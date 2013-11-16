@@ -209,62 +209,85 @@ its primary node type and its associated URIs (for both associated node resource
             "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__created" }
         },
         "j:inactiveLiveLanguages" : {
-		"value" : [],
-		"type" : "foo",
-		"links" : {"self" : "http://api.example.org/sites/mySite/props/j__inactiveLiveLanguages"
-}
-},,
-        "j:nodename" : "mySite",
+            "value" : [],
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__inactiveLiveLanguages" }
+        },
+        "j:nodename" : {
+            "value" : "mySite",
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__nodename" }
+        },
         "jcr:primaryType" : {
-		"value" : "jnt:virtualsite",
-		"type" : "foo",
-		"links" : {"self" : "http://api.example.org/sites/mySite/props/jcr__primaryType"
-}
-},,
-        "j:installedModules" : [ "templates-web",  "default", "robots", "linkchecker", "siteSettings" ],
+            "value" : "jnt:virtualsite",
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__primaryType" }
+        },
+        "j:installedModules" : {
+            "value" : [ "templates-web",  "default", "robots", "linkchecker", "siteSettings" ],
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__installedModules" }
+        },
         "jcr:lastModifiedBy" : {
-		"value" : "root",
-		"type" : "foo",
-		"links" : {"self" : "http://api.example.org/sites/mySite/props/default", "robots", "linkchecker", "siteSettings" ],
-        "jcr__lastModifiedBy"
-}
-},,
-        "j:languages" : [ "en" ],
+            "value" : "root",
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__lastModifiedBy" }
+        },
+        "j:languages" : {
+            "value" : [ "en" ],
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__languages" }
+        },
         "j:lastPublished" : {
-		"value" : "2013-11-13 17:29:34",
-		"type" : "foo",
-		"links" : {"self" : "http://api.example.org/sites/mySite/props/j__lastPublished"
-}
-},,
-        "j:lastPublishedBy" : "root",
+            "value" : "2013-11-13 17:29:34",
+            "type" : "date",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__lastPublished" }
+        },
+        "j:lastPublishedBy" : {
+            "value" : "root",
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__lastPublishedBy" }
+        },
         "jcr:createdBy" : {
-		"value" : "system",
-		"type" : "foo",
-		"links" : {"self" : "http://api.example.org/sites/mySite/props/jcr__createdBy"
-}
-},,
-        "j:mixLanguage" : false,
+            "value" : "system",
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__createdBy" }
+        },
+        "j:mixLanguage" : {
+            "value" : false,
+            "type" : "boolean",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__mixLanguage" }
+        },
         "j:description" : {
-		"value" : "",
-		"type" : "foo",
-		"links" : {"self" : "http://api.example.org/sites/mySite/props/j__description"
-}
-},,
-        "j:defaultLanguage" : en",
+            "value" : null,
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__description" }
+        },
+        "j:defaultLanguage" : {
+            "value" : "en",
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__defaultLanguage" }
+        },
         "jcr:lastModified" : {
-		"value" : "2013-11-13 17:29:34",
-		"type" : "foo",
-		"links" : {"self" : "http://api.example.org/sites/mySite/props/jcr__lastModified"
-}
-},,
-        "j:serverName" : "localhost",
+            "value" : "2013-11-13 17:29:34",
+            "type" : "date",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__lastModified" }
+        },
+        "j:serverName" : {
+            "value" : "localhost",
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__serverName" }
+        },
         "j:siteId" : {
-		"value" : "2",
-		"type" : "foo",
-		"links" : {"self" : "http://api.example.org/sites/mySite/props/j__siteId"
-}
-},,
-        "j:templatesSet" : "templates-web",
+            "value" : "2",
+            "type" : "long",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__siteId" }
+        },
+        "j:templatesSet" : {
+            "value" : "templates-web",
+            "type" : "string",
+            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__templatesSet" }
+        },
         "mixins" : [
             {
                 "jmix:accessControlled" : {
@@ -295,7 +318,7 @@ its primary node type and its associated URIs (for both associated node resource
                 }
             }
         ],
-        children" : [
+        "children" : [
             {
                 "files" : {
                     "jcr:primaryType" : "jnt:folder",
