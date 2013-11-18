@@ -43,9 +43,6 @@ that they don't need to construct them. In order to do that, each resource that 
 specific element. When appropriate, i.e. when an object represents a node, another `nodetype` link will also be
 available so that clients can find out more about the node's metadata.
 
-IDEA: additionally, we could add an optional `contributedby` link that would point to the URI of the mixin that
-contributed the given resource to its parent.
-
 ### Properties
 
 Each property is represented by an object with the following structure:
@@ -55,13 +52,14 @@ Each property is represented by an object with the following structure:
         "type" : <type>,
         "links" : {
             "self" : "<URI identifying the resource associated with the property>",
+            "nodetype" : "<URI identifying the resource associated with the property definition>"
         }
     }
 
 `type` is the case-insensitive name of the JCR property type, and is one of: STRING, BINARY, LONG, DOUBLE, DATE,
 BOOLEAN, NAME, PATH, REFERENCE, WEAKREFERENCE, URI, and DECIMAL.
 
-todo: how to handle:
+todo: how to handle: (unstructured content)
 [jnt:translation]
   - * (undefined) multiple
   - * (undefined)
@@ -145,7 +143,16 @@ its primary node type and its associated URIs (for both associated node resource
 - mixins for a given node are accessed using the `mixins` child resource
 - children for a given node are accessed directly via their path
 - `:` character is encoded by `__` in property names since `:` is a reserved character for URIs
+- indices of same name siblings (or properties) are denoted using the `--` prefix
 - properties for a given node are found under the `props` child resource to distinguish them from children
+
+### Examples
+
+| Node                        | Encoded URI                 |
+| :-------------------------- | --------------------------- |
+| `/foo/ns:bar/ns:child[2]`   | `/foo/ns__bar/ns__child--2` |
+| `mix:title` mixin of `/foo` | `/foo/mixins/mix__title`    |
+| `jcr:uuid` property of `/a` | `/a/props/jcr__uuid`        |
 
 ## Examples
 
@@ -158,135 +165,48 @@ its primary node type and its associated URIs (for both associated node resource
     Content-Type: application/json
 
     {
-        "j:inactiveLanguages" : {
-            "value" : [],
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__inactiveLanguages" }
-        },
-        "j:mandatoryLanguages" : {
-            "value" : [],
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__mandatoryLanguages" }
-        },
-        "j:wcagCompliance" : {
-            "value" : true,
-            "type" : "boolean",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__wcagCompliance" }
-        },
-        "j:title" : {
-            "value" : "My Site",
-            "type" : "foo",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__title" }
-        },
+
+        // ...
+
         "jcr:uuid" : {
             "value" : "039cdef3-289a-4fee-b80e-54da0ad35195",
             "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__uuid" }
+            "links" : {
+                "self" : "http://api.example.org/sites/mySite/props/jcr__uuid",
+                "nodetype" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition
+            }
         },
         "jcr:mixinTypes" : {
             "value" : ["jmix:accessControlled" , "jmix:robots"],
             "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__mixinTypes" }
+            "links" : {
+                "self" : "http://api.example.org/sites/mySite/props/jcr__mixinTypes",
+                "nodetype" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition
+            }
         },
-        "j:originWS" : {
-            "value" : "default",
+        "jcr:primaryType" : {
+            "value" : "jnt:virtualsite",
             "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__originWS" }
+            "links" : {
+                "self" : "http://api.example.org/sites/mySite/props/jcr__primaryType",
+                "nodetype" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2
+            }
         },
         "robots" : {
             "value" : "User-agent: *",
             "type" : "string",
             "links" : { "self" : "http://api.example.org/sites/mySite/props/robots" }
         },
-        "j:published" : {
-            "value" :  true,
-            "type" : "boolean",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__published" }
-        },
-        "jcr:created" : {
-            "value" : "2013-11-13 14:08:17",
-            "type" : "date",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__created" }
-        },
-        "j:inactiveLiveLanguages" : {
-            "value" : [],
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__inactiveLiveLanguages" }
-        },
-        "j:nodename" : {
-            "value" : "mySite",
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__nodename" }
-        },
-        "jcr:primaryType" : {
-            "value" : "jnt:virtualsite",
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__primaryType" }
-        },
-        "j:installedModules" : {
-            "value" : [ "templates-web",  "default", "robots", "linkchecker", "siteSettings" ],
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__installedModules" }
-        },
-        "jcr:lastModifiedBy" : {
-            "value" : "root",
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__lastModifiedBy" }
-        },
-        "j:languages" : {
-            "value" : [ "en" ],
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__languages" }
-        },
-        "j:lastPublished" : {
-            "value" : "2013-11-13 17:29:34",
-            "type" : "date",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__lastPublished" }
-        },
-        "j:lastPublishedBy" : {
-            "value" : "root",
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__lastPublishedBy" }
-        },
-        "jcr:createdBy" : {
-            "value" : "system",
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__createdBy" }
-        },
-        "j:mixLanguage" : {
-            "value" : false,
-            "type" : "boolean",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__mixLanguage" }
-        },
-        "j:description" : {
-            "value" : null,
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__description" }
-        },
-        "j:defaultLanguage" : {
-            "value" : "en",
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__defaultLanguage" }
-        },
-        "jcr:lastModified" : {
-            "value" : "2013-11-13 17:29:34",
-            "type" : "date",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/jcr__lastModified" }
-        },
-        "j:serverName" : {
-            "value" : "localhost",
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__serverName" }
-        },
+
+        // ...
+
         "j:siteId" : {
             "value" : "2",
             "type" : "long",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__siteId" }
-        },
-        "j:templatesSet" : {
-            "value" : "templates-web",
-            "type" : "string",
-            "links" : { "self" : "http://api.example.org/sites/mySite/props/j__templatesSet" }
+            "links" : {
+                "self" : "http://api.example.org/sites/mySite/props/j__siteId",
+                "nodetype" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__virtualsite/jcr__propertyDefinition--5
+            }
         },
         "mixins" : [
             {
