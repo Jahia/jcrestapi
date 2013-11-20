@@ -119,6 +119,8 @@ BOOLEAN, NAME, PATH, REFERENCE, WEAKREFERENCE, URI, and DECIMAL.
 meaning that the property only has a single value. Having this field allows for easier processing of properties on
 the client side without having to examine the property's definition.
 
+// todo: add a section on how references are handled
+
 #### Examples
 
 An example of the `jcr:uuid` property of a `/sites/mySite` node. `jcr:uuid` is defined by the JCR specification as
@@ -171,7 +173,11 @@ When a mixin is retrieved in the context of a node on which it is attached, each
  to the node's property or child, respectively. If the mixin is retrieved outside of a node context,
  then `self` links for properties or children are `null` since they are not reified.
 
-For example, for a mixin defined as follows:
+// todo: show structure
+
+#### Examples
+
+For a mixin defined as follows:
 
     [jmix:robots] mixin
      extends=jnt:virtualsite
@@ -199,6 +205,7 @@ the following representation will be used:
     }
 
 // todo: example of multiple same name siblings:
+
     "jmix__accessControlled" : {
                     "name" : "jmix:accessControlled",
                     "children" : {
@@ -251,6 +258,8 @@ we could adopt the following convention to set a property's value, to be equival
 Each child is represented by an object providing only minimal information about the child: its name,
 its primary node type and its associated URIs (for both associated node resource and node type resource).
 
+// todo: show structure
+
 #### Example
 
 // todo: explain
@@ -263,6 +272,10 @@ its primary node type and its associated URIs (for both associated node resource
             "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__tagList"
         }
     }
+
+### <a name="version"></a> Version representation
+
+// todo
 
 ## Operations
 
