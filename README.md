@@ -116,7 +116,8 @@ Each property is represented by an object with the following structure:
 meaning that the property only has a single value. Having this field allows for easier processing of properties on
 the client side without having to examine the property's definition.
 
-// todo: add a section on how references are handled
+If a property is of type `PATH`, `REFERENCE` or `WEAKREFERENCE`, an additional `target` link is added to the `links`
+subsection, providing the URI identifying the resource identified by the path or reference value of the property.
 
 #### Examples
 
@@ -151,6 +152,18 @@ property's definition is the second property defined on the `nt:base` node type:
     "links" : {
         "self" : "http://api.example.org/sites/mySite/props/jcr__primaryType",
         "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2"
+    }
+
+An example showing how a `j:defaultSite` reference property pointing to a `/sites/mySite` node on a `/sites` node is
+represented, demonstrating the `target` field in the `links` section:
+
+    "name" : "j:defaultSite",
+    "value" :  "09100a94-0714-4fb6-98de-351ad63773b2",
+    "type" : "weakreference",
+    "links" : {
+        "self" : "http://api.example.org/sites/props/j__defaultSite",
+        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__virtualsitesFolder/jcr__propertyDefinition--3",
+        "target" : "http://api.example.org/sites/mySite"
     }
 
 
