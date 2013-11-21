@@ -100,19 +100,17 @@ available so that clients can find out more about the node's metadata.
 
 Each property is represented by an object with the following structure:
 
-    "<escaped property name>" : {
-        "name" : <unescaped name>,
-        "isMultiple" : <boolean indicating whether the property has multiple values or not>
-        "value" : <value>,
-        "type" : <type>,
-        "links" : {
-            "self" : "<URI identifying the resource associated with the property>",
-            "type" : "<URI identifying the resource associated with the property definition>"
-        }
+    "name" : <unescaped name>,
+    "isMultiple" : <boolean indicating whether the property has multiple values or not>
+    "value" : <value>,
+    "type" : <type>,
+    "links" : {
+        "self" : "<URI identifying the resource associated with the property>",
+        "type" : "<URI identifying the resource associated with the property definition>"
     }
 
-`type` is the case-insensitive name of the JCR property type, and is one of: STRING, BINARY, LONG, DOUBLE, DATE,
-BOOLEAN, NAME, PATH, REFERENCE, WEAKREFERENCE, URI, and DECIMAL.
+`type` is the case-insensitive name of the JCR property type, and is one of: `STRING`, `BINARY`, `LONG`, `DOUBLE`,
+`DATE`, `BOOLEAN`, `NAME`, `PATH`, `REFERENCE`, `WEAKREFERENCE`, `URI`, and `DECIMAL`.
 
 `isMultiple` is optional, if it's not present in the returned representation, it is assumed to be `false`,
 meaning that the property only has a single value. Having this field allows for easier processing of properties on
@@ -125,40 +123,34 @@ the client side without having to examine the property's definition.
 An example of the `jcr:uuid` property of a `/sites/mySite` node. `jcr:uuid` is defined by the JCR specification as
 being defined by the `mix:referenceable` mixin:
 
-    "jcr__uuid" : {
-        "name" : "jcr:uuid",
-        "value" : "039cdef3-289a-4fee-b80e-54da0ad35195",
-        "type" : "string",
-        "links" : {
-            "self" : "http://api.example.org/sites/mySite/props/jcr__uuid",
-            "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition
-        }
+    "name" : "jcr:uuid",
+    "value" : "039cdef3-289a-4fee-b80e-54da0ad35195",
+    "type" : "string",
+    "links" : {
+        "self" : "http://api.example.org/sites/mySite/props/jcr__uuid",
+        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition
     }
 
 An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the `isMultiple` field:
 
-    "jcr__mixinTypes" : {
-        "name" : "jcr:mixinTypes",
-        "isMultiple" : true,
-        "value" : ["jmix:accessControlled" , "jmix:robots"],
-        "type" : "string",
-        "links" : {
-            "self" : "http://api.example.org/sites/mySite/props/jcr__mixinTypes",
-            "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition
-        }
+    "name" : "jcr:mixinTypes",
+    "isMultiple" : true,
+    "value" : ["jmix:accessControlled" , "jmix:robots"],
+    "type" : "string",
+    "links" : {
+        "self" : "http://api.example.org/sites/mySite/props/jcr__mixinTypes",
+        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition
     }
 
 An example showing how indexed, same name properties URIs are created, here the node type associated with the
 property's definition is the second property defined on the `nt:base` node type:
 
-    "jcr__primaryType" : {
-        "name" : "jcr:primaryType",
-        "value" : "jnt:virtualsite",
-        "type" : "string",
-        "links" : {
-            "self" : "http://api.example.org/sites/mySite/props/jcr__primaryType",
-            "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2
-        }
+    "name" : "jcr:primaryType",
+    "value" : "jnt:virtualsite",
+    "type" : "string",
+    "links" : {
+        "self" : "http://api.example.org/sites/mySite/props/jcr__primaryType",
+        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2
     }
 
 
