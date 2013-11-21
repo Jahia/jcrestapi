@@ -247,22 +247,36 @@ we could adopt the following convention to set a property's value, to be equival
 ### <a name="children"></a> Children representation
 
 Each child is represented by an object providing only minimal information about the child: its name,
-its primary node type and its associated URIs (for both associated node resource and node type resource).
+its primary node type and its associated URIs (for both associated node resource and node type resource):
 
-// todo: show structure
+    "name" : <unescaped child name>,
+    "type" : <nodetype name>,
+    "links" : {
+        "self" : <URI identifying the resource associated with the child's node>,
+        "type" : <URI identifying the resource associated with the child's node type>
+    }
 
 #### Example
 
-// todo: explain
+Below is the representation of a `tags` child element of a `/sites/mySite` node,
+within the context of the enclosing's node `children` element:
 
-    "tags" : {
-        "name" : "tags",
-        "type" : "jnt:tagList",
-        "links" : {
-            "self" : "http://api.example.org/sites/mySite/tags",
-            "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__tagList"
-        }
+    // ...
+    "children" : {
+        // ...
+
+        "tags" : {
+            "name" : "tags",
+            "type" : "jnt:tagList",
+            "links" : {
+                "self" : "http://api.example.org/sites/mySite/tags",
+                "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__tagList"
+            }
+        },
+
+        // ...
     }
+    // ...
 
 ### <a name="version"></a> Version representation
 
