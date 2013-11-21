@@ -76,6 +76,11 @@ properties are not resolved to objects but left as strings. This also means that
 between resources to discover and interact with associated resources. This is detailed in the [Linking section]
 (#linking).
 
+A node's collection resources allow users to query the particular kind of resource it holds or add new resource to
+the set of existing ones. Collections should also considered as ordered despite not being modelled using JSON arrays.
+We made this particular design decision because we felt being able to access a child resource via its name was more
+important than explicitly modelling ordering.
+
 ### <a name="names"/>Names, escaped and unescaped
 
 Since JCR property and node names are usually namespaced and the `:` character used as a namespace delimiter in the
@@ -107,6 +112,9 @@ A node's properties are gathered within a `props` object that has the following 
         <for each property>
             <escaped property name> : <property representation>,
         </for each property>
+        "links" : {
+            "self" : <URI identifying the resource associated with the parent's node properties resource>
+        }
     },
     // other node elements...
 
@@ -188,11 +196,13 @@ A node's attached mixins information is gathered within a `mixins` object on the
         <for each mixin>
             <escaped mixin name> : <mixin representation>,
         </for each mixin>
+        "links" : {
+            "self" : <URI identifying the resource associated with the parent's node mixins resource>
+        }
     },
     // other node elements...
 
-Mixins, in the context of a given node representation, are represented using a simplified view containing only the
-basic information to be able to deal with this mixin. Here is the structure for a mixin representation:
+Here is the structure for a mixin representation:
 
     "name" : <the mixin's unescaped name>,
     "links" : {
@@ -210,10 +220,14 @@ For a mixin named `jmix:robots` attached to a `/sites/mySite` node, we would use
           "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__robots"
      }
 
-[jmix:robots] mixin
-     extends=jnt:virtualsite
-    - robots (string, textarea) = 'User-agent: *'
-To attach this mixin to an existing `/sites/mySite` node, a client would perform the following request:
+Given the following mixin definition:
+
+    [jmix:robots] mixin
+         extends=jnt:virtualsite
+        - robots (string, textarea) = 'User-agent: *'
+
+To attach this mixin to an existing `/sites/mySite` node, a client would perform the following,
+creating a new `jmix__robots` resource in the `mixins` collection resource, using a `PUT` request:
 
     PUT /sites/mySite/mixins/jmix__robots HTTP/1.1
     Host: api.example.org
@@ -244,9 +258,11 @@ Children of a given node are gathered within a `children` object, as follows:
         <for each child>
             <escaped child name> : <child representation>,
         </for each child>
+        "links" : {
+            "self" : <URI identifying the resource associated with the parent's node children resource>
+        }
     },
     // other node elements...
-
 
 Each child is represented by an object providing only minimal information about the child: its name,
 its primary node type and its associated URIs (for both associated node resource and node type resource):
@@ -277,6 +293,9 @@ within the context of the enclosing's node `children` element:
         },
 
         // ...
+        "links" : {
+            "self" : "http://api.example.org/sites/mySite/children"
+        }
     }
     // ...
 
@@ -289,6 +308,9 @@ A node's versions are gathered within a `versions` object as follows:
         <for each version>
             <escaped version name> : <version representation>,
         </for each version>
+        "links" : {
+            "self" : <URI identifying the resource associated with the parent's node versions resource>
+        }
     },
     // other node elements...
 
