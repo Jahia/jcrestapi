@@ -15,7 +15,7 @@ since with great accessibility/power comes great responsibility!
 The natural match to map JCR data unto REST concepts is to use JCR nodes as resources, identified by their path,
 which is made rather easy since JCR data is stored mostly in tree form.
 
-## URI design
+## <a name="uri"/>URI design
 
 - versions for a given node are found under the `versions` child resource
 - mixins for a given node are accessed using the `mixins` child resource
@@ -47,13 +47,14 @@ client code can refer to properties and nodes without having to first escape the
 it can still be useful to know the original item name. We therefore provide an extra value in the item content named
 quite appropriately `name` which contains the original, unescaped name of the item.
 
-By default, only one level of depth in the hierarchy is retrieved
-for a given node. This means that reference properties are not resolved to objects but left as strings and children
-are represented by a collection of child objects as detailed in the [dedicated section](#children). Mixins are listed
- in a collection named `mixins`, each mixin corresponding to an entry in that collection using the simplified
-representation detailed in the [Mixin representation section](#mixin) while versions are listed in a collection named
-`versions` ( see [Version representation section](#version)). Properties are listed in a collection named `props`,
-each property represented as defined in the [Property representation section](#property).
+By default, only one level of depth in the hierarchy is retrieved for a given node. This means that reference
+properties are not resolved to objects but left as strings and children are represented by a collection of child
+objects as detailed in the [dedicated section](#children). Mixins are listed in a collection named `mixins`,
+each mixin corresponding to an entry in that collection using the simplified representation detailed in the [Mixin
+representation section](#mixin) while versions are listed in a collection named `versions` ( see [Version
+representation section](#version)). Properties are listed in a collection named `props`,
+each property represented as defined in the [Property representation section](#property). Each element in a node's
+subsection is identified by its escaped name according to the rules outlined in the [URI design section](#uri).
 
 ### Making URIs opaque
 
@@ -69,32 +70,30 @@ available so that clients can find out more about the node's metadata.
 
 ### Node representation structure
 
-    {
-        "name" : <the node's unescaped name>
-        "props" : {
-        <for each property>
-            <property representation>,
-        </for each property>
-        }
-        "mixins" : {
-        <for each mixin>
-            <mixin representation>,
-        </for each mixin>
-        },
-        "children" : {
-        <for each child>
-            <child representation>,
-        </for each child>
-        },
-        "versions" : {
-        <for each version>
-            <version representation>,
-        </for each version>
-        },
-        "links" : {
-            "self" : "<URI identifying the resource associated with this node>",
-            "type" : "<URI identifying the resource associated with this node's type"
-        }
+    "name" : <the node's unescaped name>
+    "props" : {
+    <for each property>
+        <escaped property name> : <property representation>,
+    </for each property>
+    }
+    "mixins" : {
+    <for each mixin>
+        <escaped mixin name> : <mixin representation>,
+    </for each mixin>
+    },
+    "children" : {
+    <for each child>
+        <escaped child name> : <child representation>,
+    </for each child>
+    },
+    "versions" : {
+    <for each version>
+        <escaped version name> : <version representation>,
+    </for each version>
+    },
+    "links" : {
+        "self" : "<URI identifying the resource associated with this node>",
+        "type" : "<URI identifying the resource associated with this node's type"
     }
 
 ### <a name="property"></a>Properties
