@@ -103,6 +103,10 @@ quite appropriately `name` which contains the original, unescaped name of the it
         "type" : "<URI identifying the resource associated with this node's type"
     }
 
+Note that it should be possible for an API client to only request a subset of the complete structure. For example,
+a client might only be interested in properties for a given call and not care about the rest of the structure. This
+should be handled using query parameters during the `GET` request on the node resource.
+
 ### <a name="properties"/>Properties representation
 
 A node's properties are gathered within a `props` object that has the following structure:
