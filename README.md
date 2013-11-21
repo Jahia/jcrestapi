@@ -299,6 +299,74 @@ within the context of the enclosing's node `children` element:
     }
     // ...
 
+#### Special considerations for same-name siblings
+
+It is possible for a node type to specify that instances of this node type allow multiple children with the same name.
+They are then identified using a 1-based index representing the relative position of the child compared to other
+instances of same-named children. They are created using the `children` resource of the parent node and are appended
+at the end of the parent node's children collection. Their URIs and escaped names use the `--<index>` suffix
+convention we discussed previously.
+
+For example, assuming a `/foo` node allows for multiple `bar` children:
+
+    # Adding a bar child
+    PUT /foo/children/bar HTTP/1.1
+    Host: api.example.org
+    // bar content
+
+    # Response
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    "name" : "foo",
+    // ...
+    "children" : {
+        "bar" : {
+            "name" : "bar",
+            "type" : "bar:nodeType",
+            "links" : {
+                "self" : "http://api.example.org/foo/bar",
+                // ...
+            }
+        },
+        "links" : {
+            "self" : "http://api.example.org/foo/children"
+        }
+    }
+
+    # Adding a bar child
+    PUT /foo/children/bar HTTP/1.1
+    Host: api.example.org
+    // another bar child content
+
+    # New response
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    "name" : "foo",
+    // ...
+    "children" : {
+        "bar" : {
+            "name" : "bar",
+            "type" : "bar:nodeType",
+            "links" : {
+                "self" : "http://api.example.org/foo/bar",
+                // ...
+            }
+        },
+        "bar--2" : {
+            "name" : "bar",
+            "type" : "bar:nodeType",
+            "links" : {
+                "self" : "http://api.example.org/foo/bar--2",
+                // ...
+            }
+        },
+        "links" : {
+            "self" : "http://api.example.org/foo/children"
+        }
+    }
+
 ### <a name="versions"/>Versions representation
 
 A node's versions are gathered within a `versions` object as follows:
