@@ -367,6 +367,8 @@ For example, assuming a `/foo` node allows for multiple `bar` children:
         }
     }
 
+// todo: how to support orderable children and in particular re-ordering operations?
+
 ### <a name="versions"/>Versions representation
 
 A node's versions are gathered within a `versions` object as follows:
