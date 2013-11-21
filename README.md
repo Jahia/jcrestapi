@@ -128,7 +128,7 @@ being defined by the `mix:referenceable` mixin:
     "type" : "string",
     "links" : {
         "self" : "http://api.example.org/sites/mySite/props/jcr__uuid",
-        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition
+        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition"
     }
 
 An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the `isMultiple` field:
@@ -139,10 +139,10 @@ An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the 
     "type" : "string",
     "links" : {
         "self" : "http://api.example.org/sites/mySite/props/jcr__mixinTypes",
-        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition
+        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition"
     }
 
-An example showing how indexed, same name properties URIs are created, here the node type associated with the
+An example showing how indexed, same name properties URIs are represented, here the node type associated with the
 property's definition is the second property defined on the `nt:base` node type:
 
     "name" : "jcr:primaryType",
@@ -150,7 +150,7 @@ property's definition is the second property defined on the `nt:base` node type:
     "type" : "string",
     "links" : {
         "self" : "http://api.example.org/sites/mySite/props/jcr__primaryType",
-        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2
+        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2"
     }
 
 
