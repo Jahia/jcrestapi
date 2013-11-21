@@ -5,8 +5,8 @@
 - Provide a simple CRUD REST API to JCR nodes
 - Support only JSON as input/output format at this time
 - Legacy options that are available in the current version of the REST API don't need to be ported / duplicated
-- API should be accessible both from JS (directly or via frameworks) and traditional HTTP forms in browsers,
-directly from any REST-able technology
+- API should be accessible both from JS (directly or via frameworks) and _optionally_ traditional HTTP forms in
+browsers, directly from any REST-able technology
 - All JCR nodes should be accessible from the API: this mandates that authorization will need to be properly tackled
 since with great accessibility/power comes great responsibility!
 
@@ -41,22 +41,7 @@ with specific representations for node elements.
 
 // todo: it might be worth it to describe the API using a JSON schema definition as per http://json-schema.org/
 
-Since JCR property and node names are usually namespaced and the `:` character used as a namespace delimiter in the
-prefixed form is a reserved JSON character, we use escaped names for both properties and nodes. This way,
-client code can refer to properties and nodes without having to first escape them. However,
-it can still be useful to know the original item name. We therefore provide an extra value in the item content named
-quite appropriately `name` which contains the original, unescaped name of the item.
-
-By default, only one level of depth in the hierarchy is retrieved for a given node. This means that reference
-properties are not resolved to objects but left as strings and children are represented by a collection of child
-objects as detailed in the [dedicated section](#children). Mixins are listed in a collection named `mixins`,
-each mixin corresponding to an entry in that collection using the simplified representation detailed in the [Mixin
-representation section](#mixin) while versions are listed in a collection named `versions` ( see [Version
-representation section](#version)). Properties are listed in a collection named `props`,
-each property represented as defined in the [Property representation section](#property). Each element in a node's
-subsection is identified by its escaped name according to the rules outlined in the [URI design section](#uri).
-
-### Making URIs opaque
+### <a name="linking"/>Linking to resources and keeping URIs opaque
 
 It's important that clients don't rely on building URIs themselves as much as possible and thus,
 we should strive to let clients treat them as *opaque* as possible. This does not mean that URIs need to be
@@ -64,39 +49,66 @@ unreadable. This, however, means that URIs for resources should be easily discov
 that they don't need to construct them. In order to do that, each resource that can be interacted with embeds a
 `links` child object that minimally defines a `self` reference identifying the URI to use to interact with this
 specific element. When appropriate, i.e. when an object represents a node, another `type` link will also be
-available so that clients can find out more about the node's metadata.
+available so that clients can find out more about the node's metadata. Specific objects might add more link types
+when appropriate.
 
 // todo: examine whether it's worth using the JSON Hyper Schema specification for links: http://json-schema.org/latest/json-schema-hypermedia.html
 
+
+### Node representation
+
+A node is composed of several elements that need to be represented as efficiently and usefully as possible so that
+both humans and automated systems can make sense of the information conveyed by the representation. We've identified
+the following information to represent nodes:
+
+- The unescaped node's name, represented by the `name` field, as detailed in the [Names section](#names).
+- The name of the node's type, represented by the `type` field.
+- The node's properties, which are gathered in a `props` object, as detailed in the [Properties section](#properties).
+- The node's children collection, which are gathered in a `children` object, as detailed in the [Children section]
+(#children).
+- The node's attached mixins, which information is gathered in a `mixins` object, as detailed in the [Mixins section]
+(#mixins).
+- The node's versions if appropriate, which are gathered in a `versions` object,
+as detailed in the [Versions section](#versions).
+- Links to useful resources associated with the node, gathered in `links` object. By default,
+only one level of depth in the hierarchy is retrieved for a given node. This means that reference
+properties are not resolved to objects but left as strings. This also means that the API makes extensive use of links
+between resources to discover and interact with associated resources. This is detailed in the [Linking section]
+(#linking).
+
+### <a name="names"/>Names, escaped and unescaped
+
+Since JCR property and node names are usually namespaced and the `:` character used as a namespace delimiter in the
+prefixed form is a reserved JSON character, we use escaped (according to the rules outlined in the [URI design
+section](#uri)) names to identify both properties and nodes in collections.
+This way, client code can refer to properties and nodes without having to first escape them. However,
+it can still be useful to know the original item name. We therefore provide an extra value in the item content named
+quite appropriately `name` which contains the original, unescaped name of the item.
+
 ### Node representation structure
 
-    "name" : <the node's unescaped name>
-    "props" : {
-    <for each property>
-        <escaped property name> : <property representation>,
-    </for each property>
-    }
-    "mixins" : {
-    <for each mixin>
-        <escaped mixin name> : <mixin representation>,
-    </for each mixin>
-    },
-    "children" : {
-    <for each child>
-        <escaped child name> : <child representation>,
-    </for each child>
-    },
-    "versions" : {
-    <for each version>
-        <escaped version name> : <version representation>,
-    </for each version>
-    },
+    "name" : <the node's unescaped name>,
+    "type" : <the node's node type name>,
+    "props" : <properties representation>,
+    "mixins" : <mixins representation>,
+    "children" : <children representation>,
+    "versions" : <versions representation>,
     "links" : {
         "self" : "<URI identifying the resource associated with this node>",
         "type" : "<URI identifying the resource associated with this node's type"
     }
 
-### <a name="property"></a>Properties
+### <a name="properties"/>Properties representation
+
+A node's properties are gathered within a `props` object that has the following structure:
+
+    // other node elements...
+    "props" : {
+        <for each property>
+            <escaped property name> : <property representation>,
+        </for each property>
+    },
+    // other node elements...
 
 Each property is represented by an object with the following structure:
 
@@ -167,80 +179,48 @@ represented, demonstrating the `target` field in the `links` section:
     }
 
 
-### <a name="mixin"></a> Mixin representation
+### <a name="mixins"/>Mixins representation
 
-Each mixin attached to a retrieved node is represented using a simplified view: an object with exactly one
-name/value pair where the name is the name of the mixin and its associated value is the content model of the mixin
-associated. The common `links` element completes the simplified view of the mixin.
+A node's attached mixins information is gathered within a `mixins` object on the node's representation, as follows:
 
-When a mixin is retrieved in the context of a node on which it is attached, each property or child `self` link points
- to the node's property or child, respectively. If the mixin is retrieved outside of a node context,
- then `self` links for properties or children are `null` since they are not reified.
+    // other node elements...
+    "mixins" : {
+        <for each mixin>
+            <escaped mixin name> : <mixin representation>,
+        </for each mixin>
+    },
+    // other node elements...
 
-// todo: show structure
+Mixins, in the context of a given node representation, are represented using a simplified view containing only the
+basic information to be able to deal with this mixin. Here is the structure for a mixin representation:
+
+    "name" : <the mixin's unescaped name>,
+    "links" : {
+        "self" : <URI identifying the resource associated with the mixin in the context of the enclosing node>,
+        "type" : <URI identifying the resource associated with the mixin's node type>
+    }
 
 #### Examples
 
-For a mixin defined as follows:
+For a mixin named `jmix:robots` attached to a `/sites/mySite` node, we would use the following representation:
 
-    [jmix:robots] mixin
+    "name" : "jmix:robots",
+     "links" : {
+          "self" : "http://api.example.org/sites/mySite/mixins/jmix__robots",
+          "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__robots"
+     }
+
+[jmix:robots] mixin
      extends=jnt:virtualsite
     - robots (string, textarea) = 'User-agent: *'
-
-the following representation will be used:
-
-    "jmix__robots" : {
-        "name" : "jmix:robots",
-        "props" : {
-            "robots" : {
-                "name" : "robots",
-                "value" : "User-agent: *",
-                "type" : "string",
-                "links" : {
-                    "self" : <URI identifying the resource associated with the property of the node the mixin is
-                    attached to>,
-                    "type": "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__robots/jcr__propertyDefinition"
-                }
-        }
-         "links" : {
-              "self" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__robots",
-              "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__robots"
-         }
-    }
-
-// todo: example of multiple same name siblings:
-
-    "jmix__accessControlled" : {
-                    "name" : "jmix:accessControlled",
-                    "children" : {
-                        "j__acl" : {
-                            "name" : "j:acl",
-                            "type" : "jnt:acl",
-                            "links" : {
-                                "self" : "http://api.example.org/sites/mySite/j__acl",
-                                "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__acl"
-                            }
-                        }
-                    },
-                    "links" : {
-                        "self" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__accessControlled"
-                        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__accessControlled"
-                    }
-                }
-
-
-Note that, since mixins *are* nodetypes, both `self` and `type` links point to the same URI.
-
 To attach this mixin to an existing `/sites/mySite` node, a client would perform the following request:
 
     PUT /sites/mySite/mixins/jmix__robots HTTP/1.1
     Host: api.example.org
 
-    {
-        "props" : {
-            "robots" : {
-                "value" : "User-agent: *"
-            }
+    "props" : {
+        "robots" : {
+            "value" : "User-agent: *"
         }
     }
 
@@ -250,14 +230,23 @@ we could adopt the following convention to set a property's value, to be equival
     PUT /sites/mySite/mixins/jmix__robots HTTP/1.1
     Host: api.example.org
 
-    {
-        "props" : {
-            "robots" : "User-agent: *"
-        }
+    "props" : {
+        "robots" : "User-agent: *"
     }
 
 
-### <a name="children"></a> Children representation
+### <a name="children"/>Children representation
+
+Children of a given node are gathered within a `children` object, as follows:
+
+    // other node elements...
+    "children" : {
+        <for each child>
+            <escaped child name> : <child representation>,
+        </for each child>
+    },
+    // other node elements...
+
 
 Each child is represented by an object providing only minimal information about the child: its name,
 its primary node type and its associated URIs (for both associated node resource and node type resource):
@@ -291,7 +280,17 @@ within the context of the enclosing's node `children` element:
     }
     // ...
 
-### <a name="version"></a> Version representation
+### <a name="versions"/>Versions representation
+
+A node's versions are gathered within a `versions` object as follows:
+
+    // other node elements...
+    "versions" : {
+        <for each version>
+            <escaped version name> : <version representation>,
+        </for each version>
+    },
+    // other node elements...
 
 // todo
 
