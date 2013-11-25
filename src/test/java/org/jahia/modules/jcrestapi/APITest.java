@@ -43,17 +43,15 @@ import com.sun.net.httpserver.HttpServer;
 import org.jboss.resteasy.plugins.server.sun.http.HttpContextBuilder;
 import org.jboss.resteasy.test.TestPortProvider;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 
+import static com.jayway.restassured.RestAssured.expect;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.equalTo;
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
@@ -85,16 +83,35 @@ public class APITest {
 
     @Test
     public void testGetVersion() throws Exception {
-        Client client = ClientBuilder.newClient();
-        final WebTarget target = client.target(generateURL("/version"));
-        final Response response = target.request("text/plain").get();
-        String version = response.readEntity(String.class);
-
         Properties props = new Properties();
         props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("jcrestapi.properties"));
 
-        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals(props.getProperty("jcrestapi.version"), version);
-        client.close();
+        expect().statusCode(SC_OK)
+                .contentType("text/plain")
+                .body(equalTo(props.getProperty("jcrestapi.version")))
+                .when().get(generateURL("/version"));
     }
+
+    /*
+    @Test
+    public void createSite() {
+        given().body("\"j__title\":\"mySite\"")
+                .expect()
+                .statusCode(SC_CREATED)
+                .header(LOCATION, baseURL + "/sites/mySite")
+                .body("j__nodename.value", equalTo("mySite"), "j__nodename.type", equalTo("string"),
+                        "j__nodename.links.self", equalTo(baseURL + "/sites/mySite/props/j__nodename"))
+                .when().put("/sites/mySite");
+    }
+
+    @Test
+    public void attemptingToChangeAProtectedPropertyShouldFail(@ArquillianResource URL baseURL) {
+        final String propURI = baseURL + "/sites/mySite/props/j__nodename";
+        given().body("newSite")
+                .expect()
+                .statusCode(SC_METHOD_NOT_ALLOWED)
+                .header(LOCATION, propURI)
+                .header(ALLOW, "GET")
+                .when().put(propURI);
+    }*/
 }
