@@ -100,7 +100,7 @@ quite appropriately `name` which contains the original, unescaped name of the it
     "versions" : <versions representation>,
     "links" : {
         "self" : "<URI identifying the resource associated with this node>",
-        "type" : "<URI identifying the resource associated with this node's type"
+        "type" : "<URI identifying the resource associated with this node's type>",
     }
 
 Note that it should be possible for an API client to only request a subset of the complete structure. For example,
@@ -117,7 +117,7 @@ A node's properties are gathered within a `properties` object that has the follo
             <escaped property name> : <property representation>,
         </for each property>
         "links" : {
-            "self" : <URI identifying the resource associated with the parent's node properties resource>
+            "self" : "<URI identifying the resource associated with the parent's node properties resource>"
         }
     },
     // other node elements...
@@ -201,7 +201,7 @@ A node's attached mixins information is gathered within a `mixins` object on the
             <escaped mixin name> : <mixin representation>,
         </for each mixin>
         "links" : {
-            "self" : <URI identifying the resource associated with the parent's node mixins resource>
+            "self" : "<URI identifying the resource associated with the parent's node mixins resource>"
         }
     },
     // other node elements...
@@ -210,8 +210,8 @@ Here is the structure for a mixin representation:
 
     "name" : <the mixin's unescaped name>,
     "links" : {
-        "self" : <URI identifying the resource associated with the mixin in the context of the enclosing node>,
-        "type" : <URI identifying the resource associated with the mixin's node type>
+        "self" : "<URI identifying the resource associated with the mixin in the context of the enclosing node>",
+        "type" : "<URI identifying the resource associated with the mixin's node type>"
     }
 
 #### Examples
@@ -263,7 +263,7 @@ Children of a given node are gathered within a `children` object, as follows:
             <escaped child name> : <child representation>,
         </for each child>
         "links" : {
-            "self" : <URI identifying the resource associated with the parent's node children resource>
+            "self" : "<URI identifying the resource associated with the parent's node children resource>"
         }
     },
     // other node elements...
@@ -274,8 +274,8 @@ its primary node type and its associated URIs (for both associated node resource
     "name" : <unescaped child name>,
     "type" : <nodetype name>,
     "links" : {
-        "self" : <URI identifying the resource associated with the child's node>,
-        "type" : <URI identifying the resource associated with the child's node type>
+        "self" : "<URI identifying the resource associated with the child's node>",
+        "type" : "<URI identifying the resource associated with the child's node type>"
     }
 
 #### Example
@@ -383,7 +383,7 @@ A node's versions are gathered within a `versions` object as follows:
             <escaped version name> : <version representation>,
         </for each version>
         "links" : {
-            "self" : <URI identifying the resource associated with the parent's node versions resource>
+            "self" : "<URI identifying the resource associated with the parent's node versions resource>"
         }
     },
     // other node elements...
