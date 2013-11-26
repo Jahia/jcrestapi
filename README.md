@@ -22,7 +22,7 @@ which is made rather easy since JCR data is stored mostly in tree form.
 - children for a given node are accessed directly via their path
 - `:` character is encoded by `__` in property names since `:` is a reserved character for URIs
 - indices of same name siblings are denoted using the `--` prefix
-- properties for a given node are found under the `props` child resource to distinguish them from children
+- properties for a given node are found under the `properties` child resource to distinguish them from children
 
 ### Examples
 
@@ -30,7 +30,7 @@ which is made rather easy since JCR data is stored mostly in tree form.
 | :-------------------------- | --------------------------- |
 | `/foo/ns:bar/ns:child[2]`   | `/foo/ns__bar/ns__child--2` |
 | `mix:title` mixin of `/foo` | `/foo/mixins/mix__title`    |
-| `jcr:uuid` property of `/a` | `/a/props/jcr__uuid`        |
+| `jcr:uuid` property of `/a` | `/a/properties/jcr__uuid`        |
 
 
 ## Resources representation
@@ -63,7 +63,7 @@ the following information to represent nodes:
 
 - The unescaped node's name, represented by the `name` field, as detailed in the [Names section](#names).
 - The name of the node's type, represented by the `type` field.
-- The node's properties, which are gathered in a `props` object, as detailed in the [Properties section](#properties).
+- The node's properties, which are gathered in a `properties` object, as detailed in the [Properties section](#properties).
 - The node's children collection, which are gathered in a `children` object, as detailed in the [Children section]
 (#children).
 - The node's attached mixins, which information is gathered in a `mixins` object, as detailed in the [Mixins section]
@@ -94,7 +94,7 @@ quite appropriately `name` which contains the original, unescaped name of the it
 
     "name" : <the node's unescaped name>,
     "type" : <the node's node type name>,
-    "props" : <properties representation>,
+    "properties" : <properties representation>,
     "mixins" : <mixins representation>,
     "children" : <children representation>,
     "versions" : <versions representation>,
@@ -109,10 +109,10 @@ should be handled using query parameters during the `GET` request on the node re
 
 ### <a name="properties"/>Properties representation
 
-A node's properties are gathered within a `props` object that has the following structure:
+A node's properties are gathered within a `properties` object that has the following structure:
 
     // other node elements...
-    "props" : {
+    "properties" : {
         <for each property>
             <escaped property name> : <property representation>,
         </for each property>
@@ -152,7 +152,7 @@ being defined by the `mix:referenceable` mixin:
     "value" : "039cdef3-289a-4fee-b80e-54da0ad35195",
     "type" : "string",
     "links" : {
-        "self" : "http://api.example.org/sites/mySite/props/jcr__uuid",
+        "self" : "http://api.example.org/sites/mySite/properties/jcr__uuid",
         "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition"
     }
 
@@ -163,7 +163,7 @@ An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the 
     "value" : ["jmix:accessControlled" , "jmix:robots"],
     "type" : "string",
     "links" : {
-        "self" : "http://api.example.org/sites/mySite/props/jcr__mixinTypes",
+        "self" : "http://api.example.org/sites/mySite/properties/jcr__mixinTypes",
         "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition"
     }
 
@@ -174,7 +174,7 @@ property's definition is the second property defined on the `nt:base` node type:
     "value" : "jnt:virtualsite",
     "type" : "string",
     "links" : {
-        "self" : "http://api.example.org/sites/mySite/props/jcr__primaryType",
+        "self" : "http://api.example.org/sites/mySite/properties/jcr__primaryType",
         "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2"
     }
 
@@ -185,7 +185,7 @@ represented, demonstrating the `target` field in the `links` section:
     "value" :  "09100a94-0714-4fb6-98de-351ad63773b2",
     "type" : "weakreference",
     "links" : {
-        "self" : "http://api.example.org/sites/props/j__defaultSite",
+        "self" : "http://api.example.org/sites/properties/j__defaultSite",
         "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__virtualsitesFolder/jcr__propertyDefinition--3",
         "target" : "http://api.example.org/sites/mySite"
     }
@@ -236,7 +236,7 @@ creating a new `jmix__robots` resource in the `mixins` collection resource, usin
     PUT /sites/mySite/mixins/jmix__robots HTTP/1.1
     Host: api.example.org
 
-    "props" : {
+    "properties" : {
         "robots" : {
             "value" : "User-agent: *"
         }
@@ -248,7 +248,7 @@ we could adopt the following convention to set a property's value, to be equival
     PUT /sites/mySite/mixins/jmix__robots HTTP/1.1
     Host: api.example.org
 
-    "props" : {
+    "properties" : {
         "robots" : "User-agent: *"
     }
 
