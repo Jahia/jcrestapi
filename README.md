@@ -76,6 +76,10 @@ properties are not resolved to objects but left as strings. This also means that
 between resources to discover and interact with associated resources. This is detailed in the [Linking section]
 (#linking).
 
+The node representation adds URIs identifying each sub-element to the `links` section,
+each named with the name of the sub-element it is associated with. This way, a `properties` object is added to the
+`links` section pointing to the `properties` resource, a `mixins` object points to the `mixins` resource, etc.
+
 A node's collection resources allow users to query the particular kind of resource it holds or add new resource to
 the set of existing ones. Collections should also considered as ordered despite not being modelled using JSON arrays.
 We made this particular design decision because we felt being able to access a child resource via its name was more
@@ -101,6 +105,10 @@ quite appropriately `name` which contains the original, unescaped name of the it
     "links" : {
         "self" : "<URI identifying the resource associated with this node>",
         "type" : "<URI identifying the resource associated with this node's type>",
+        "properties" : "<URI identifying the resource associated with this node's properties>",
+        "mixins" : "<URI identifying the resource associated with this node's mixins>",
+        "children" : "<URI identifying the resource associated with this node's children>",
+        "versions" : "<URI identifying the resource associated with this node's versions>"
     }
 
 Note that it should be possible for an API client to only request a subset of the complete structure. For example,
