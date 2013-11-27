@@ -40,6 +40,7 @@
 package org.jahia.modules.jcrestapi;
 
 import com.sun.net.httpserver.HttpServer;
+import org.apache.jackrabbit.core.TransientRepository;
 import org.jboss.resteasy.plugins.server.sun.http.HttpContextBuilder;
 import org.jboss.resteasy.test.TestPortProvider;
 import org.junit.AfterClass;
@@ -50,8 +51,11 @@ import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import static com.jayway.restassured.RestAssured.expect;
+import static com.jayway.restassured.RestAssured.get;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
@@ -62,17 +66,15 @@ public class APITest {
     private static HttpServer httpServer;
     private static HttpContextBuilder contextBuilder;
 
-
     @BeforeClass
     public static void init() throws Exception {
         int port = TestPortProvider.getPort();
 
         httpServer = HttpServer.create(new InetSocketAddress("localhost", port), 10);
         contextBuilder = new HttpContextBuilder();
-        contextBuilder.getDeployment().getActualResourceClasses().add(API.class);
+        contextBuilder.getDeployment().getActualResourceClasses().add(APIWithFixture.class);
         contextBuilder.bind(httpServer);
         httpServer.start();
-
     }
 
     @AfterClass
@@ -89,8 +91,50 @@ public class APITest {
         expect().statusCode(SC_OK)
                 .contentType("text/plain")
                 .body(equalTo(props.getProperty("jcrestapi.version")))
-                .when().get(generateURL("/version"));
+                .when().get(getURL("version"));
     }
+
+    @Test
+    public void testGetInexistingNode() {
+        expect().statusCode(SC_NOT_FOUND)
+                .when().get(generateURL("/foo"));
+
+        expect().statusCode(SC_NOT_FOUND)
+                .when().get(getURL("foo"));
+    }
+
+    @Test
+    public void testGetRoot() {
+
+        System.out.println(get(getURL("")).asString());
+
+        expect().statusCode(SC_OK)
+                .contentType("application/json")
+                .body(
+                        "name", equalTo(""),
+                        "type", equalTo("rep:root"),
+                        "properties.jcr__primaryType.name", equalTo("jcr:primaryType"),
+                        "properties.jcr__primaryType.value", equalTo("rep:root"),
+                        "properties.jcr__mixinTypes.name", equalTo("jcr:mixinTypes"),
+                        "properties.jcr__mixinTypes.value", hasItem("rep:AccessControllable")
+                )
+                .when().get(getURL(""));
+    }
+
+    private String getURL(String path) {
+        return generateURL("/api/" + path);
+    }
+
+    /*@Test
+    public void testGetSite() {
+        expect().statusCode(SC_OK)
+                .contentType("application/json")
+                .body(
+                        "props.j__nodename.value", equalTo("site"),
+                        "props.j__nodename.type", equalToIgnoringCase("string")
+                )
+                .when().get(generateURL("/sites/site"));
+    }*/
 
     /*
     @Test
@@ -114,4 +158,15 @@ public class APITest {
                 .header(ALLOW, "GET")
                 .when().put(propURI);
     }*/
+
+    /**
+     * Instrumented API implementation so that we can get a simple way to set up the API with test fixtures since Spring
+     * injection won't work directly due to the fact that the API bean is loaded in the RESTeasy context in the HTTP
+     * server process.
+     */
+    public static class APIWithFixture extends API {
+        public APIWithFixture() {
+            setRepository(new TransientRepository());
+        }
+    }
 }

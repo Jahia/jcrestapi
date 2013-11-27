@@ -39,61 +39,21 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.json.JSONNode;
-
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.util.Properties;
+import javax.jcr.ItemNotFoundException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
 /**
  * @author Christophe Laprun
  */
-@Path("/api")
-public class API {
-
-    public static final String VERSION;
-
-    static {
-        Properties props = new Properties();
-        try {
-            props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("jcrestapi.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load jcrestapi.properties.");
+@Provider
+public class APIExceptionMapper implements ExceptionMapper {
+    @Override
+    public Response toResponse(Throwable exception) {
+        if (exception instanceof ItemNotFoundException) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-
-        VERSION = props.getProperty("jcrestapi.version");
-    }
-
-    private Repository repository;
-
-    public void setRepository(Repository repository) {
-        this.repository = repository;
-    }
-
-    @GET
-    @Path("/version")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String version() {
-        return VERSION;
-    }
-
-    @GET
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public JSONNode getNode() throws RepositoryException {
-        final Session session = repository.login();
-        try {
-            return new JSONNode(session.getRootNode());
-        } finally {
-            session.logout();
-        }
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
     }
 }

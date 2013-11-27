@@ -37,63 +37,44 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi;
+package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.json.JSONNode;
-
-import javax.jcr.Repository;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.util.Properties;
+import javax.jcr.Value;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * @author Christophe Laprun
  */
-@Path("/api")
-public class API {
+@XmlRootElement
+public class JSONProperty extends JSONItem {
+    private final boolean multiple;
+    private final Object value;
 
-    public static final String VERSION;
+    public JSONProperty(Property property) throws RepositoryException {
+        super(property);
 
-    static {
-        Properties props = new Properties();
-        try {
-            props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("jcrestapi.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load jcrestapi.properties.");
+        this.multiple = property.isMultiple();
+        if (multiple) {
+            final Value[] values = property.getValues();
+            value = new String[values.length];
+            for (int i = 0; i < values.length; i++) {
+                ((String[]) value)[i] = values[i].getString();
+            }
+        } else {
+            this.value = property.getString();
         }
-
-        VERSION = props.getProperty("jcrestapi.version");
     }
 
-    private Repository repository;
-
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    @XmlElement
+    public boolean isMultiple() {
+        return multiple;
     }
 
-    @GET
-    @Path("/version")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String version() {
-        return VERSION;
-    }
-
-    @GET
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public JSONNode getNode() throws RepositoryException {
-        final Session session = repository.login();
-        try {
-            return new JSONNode(session.getRootNode());
-        } finally {
-            session.logout();
-        }
+    @XmlElement
+    public Object getValue() {
+        return value;
     }
 }
