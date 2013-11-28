@@ -40,6 +40,8 @@
 package org.jahia.modules.jcrestapi;
 
 import javax.jcr.ItemNotFoundException;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -48,10 +50,10 @@ import javax.ws.rs.ext.Provider;
  * @author Christophe Laprun
  */
 @Provider
-public class APIExceptionMapper implements ExceptionMapper {
+public class APIExceptionMapper implements ExceptionMapper<RepositoryException> {
     @Override
-    public Response toResponse(Throwable exception) {
-        if (exception instanceof ItemNotFoundException) {
+    public Response toResponse(RepositoryException exception) {
+        if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();

@@ -39,10 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -50,24 +48,14 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONProperty extends JSONItem {
-    @XmlElement
-    private final boolean multiple;
-    @XmlElement
-    private final Object value;
+@XmlAccessorType(XmlAccessType.NONE)
+public class JSONLink {
+    private final String rel;
+    @XmlElement(name = "href")
+    private final String link;
 
-    public JSONProperty(Property property, UriInfo info) throws RepositoryException {
-        super(property, info);
-
-        this.multiple = property.isMultiple();
-        if (multiple) {
-            final Value[] values = property.getValues();
-            value = new String[values.length];
-            for (int i = 0; i < values.length; i++) {
-                ((String[]) value)[i] = values[i].getString();
-            }
-        } else {
-            this.value = property.getString();
-        }
+    public JSONLink(String rel, String link) {
+        this.rel = rel;
+        this.link = link;
     }
 }

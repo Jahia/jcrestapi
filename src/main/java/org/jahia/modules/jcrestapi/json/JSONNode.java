@@ -40,6 +40,7 @@
 package org.jahia.modules.jcrestapi.json;
 
 import javax.jcr.*;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
@@ -70,20 +71,23 @@ import java.util.Map;
  */
 @XmlRootElement
 public class JSONNode extends JSONItem {
-
+    @XmlElement
     private final Map<String, JSONProperty> properties;
+    @XmlElement
     private final List<Object> mixins;
+    @XmlElement
     private final Map<String, JSONItem> children;
+    @XmlElement
     private final List<Object> versions;
 
-    public JSONNode(Node node) throws RepositoryException {
-        super(node);
+    public JSONNode(Node node, UriInfo info) throws RepositoryException {
+        super(node, info);
 
         final PropertyIterator props = node.getProperties();
         properties = new HashMap<String, JSONProperty>((int) props.getSize());
         while (props.hasNext()) {
             Property property = props.nextProperty();
-            properties.put(escape(property.getName()), new JSONProperty(property));
+            properties.put(escape(property.getName()), new JSONProperty(property, info));
         }
 
         mixins = null;
@@ -92,29 +96,9 @@ public class JSONNode extends JSONItem {
         children = new HashMap<String, JSONItem>((int) nodes.getSize());
         while (nodes.hasNext()) {
             Node child = nodes.nextNode();
-            children.put(escape(child.getName()), new JSONItem(child));
+            children.put(escape(child.getName()), new JSONItem(child, info));
         }
 
         versions = null;
-    }
-
-    @XmlElement
-    public Map<String, JSONProperty> getProperties() {
-        return properties;
-    }
-
-    @XmlElement
-    public List<Object> getMixins() {
-        return mixins;
-    }
-
-    @XmlElement
-    public Map<String, JSONItem> getChildren() {
-        return children;
-    }
-
-    @XmlElement
-    public List<Object> getVersions() {
-        return versions;
     }
 }

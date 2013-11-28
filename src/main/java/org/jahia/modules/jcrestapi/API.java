@@ -39,25 +39,27 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.jahia.modules.jcrestapi.json.JSONItem;
 import org.jahia.modules.jcrestapi.json.JSONNode;
 
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Properties;
 
 /**
  * @author Christophe Laprun
  */
-@Path("/api")
+@Path(API.API_PATH)
+@Produces({MediaType.APPLICATION_JSON, "application/hal+json"})
 public class API {
-
+    public static final String API_PATH_FRAGMENT = "api";
+    public static final String API_PATH = "/" + API_PATH_FRAGMENT;
     public static final String VERSION;
 
     static {
@@ -86,12 +88,28 @@ public class API {
 
     @GET
     @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public JSONNode getNode() throws RepositoryException {
+    public JSONNode getRootNode(@Context UriInfo info) throws RepositoryException {
         final Session session = repository.login();
         try {
-            return new JSONNode(session.getRootNode());
+            return new JSONNode(session.getRootNode(), info);
+        } finally {
+            session.logout();
+        }
+
+    }
+
+    @GET
+    @Path("/{path:.*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public JSONNode getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
+        if (path.isEmpty() || !path.startsWith("/")) {
+            path = "/" + path;
+        }
+        path = JSONItem.unescape(path);
+        final Session session = repository.login();
+        try {
+            return new JSONNode(session.getNode(path), info);
         } finally {
             session.logout();
         }

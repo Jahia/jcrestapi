@@ -42,6 +42,7 @@ package org.jahia.modules.jcrestapi;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.jackrabbit.core.TransientRepository;
 import org.jboss.resteasy.plugins.server.sun.http.HttpContextBuilder;
+import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.jboss.resteasy.test.TestPortProvider;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -72,8 +73,13 @@ public class APITest {
 
         httpServer = HttpServer.create(new InetSocketAddress("localhost", port), 10);
         contextBuilder = new HttpContextBuilder();
-        contextBuilder.getDeployment().getActualResourceClasses().add(APIWithFixture.class);
+        final ResteasyDeployment deployment = contextBuilder.getDeployment();
+        deployment.getActualResourceClasses().add(APIWithFixture.class);
         contextBuilder.bind(httpServer);
+
+        // to make sure our ExceptionMapper is properly registered
+        deployment.getProviderFactory().registerProvider(APIExceptionMapper.class);
+
         httpServer.start();
     }
 
@@ -109,7 +115,7 @@ public class APITest {
         System.out.println(get(getURL("")).asString());
 
         expect().statusCode(SC_OK)
-                .contentType("application/json")
+                .contentType("application/hal+json")
                 .body(
                         "name", equalTo(""),
                         "type", equalTo("rep:root"),
@@ -119,6 +125,20 @@ public class APITest {
                         "properties.jcr__mixinTypes.value", hasItem("rep:AccessControllable")
                 )
                 .when().get(getURL(""));
+    }
+
+    @Test
+    public void testGetJCRSystem() {
+
+        System.out.println(get(getURL("jcr__system")).asString());
+
+        expect().statusCode(SC_OK)
+                .contentType("application/json")
+                .body(
+                        "name", equalTo("jcr:system"),
+                        "type", equalTo("rep:system")
+                )
+                .when().get(getURL("jcr__system"));
     }
 
     private String getURL(String path) {
