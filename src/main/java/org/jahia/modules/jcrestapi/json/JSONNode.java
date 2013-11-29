@@ -132,4 +132,8 @@ public class JSONNode extends JSONItem<Node> {
     protected String getUnescapedTypeName(Node item) throws RepositoryException {
         return item.getPrimaryNodeType().getName();
     }
+
+    public JSONProperty getProperty(String property) {
+        return properties.get(property);
+    }
 }

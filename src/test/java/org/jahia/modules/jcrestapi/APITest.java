@@ -39,6 +39,8 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.response.Response;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.jackrabbit.core.TransientRepository;
 import org.jboss.resteasy.plugins.server.sun.http.HttpContextBuilder;
@@ -111,7 +113,7 @@ public class APITest {
     @Test
     public void testGetRoot() {
 
-        System.out.println(get(getURL("")).asString());
+//        System.out.println(get(getURL("")).asString());
 
         expect().statusCode(SC_OK)
                 .contentType("application/hal+json")
@@ -148,9 +150,30 @@ public class APITest {
     }
 
     @Test
+    public void testThatWeCanAccessValuesAndTypesFromLinks() {
+        // get root and its JSON representation
+        final Response response = expect().statusCode(SC_OK).when().get(getURL(""));
+        final JsonPath rootJSON = response.body().jsonPath();
+
+        // get the root primary type property and check that its name matches the one we got from root object
+        final String primaryTypeSelf = rootJSON.getString("properties.jcr__primaryType._links.self.href");
+        expect().body(
+                "name", equalTo(rootJSON.get("properties.jcr__primaryType.name"))
+        ).when().get(primaryTypeSelf);
+
+        // get the root primary type property definition and check that we're getting a property definition
+        final String primaryTypeType = rootJSON.getString("properties.jcr__primaryType._links.type.href");
+        System.out.println(get(primaryTypeType).asString());
+        expect().body(
+                "type", equalTo("nt:propertyDefinition"),
+                "properties.jcr__name.value", equalTo("jcr:primaryType")
+        ).when().get(primaryTypeType);
+    }
+
+    @Test
     public void testGetJCRSystem() {
 
-        System.out.println(get(getURL("jcr__system")).asString());
+//        System.out.println(get(getURL("jcr__system")).asString());
 
         expect().statusCode(SC_OK)
                 .contentType("application/json")

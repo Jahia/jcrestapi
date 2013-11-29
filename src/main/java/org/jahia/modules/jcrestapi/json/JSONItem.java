@@ -94,7 +94,16 @@ public abstract class JSONItem<T extends Item> {
     }
 
     public static String unescape(String value) {
-        return value.replace("__", ":");
+        String replace = value.replace("__", ":");
+
+        final int indexMarker = replace.lastIndexOf("--");
+        if (indexMarker > 0) {
+            // we have an index marker that we need to replace
+            String index = replace.substring(indexMarker + 2);
+            replace = replace.substring(0, indexMarker) + "[" + index + "]";
+        }
+
+        return replace;
     }
 
     protected JSONLink getChildLink(URI parent, String childName) {
