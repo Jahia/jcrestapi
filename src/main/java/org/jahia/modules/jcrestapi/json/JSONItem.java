@@ -41,6 +41,8 @@ package org.jahia.modules.jcrestapi.json;
 
 import org.jahia.modules.jcrestapi.API;
 
+import javax.jcr.Item;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -57,7 +59,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONItem {
+public abstract class JSONItem<T extends Item> {
     private static final AtomicReference<URI> nodetypesURI = new AtomicReference<URI>(null);
     @XmlElement
     private String name;
@@ -66,18 +68,21 @@ public class JSONItem {
     @XmlElement(name = "_links")
     private Map<String, JSONLink> links;
 
-    protected JSONItem() {
-    }
-
-    public JSONItem(String name, String type, URI absoluteURI) {
-        init(name, type, absoluteURI);
-    }
-
-    protected void init(String name, String type, URI absoluteURI) {
-        this.name = name;
-        this.type = type;
+    public JSONItem(T item, URI absoluteURI) throws RepositoryException {
+        this.name = item.getName();
+        this.type = getUnescapedTypeName(item);
         links = new HashMap<String, JSONLink>(7);
         addLink(new JSONLink("self", absoluteURI));
+
+
+        if (nodetypesURI.get() == null) {
+            URI api = UriBuilder.fromResource(API.class).build();
+            UriBuilder builder = UriBuilder.fromUri(absoluteURI.resolve(api));
+            URI uri = builder.segment("jcr__system", "jcr__nodeTypes").build();
+            nodetypesURI.set(uri);
+        }
+
+        addLink(new JSONLink("type", getChildURI(nodetypesURI.get(), getTypeChildPath(item))));
     }
 
     protected void addLink(JSONLink link) {
@@ -112,14 +117,9 @@ public class JSONItem {
         }
     }
 
-    protected URI getTypeURI(URI absoluteURI, String typePath) {
-        if (nodetypesURI.get() == null) {
-            URI api = UriBuilder.fromResource(API.class).build();
-            UriBuilder builder = UriBuilder.fromUri(absoluteURI.resolve(api));
-            URI uri = builder.segment("jcr__system", "jcr__nodeTypes").build();
-            nodetypesURI.set(uri);
-        }
-
-        return getChildURI(nodetypesURI.get(), escape(typePath));
+    protected String getTypeChildPath(T item) throws RepositoryException {
+        return type;
     }
+
+    protected abstract String getUnescapedTypeName(T item) throws RepositoryException;
 }

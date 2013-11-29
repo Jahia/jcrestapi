@@ -130,8 +130,15 @@ public class APITest {
                         "properties.jcr__primaryType.name", equalTo("jcr:primaryType"),
                         "properties.jcr__primaryType.value", equalTo("rep:root"),
                         "properties.jcr__primaryType._links.self.href", equalTo(getURL("properties/jcr__primaryType")),
+                        "properties.jcr__primaryType._links.type.href",
+                        equalTo(getURL("jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2")),
+
+                        // check jcr:mixinTypes property
                         "properties.jcr__mixinTypes.name", equalTo("jcr:mixinTypes"),
                         "properties.jcr__mixinTypes.value", hasItem("rep:AccessControllable"),
+                        "properties.jcr__mixinTypes._links.self.href", equalTo(getURL("properties/jcr__mixinTypes")),
+                        "properties.jcr__mixinTypes._links.type.href",
+                        equalTo(getURL("jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition")),
 
                         // check that children don't have children (only 1 level deep hierarchy)
                         "children.jcr__system.children", is(nullValue())

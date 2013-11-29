@@ -70,7 +70,7 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONNode extends JSONItem {
+public class JSONNode extends JSONItem<Node> {
     @XmlElement
     private final Map<String, JSONProperty> properties;
     @XmlElement
@@ -81,11 +81,9 @@ public class JSONNode extends JSONItem {
     private final List<Object> versions;
 
     public JSONNode(Node node, URI absoluteURI, int depth) throws RepositoryException {
-        final String typeName = getTypeName(node);
-        init(node.getName(), typeName, absoluteURI);
+        super(node, absoluteURI);
 
         // add links
-        addLink(new JSONLink("type", getTypeURI(absoluteURI, typeName)));
         final JSONLink propertiesLink = getChildLink(absoluteURI, "properties");
         addLink(propertiesLink);
         addLink(getChildLink(absoluteURI, "children"));
@@ -130,8 +128,8 @@ public class JSONNode extends JSONItem {
         }
     }
 
-    private String getTypeName(Node node) throws RepositoryException {
-        return node.getPrimaryNodeType().getName();
+    @Override
+    protected String getUnescapedTypeName(Node item) throws RepositoryException {
+        return item.getPrimaryNodeType().getName();
     }
-
 }

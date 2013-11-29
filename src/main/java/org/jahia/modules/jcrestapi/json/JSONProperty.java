@@ -43,6 +43,8 @@ import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URI;
@@ -51,14 +53,14 @@ import java.net.URI;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONProperty extends JSONItem {
+public class JSONProperty extends JSONItem<Property> {
     @XmlElement
     private final boolean multiple;
     @XmlElement
     private final Object value;
 
     public JSONProperty(Property property, URI absoluteURI) throws RepositoryException {
-        init(property.getName(), PropertyType.nameFromValue(property.getType()), absoluteURI);
+        super(property, absoluteURI);
 
         this.multiple = property.isMultiple();
         if (multiple) {
@@ -69,6 +71,49 @@ public class JSONProperty extends JSONItem {
             }
         } else {
             this.value = property.getString();
+        }
+    }
+
+    @Override
+    protected String getUnescapedTypeName(Property item) throws RepositoryException {
+        return PropertyType.nameFromValue(item.getType());
+    }
+
+    /**
+     * Property types are a little bit more tricky: we need to get the declaring node type and figure out in its array
+     * of property definitions which one matches our property to be able to build the proper type link.
+     *
+     * @param item
+     * @return
+     * @throws RepositoryException
+     */
+    @Override
+    protected String getTypeChildPath(Property item) throws RepositoryException {
+        // get declaring node type
+        final NodeType declaringNodeType = item.getDefinition().getDeclaringNodeType();
+
+        // get its name and escape it
+        final String parentName = escape(declaringNodeType.getName());
+
+        // get its property definitions
+        final PropertyDefinition[] parentPropDefs = declaringNodeType.getDeclaredPropertyDefinitions();
+        final int numberOfPropertyDefinitions = parentPropDefs.length;
+
+        // if we only have one property definition, we're done
+        if (numberOfPropertyDefinitions == 1) {
+            return parentName + "/jcr__propertyDefinition";
+        } else {
+            // we need to figure out which property definition matches ours in the array
+            int index = 1; // JCR indexes start at 1
+            for (int i = 0; i < numberOfPropertyDefinitions; i++) {
+                PropertyDefinition propDef = parentPropDefs[i];
+                if (propDef.getName().equals(item.getName())) {
+                    index = i + 1; // adjust for start at 1 in JCR
+                    break;
+                }
+            }
+            // create the indexed escaped link, if index = 1, no need for an index
+            return parentName + "/jcr__propertyDefinition" + (index > 1 ? "--" + index : "");
         }
     }
 }
