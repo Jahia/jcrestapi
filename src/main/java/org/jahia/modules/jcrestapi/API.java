@@ -87,7 +87,7 @@ public class API {
     }
 
     @GET
-    @Path("/")
+    @Path("")
     @Consumes(MediaType.APPLICATION_JSON)
     public JSONNode getRootNode(@Context UriInfo info) throws RepositoryException {
         final Session session = repository.login();
