@@ -39,13 +39,17 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.API;
+
 import javax.jcr.*;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A JSON representation of a JCR node.
@@ -80,25 +84,69 @@ public class JSONNode extends JSONItem {
     @XmlElement
     private final List<Object> versions;
 
-    public JSONNode(Node node, UriInfo info) throws RepositoryException {
-        super(node, info);
+    private static final AtomicReference<URI> nodetypesURI = new AtomicReference<URI>(null);
 
-        final PropertyIterator props = node.getProperties();
-        properties = new HashMap<String, JSONProperty>((int) props.getSize());
-        while (props.hasNext()) {
-            Property property = props.nextProperty();
-            properties.put(escape(property.getName()), new JSONProperty(property, info));
+    public JSONNode(Node node, URI absoluteURI, int depth) throws RepositoryException {
+        final String typeName = getTypeName(node);
+        init(node.getName(), typeName, absoluteURI);
+
+        // add link for node type
+        addLink(new JSONLink("type", getTypeURI(typeName, absoluteURI)));
+
+        if (depth > 0) {
+            final PropertyIterator props = node.getProperties();
+            properties = new HashMap<String, JSONProperty>((int) props.getSize());
+            while (props.hasNext()) {
+                Property property = props.nextProperty();
+                final String propertyName = property.getName();
+                final String escapedPropertyName = escape(propertyName);
+
+                // build URI for property resource
+                final UriBuilder builder = UriBuilder.fromUri(absoluteURI);
+                builder.segment("properties", escapedPropertyName);
+
+                // add property
+                properties.put(escapedPropertyName, new JSONProperty(property, builder.build()));
+            }
+
+            mixins = null;
+
+            final NodeIterator nodes = node.getNodes();
+            children = new HashMap<String, JSONItem>((int) nodes.getSize());
+            while (nodes.hasNext()) {
+                Node child = nodes.nextNode();
+
+                // build child resource URI
+                final String childName = child.getName();
+                final String escapedChildName = escape(childName);
+                final UriBuilder builder = UriBuilder.fromUri(absoluteURI);
+                builder.segment(escapedChildName);
+
+                children.put(escapedChildName, new JSONNode(child, builder.build(), depth - 1));
+            }
+
+            versions = null;
+        } else {
+            properties = null;
+            mixins = null;
+            children = null;
+            versions = null;
+        }
+    }
+
+    private String getTypeName(Node node) throws RepositoryException {
+        return node.getPrimaryNodeType().getName();
+    }
+
+    private URI getTypeURI(String typeName, URI absoluteURI) {
+        if (nodetypesURI.get() == null) {
+            URI api = UriBuilder.fromResource(API.class).build();
+            UriBuilder builder = UriBuilder.fromUri(absoluteURI.resolve(api));
+            URI uri = builder.segment("jcr__system", "jcr__nodeTypes").build();
+            nodetypesURI.set(uri);
         }
 
-        mixins = null;
-
-        final NodeIterator nodes = node.getNodes();
-        children = new HashMap<String, JSONItem>((int) nodes.getSize());
-        while (nodes.hasNext()) {
-            Node child = nodes.nextNode();
-            children.put(escape(child.getName()), new JSONItem(child, info));
-        }
-
-        versions = null;
+        UriBuilder builder = UriBuilder.fromUri(nodetypesURI.get());
+        return builder.segment(escape(typeName)).build();
     }
 }

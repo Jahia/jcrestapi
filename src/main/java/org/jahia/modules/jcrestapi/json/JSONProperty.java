@@ -40,11 +40,12 @@
 package org.jahia.modules.jcrestapi.json;
 
 import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
-import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.net.URI;
 
 /**
  * @author Christophe Laprun
@@ -56,8 +57,8 @@ public class JSONProperty extends JSONItem {
     @XmlElement
     private final Object value;
 
-    public JSONProperty(Property property, UriInfo info) throws RepositoryException {
-        super(property, info);
+    public JSONProperty(Property property, URI absoluteURI) throws RepositoryException {
+        init(property.getName(), PropertyType.nameFromValue(property.getType()), absoluteURI);
 
         this.multiple = property.isMultiple();
         if (multiple) {

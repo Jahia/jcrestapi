@@ -39,14 +39,11 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.API;
-
-import javax.jcr.*;
-import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,31 +60,22 @@ public class JSONItem {
     @XmlElement(name = "_links")
     private Map<String, JSONLink> links;
 
-    public JSONItem(String name, String type, UriInfo info) {
-        init(name, type, info);
+    protected JSONItem() {
     }
 
-    private void init(String name, String type, UriInfo info) {
+    public JSONItem(String name, String type, URI absoluteURI) {
+        init(name, type, absoluteURI);
+    }
+
+    protected void init(String name, String type, URI absoluteURI) {
         this.name = name;
         this.type = type;
         links = new HashMap<String, JSONLink>(7);
-        links.put("self", new JSONLink("self", info.getAbsolutePath().toString()));
+        links.put("self", new JSONLink("self", absoluteURI));
     }
 
-    public JSONItem(Item item, UriInfo info) throws RepositoryException {
-        if (item instanceof Node) {
-            Node node = (Node) item;
-            final String typeName = node.getPrimaryNodeType().getName();
-            init(node.getName(), typeName, info);
-            links.put("type", new JSONLink("type", getTypeURI(info, typeName)));
-        } else {
-            Property property = (Property) item;
-            init(property.getName(), PropertyType.nameFromValue(property.getType()), info);
-        }
-    }
-
-    private String getTypeURI(UriInfo info, String typeName) {
-        return info.getBaseUri() + API.API_PATH_FRAGMENT + "/jcr__system/jcr__nodeTypes/" + escape(typeName);
+    protected void addLink(JSONLink link) {
+        links.put(link.getRel(), link);
     }
 
     public static String escape(String value) {

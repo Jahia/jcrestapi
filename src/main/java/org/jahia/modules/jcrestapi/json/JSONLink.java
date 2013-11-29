@@ -43,6 +43,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.net.URI;
 
 /**
  * @author Christophe Laprun
@@ -52,10 +53,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class JSONLink {
     private final String rel;
     @XmlElement(name = "href")
-    private final String link;
+    private final URI link;
 
-    public JSONLink(String rel, String link) {
+    public JSONLink(String rel, URI link) {
         this.rel = rel;
         this.link = link;
+    }
+
+    String getRel() {
+        return rel;
     }
 }

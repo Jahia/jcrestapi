@@ -58,9 +58,9 @@ import java.util.Properties;
 @Path(API.API_PATH)
 @Produces({MediaType.APPLICATION_JSON, "application/hal+json"})
 public class API {
-    public static final String API_PATH_FRAGMENT = "api";
-    public static final String API_PATH = "/" + API_PATH_FRAGMENT;
     public static final String VERSION;
+
+    static final String API_PATH = "/api";
 
     static {
         Properties props = new Properties();
@@ -92,7 +92,7 @@ public class API {
     public JSONNode getRootNode(@Context UriInfo info) throws RepositoryException {
         final Session session = repository.login();
         try {
-            return new JSONNode(session.getRootNode(), info);
+            return new JSONNode(session.getRootNode(), info.getAbsolutePath(), 1);
         } finally {
             session.logout();
         }
@@ -103,13 +103,11 @@ public class API {
     @Path("/{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     public JSONNode getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
-        if (path.isEmpty() || !path.startsWith("/")) {
-            path = "/" + path;
-        }
+        path = "/" + path;
         path = JSONItem.unescape(path);
         final Session session = repository.login();
         try {
-            return new JSONNode(session.getNode(path), info);
+            return new JSONNode(session.getNode(path), info.getAbsolutePath(), 1);
         } finally {
             session.logout();
         }
