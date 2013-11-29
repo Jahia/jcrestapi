@@ -39,13 +39,18 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.API;
+
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Christophe Laprun
@@ -53,6 +58,7 @@ import java.util.Map;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class JSONItem {
+    private static final AtomicReference<URI> nodetypesURI = new AtomicReference<URI>(null);
     @XmlElement
     private String name;
     @XmlElement
@@ -71,7 +77,7 @@ public class JSONItem {
         this.name = name;
         this.type = type;
         links = new HashMap<String, JSONLink>(7);
-        links.put("self", new JSONLink("self", absoluteURI));
+        addLink(new JSONLink("self", absoluteURI));
     }
 
     protected void addLink(JSONLink link) {
@@ -84,5 +90,36 @@ public class JSONItem {
 
     public static String unescape(String value) {
         return value.replace("__", ":");
+    }
+
+    protected JSONLink getChildLink(URI parent, String childName) {
+        return new JSONLink(childName, getChildURI(parent, childName));
+    }
+
+    protected URI getChildURI(URI parent, String childName) {
+        try {
+            if (childName.startsWith("/")) {
+                childName = childName.substring(1);
+            }
+            String parentURI = parent.toASCIIString();
+            if (parentURI.endsWith("/")) {
+                return new URI(parent + childName);
+            } else {
+                return new URI(parent + "/" + childName);
+            }
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected URI getTypeURI(URI absoluteURI, String typePath) {
+        if (nodetypesURI.get() == null) {
+            URI api = UriBuilder.fromResource(API.class).build();
+            UriBuilder builder = UriBuilder.fromUri(absoluteURI.resolve(api));
+            URI uri = builder.segment("jcr__system", "jcr__nodeTypes").build();
+            nodetypesURI.set(uri);
+        }
+
+        return getChildURI(nodetypesURI.get(), escape(typePath));
     }
 }

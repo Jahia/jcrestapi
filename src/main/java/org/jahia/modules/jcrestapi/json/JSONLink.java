@@ -53,14 +53,18 @@ import java.net.URI;
 public class JSONLink {
     private final String rel;
     @XmlElement(name = "href")
-    private final URI link;
+    private final URI uri;
 
     public JSONLink(String rel, URI link) {
         this.rel = rel;
-        this.link = link;
+        this.uri = link;
     }
 
     String getRel() {
         return rel;
+    }
+
+    public URI getURI() {
+        return uri;
     }
 }
