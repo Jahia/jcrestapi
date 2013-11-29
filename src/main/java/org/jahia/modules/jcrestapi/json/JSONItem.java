@@ -118,7 +118,7 @@ public abstract class JSONItem<T extends Item> {
     }
 
     protected String getTypeChildPath(T item) throws RepositoryException {
-        return type;
+        return escape(type);
     }
 
     protected abstract String getUnescapedTypeName(T item) throws RepositoryException;

@@ -121,6 +121,7 @@ public class APITest {
 
                         // check that links are present
                         "_links.self.href", equalTo(getURL("")),
+                        "_links.type.href", equalTo(getURL("jcr__system/jcr__nodeTypes/rep__root")),
                         "_links.children.href", equalTo(getURL("children")),
                         "_links.properties.href", equalTo(getURL("properties")),
                         "_links.mixins.href", equalTo(getURL("mixins")),
