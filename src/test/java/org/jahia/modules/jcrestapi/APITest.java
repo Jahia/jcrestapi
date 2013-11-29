@@ -55,8 +55,7 @@ import static com.jayway.restassured.RestAssured.expect;
 import static com.jayway.restassured.RestAssured.get;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.*;
 import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
@@ -119,10 +118,23 @@ public class APITest {
                 .body(
                         "name", equalTo(""),
                         "type", equalTo("rep:root"),
+
+                        // check that links are present
+                        "_links.self.href", equalTo(getURL("")),
+                        "_links.children.href", equalTo(getURL("children")),
+                        "_links.properties.href", equalTo(getURL("properties")),
+                        "_links.mixins.href", equalTo(getURL("mixins")),
+                        "_links.versions.href", equalTo(getURL("versions")),
+
+                        // check jcr:primaryType property
                         "properties.jcr__primaryType.name", equalTo("jcr:primaryType"),
                         "properties.jcr__primaryType.value", equalTo("rep:root"),
+                        "properties.jcr__primaryType._links.self.href", equalTo(getURL("properties/jcr__primaryType")),
                         "properties.jcr__mixinTypes.name", equalTo("jcr:mixinTypes"),
-                        "properties.jcr__mixinTypes.value", hasItem("rep:AccessControllable")
+                        "properties.jcr__mixinTypes.value", hasItem("rep:AccessControllable"),
+
+                        // check that children don't have children (only 1 level deep hierarchy)
+                        "children.jcr__system.children", is(nullValue())
                 )
                 .when().get(getURL(""));
     }
