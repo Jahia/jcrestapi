@@ -47,10 +47,22 @@ It's important that clients don't rely on building URIs themselves as much as po
 we should strive to let clients treat them as *opaque* as possible. This does not mean that URIs need to be
 unreadable. This, however, means that URIs for resources should be easily discoverable automatically by clients so
 that they don't need to construct them. In order to do that, each resource that can be interacted with embeds a
-`links` child object that minimally defines a `self` reference identifying the URI to use to interact with this
-specific element. When appropriate, i.e. when an object represents a node, another `type` link will also be
-available so that clients can find out more about the node's metadata. Specific objects might add more link types
-when appropriate.
+`_links` child object. This child object contains links objects per the
+[HAL](http://tools.ietf.org/html/draft-kelly-json-hal-06) specification.
+
+This means that links are represented as objects containing at least an `href` property identifying the URI
+associated with the link.
+
+Per the HAL recommendations, we define a `self` reference identifying the URI to use to interact with this
+specific element. When appropriate, another `type` link will also be available so that clients can find out more about the node's metadata. Specific objects might add more link types when appropriate.
+
+To sum up, the `_links` section will look similarly to the following example:
+
+    "_links" : {
+        "self" : { "href" : "<URI identifying the associated resource>" },
+        "type" : { "href" : "<URI identifying the resource associated with the resource type>"
+        ... other links as appropriate
+    }
 
 // todo: examine whether it's worth using the JSON Hyper Schema specification for links: http://json-schema.org/latest/json-schema-hypermedia.html
 
@@ -70,15 +82,15 @@ the following information to represent nodes:
 (#mixins).
 - The node's versions if appropriate, which are gathered in a `versions` object,
 as detailed in the [Versions section](#versions).
-- Links to useful resources associated with the node, gathered in `links` object. By default,
+- Links to useful resources associated with the node, gathered in `_links` object. By default,
 only one level of depth in the hierarchy is retrieved for a given node. This means that reference
 properties are not resolved to objects but left as strings. This also means that the API makes extensive use of links
 between resources to discover and interact with associated resources. This is detailed in the [Linking section]
 (#linking).
 
-The node representation adds URIs identifying each sub-element to the `links` section,
+The node representation adds URIs identifying each sub-element to the `_links` section,
 each named with the name of the sub-element it is associated with. This way, a `properties` object is added to the
-`links` section pointing to the `properties` resource, a `mixins` object points to the `mixins` resource, etc.
+`_links` section pointing to the `properties` resource, a `mixins` object points to the `mixins` resource, etc.
 
 A node's collection resources allow users to query the particular kind of resource it holds or add new resource to
 the set of existing ones. Collections should also considered as ordered despite not being modelled using JSON arrays.
@@ -102,13 +114,13 @@ quite appropriately `name` which contains the original, unescaped name of the it
     "mixins" : <mixins representation>,
     "children" : <children representation>,
     "versions" : <versions representation>,
-    "links" : {
-        "self" : "<URI identifying the resource associated with this node>",
-        "type" : "<URI identifying the resource associated with this node's type>",
-        "properties" : "<URI identifying the resource associated with this node's properties>",
-        "mixins" : "<URI identifying the resource associated with this node's mixins>",
-        "children" : "<URI identifying the resource associated with this node's children>",
-        "versions" : "<URI identifying the resource associated with this node's versions>"
+    "_links" : {
+        "self" : { "href" : "<URI identifying the resource associated with this node>" },
+        "type" : { "href" : "<URI identifying the resource associated with this node's type>" },
+        "properties" : { "href" : "<URI identifying the resource associated with this node's properties>" },
+        "mixins" : { "href" : "<URI identifying the resource associated with this node's mixins>" },
+        "children" : { "href" : "<URI identifying the resource associated with this node's children>" },
+        "versions" : { "href" : "<URI identifying the resource associated with this node's versions>" }
     }
 
 Note that it should be possible for an API client to only request a subset of the complete structure. For example,
@@ -124,8 +136,8 @@ A node's properties are gathered within a `properties` object that has the follo
         <for each property>
             <escaped property name> : <property representation>,
         </for each property>
-        "links" : {
-            "self" : "<URI identifying the resource associated with the parent's node properties resource>"
+        "_links" : {
+            "self" : { "href" : "<URI identifying the resource associated with the parent's node properties resource>" }
         }
     },
     // other node elements...
@@ -136,9 +148,9 @@ Each property is represented by an object with the following structure:
     "isMultiple" : <boolean indicating whether the property has multiple values or not>
     "value" : <value>,
     "type" : <type>,
-    "links" : {
-        "self" : "<URI identifying the resource associated with the property>",
-        "type" : "<URI identifying the resource associated with the property definition>"
+    "_links" : {
+        "self" : { "href" : "<URI identifying the resource associated with the property>" },
+        "type" : { "href" : "<URI identifying the resource associated with the property definition>" }
     }
 
 `type` is the case-insensitive name of the JCR property type, and is one of: `STRING`, `BINARY`, `LONG`, `DOUBLE`,
@@ -148,7 +160,7 @@ Each property is represented by an object with the following structure:
 meaning that the property only has a single value. Having this field allows for easier processing of properties on
 the client side without having to examine the property's definition.
 
-If a property is of type `PATH`, `REFERENCE` or `WEAKREFERENCE`, an additional `target` link is added to the `links`
+If a property is of type `PATH`, `REFERENCE` or `WEAKREFERENCE`, an additional `target` link is added to the `_links`
 subsection, providing the URI identifying the resource identified by the path or reference value of the property.
 
 #### Examples
@@ -159,9 +171,9 @@ being defined by the `mix:referenceable` mixin:
     "name" : "jcr:uuid",
     "value" : "039cdef3-289a-4fee-b80e-54da0ad35195",
     "type" : "string",
-    "links" : {
-        "self" : "http://api.example.org/sites/mySite/properties/jcr__uuid",
-        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition"
+    "_links" : {
+        "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__uuid" },
+        "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition" }
     }
 
 An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the `isMultiple` field:
@@ -170,9 +182,9 @@ An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the 
     "isMultiple" : true,
     "value" : ["jmix:accessControlled" , "jmix:robots"],
     "type" : "string",
-    "links" : {
-        "self" : "http://api.example.org/sites/mySite/properties/jcr__mixinTypes",
-        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition"
+    "_links" : {
+        "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__mixinTypes" },
+        "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition" }
     }
 
 An example showing how indexed, same name properties URIs are represented, here the node type associated with the
@@ -181,21 +193,21 @@ property's definition is the second property defined on the `nt:base` node type:
     "name" : "jcr:primaryType",
     "value" : "jnt:virtualsite",
     "type" : "string",
-    "links" : {
-        "self" : "http://api.example.org/sites/mySite/properties/jcr__primaryType",
-        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2"
+    "_links" : {
+        "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__primaryType" },
+        "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2" }
     }
 
 An example showing how a `j:defaultSite` reference property pointing to a `/sites/mySite` node on a `/sites` node is
-represented, demonstrating the `target` field in the `links` section:
+represented, demonstrating the `target` field in the `_links` section:
 
     "name" : "j:defaultSite",
     "value" :  "09100a94-0714-4fb6-98de-351ad63773b2",
     "type" : "weakreference",
-    "links" : {
-        "self" : "http://api.example.org/sites/properties/j__defaultSite",
-        "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__virtualsitesFolder/jcr__propertyDefinition--3",
-        "target" : "http://api.example.org/sites/mySite"
+    "_links" : {
+        "self" : { "href" : "http://api.example.org/sites/properties/j__defaultSite" },
+        "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__virtualsitesFolder/jcr__propertyDefinition--3" },
+        "target" : { "href" : "http://api.example.org/sites/mySite" }
     }
 
 
@@ -208,8 +220,8 @@ A node's attached mixins information is gathered within a `mixins` object on the
         <for each mixin>
             <escaped mixin name> : <mixin representation>,
         </for each mixin>
-        "links" : {
-            "self" : "<URI identifying the resource associated with the parent's node mixins resource>"
+        "_links" : {
+            "self" : { "href" : "<URI identifying the resource associated with the parent's node mixins resource>" }
         }
     },
     // other node elements...
@@ -217,9 +229,9 @@ A node's attached mixins information is gathered within a `mixins` object on the
 Here is the structure for a mixin representation:
 
     "name" : <the mixin's unescaped name>,
-    "links" : {
-        "self" : "<URI identifying the resource associated with the mixin in the context of the enclosing node>",
-        "type" : "<URI identifying the resource associated with the mixin's node type>"
+    "_links" : {
+        "self" : { "href" : "<URI identifying the resource associated with the mixin in the context of the enclosing node>" },
+        "type" : { "href" : "<URI identifying the resource associated with the mixin's node type>" }
     }
 
 #### Examples
@@ -227,9 +239,9 @@ Here is the structure for a mixin representation:
 For a mixin named `jmix:robots` attached to a `/sites/mySite` node, we would use the following representation:
 
     "name" : "jmix:robots",
-     "links" : {
-          "self" : "http://api.example.org/sites/mySite/mixins/jmix__robots",
-          "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__robots"
+     "_links" : {
+          "self" : { "href" : "http://api.example.org/sites/mySite/mixins/jmix__robots" },
+          "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__robots" }
      }
 
 Given the following mixin definition:
@@ -270,8 +282,8 @@ Children of a given node are gathered within a `children` object, as follows:
         <for each child>
             <escaped child name> : <child representation>,
         </for each child>
-        "links" : {
-            "self" : "<URI identifying the resource associated with the parent's node children resource>"
+        "_links" : {
+            "self" : { "href" : "<URI identifying the resource associated with the parent's node children resource>" }
         }
     },
     // other node elements...
@@ -281,9 +293,9 @@ its primary node type and its associated URIs (for both associated node resource
 
     "name" : <unescaped child name>,
     "type" : <nodetype name>,
-    "links" : {
-        "self" : "<URI identifying the resource associated with the child's node>",
-        "type" : "<URI identifying the resource associated with the child's node type>"
+    "_links" : {
+        "self" : { "href" : "<URI identifying the resource associated with the child's node>" },
+        "type" : { "href" : "<URI identifying the resource associated with the child's node type>" }
     }
 
 #### Example
@@ -298,15 +310,15 @@ within the context of the enclosing's node `children` element:
         "tags" : {
             "name" : "tags",
             "type" : "jnt:tagList",
-            "links" : {
-                "self" : "http://api.example.org/sites/mySite/tags",
-                "type" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__tagList"
+            "_links" : {
+                "self" : { "href" : "http://api.example.org/sites/mySite/tags" },
+                "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__tagList" }
             }
         },
 
         // ...
-        "links" : {
-            "self" : "http://api.example.org/sites/mySite/children"
+        "_links" : {
+            "self" : { "href" : "http://api.example.org/sites/mySite/children" }
         }
     }
     // ...
@@ -336,13 +348,13 @@ For example, assuming a `/foo` node allows for multiple `bar` children:
         "bar" : {
             "name" : "bar",
             "type" : "bar:nodeType",
-            "links" : {
-                "self" : "http://api.example.org/foo/bar",
+            "_links" : {
+                "self" : { "href" : "http://api.example.org/foo/bar" },
                 // ...
             }
         },
-        "links" : {
-            "self" : "http://api.example.org/foo/children"
+        "_links" : {
+            "self" : { "href" : "http://api.example.org/foo/children" }
         }
     }
 
@@ -361,21 +373,21 @@ For example, assuming a `/foo` node allows for multiple `bar` children:
         "bar" : {
             "name" : "bar",
             "type" : "bar:nodeType",
-            "links" : {
-                "self" : "http://api.example.org/foo/bar",
+            "_links" : {
+                "self" : { "href" : "http://api.example.org/foo/bar" },
                 // ...
             }
         },
         "bar--2" : {
             "name" : "bar",
             "type" : "bar:nodeType",
-            "links" : {
-                "self" : "http://api.example.org/foo/bar--2",
+            "_links" : {
+                "self" : { "href" : "http://api.example.org/foo/bar--2" },
                 // ...
             }
         },
-        "links" : {
-            "self" : "http://api.example.org/foo/children"
+        "_links" : {
+            "self" : { "href" : "http://api.example.org/foo/children" }
         }
     }
 
@@ -390,8 +402,8 @@ A node's versions are gathered within a `versions` object as follows:
         <for each version>
             <escaped version name> : <version representation>,
         </for each version>
-        "links" : {
-            "self" : "<URI identifying the resource associated with the parent's node versions resource>"
+        "_links" : {
+            "self" : { "href" : "<URI identifying the resource associated with the parent's node versions resource>" }
         }
     },
     // other node elements...
