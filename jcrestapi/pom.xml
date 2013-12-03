@@ -152,12 +152,13 @@
                             <includes>
                                 <include>**/*</include>
                             </includes>
-                            <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
                             <directory>${basedir}</directory>
                             <includes>
                                 <include>repository.xml</include>
+                                <include>repository</include>
+                                <include>derby.log</include>
                             </includes>
                         </fileset>
                     </filesets>
