@@ -54,7 +54,6 @@ import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import static com.jayway.restassured.RestAssured.expect;
-import static com.jayway.restassured.RestAssured.get;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.*;
@@ -163,7 +162,7 @@ public class APITest {
 
         // get the root primary type property definition and check that we're getting a property definition
         final String primaryTypeType = rootJSON.getString("properties.jcr__primaryType._links.type.href");
-        System.out.println(get(primaryTypeType).asString());
+//        System.out.println(get(primaryTypeType).asString());
         expect().body(
                 "type", equalTo("nt:propertyDefinition"),
                 "properties.jcr__name.value", equalTo("jcr:primaryType")
