@@ -51,7 +51,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 
@@ -68,8 +67,8 @@ public class API {
     static {
         Properties props = new Properties();
         try {
-            props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("jcrestapi.properties"));
-        } catch (IOException e) {
+            props.load(API.class.getClassLoader().getResourceAsStream("jcrestapi.properties"));
+        } catch (Exception e) {
             throw new RuntimeException("Could not load jcrestapi.properties.");
         }
 

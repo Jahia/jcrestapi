@@ -92,7 +92,7 @@ public class APITest {
     @Test
     public void testGetVersion() throws Exception {
         Properties props = new Properties();
-        props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("jcrestapi.properties"));
+        props.load(API.class.getClassLoader().getResourceAsStream("jcrestapi.properties"));
 
         expect().statusCode(SC_OK)
                 .contentType("text/plain")
