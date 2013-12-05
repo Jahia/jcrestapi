@@ -61,8 +61,17 @@
             <version>2.0</version>
             <scope>provided</scope>
         </dependency>
-        <!-- RESTeasy -->
+
+        <!-- Jersey -->
         <dependency>
+            <groupId>org.glassfish.jersey.bundles</groupId>
+            <artifactId>jaxrs-ri</artifactId>
+            <version>${jersey.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- RESTeasy -->
+        <!--<dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxrs</artifactId>
             <scope>provided</scope>
@@ -71,7 +80,7 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jackson2-provider</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
         <!-- To run in Tomcat -->
         <!--<dependency>
             <groupId>org.jboss.resteasy</groupId>
@@ -86,7 +95,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson2-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+        <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
             <scope>test</scope>
@@ -107,13 +121,13 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-core</artifactId>
-            <version>${jackrabbit.version}</version>
+            <version>2.4.4-patch1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
+            <version>1.6.6</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -133,7 +147,15 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <!--<Jahia-Depends>default</Jahia-Depends>-->
+                        <Jahia-Depends>default</Jahia-Depends>
+                        <Private-Package>org.jahia.modules.jcrestapi,org.jahia.modules.jcrestapi.json</Private-Package>
+                        <Import-Package>
+                            javax.ws.rs,
+                            javax.ws.rs.core,
+                            ${jahia.plugin.projectPackageImport}
+                        </Import-Package>
+                        <JAX-RS-Classes>$(classes;ANNOTATION;javax.ws.rs.Path)</JAX-RS-Classes>
+                        <JAX-RS-Alias>/api</JAX-RS-Alias>
                     </instructions>
                 </configuration>
             </plugin>
