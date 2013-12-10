@@ -228,7 +228,9 @@ public class APITest {
      */
     public static class APIWithFixture extends API {
         public APIWithFixture() {
-            setRepository(new TransientRepository());
+            SpringBeansAccess access = SpringBeansAccess.getInstance();
+            access.setRepository(new TransientRepository());
+            setBeansAccess(access);
         }
     }
 }

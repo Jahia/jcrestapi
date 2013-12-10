@@ -42,11 +42,12 @@ package org.jahia.modules.jcrestapi;
 import org.jahia.modules.jcrestapi.json.JSONItem;
 import org.jahia.modules.jcrestapi.json.JSONNode;
 import org.jahia.modules.jcrestapi.json.JSONProperty;
+import org.osgi.service.component.annotations.Component;
 
 import javax.jcr.Node;
-import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -57,8 +58,9 @@ import java.util.Properties;
 /**
  * @author Christophe Laprun
  */
+@Component
 @Path(API.API_PATH)
-@Produces({MediaType.APPLICATION_JSON, "application/hal+json"})
+@Produces({MediaType.APPLICATION_JSON})
 public class API {
     public static final String VERSION;
 
@@ -75,10 +77,10 @@ public class API {
         VERSION = props.getProperty("jcrestapi.version");
     }
 
-    private Repository repository;
+    private SpringBeansAccess beansAccess = SpringBeansAccess.getInstance();
 
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    void setBeansAccess(SpringBeansAccess beansAccess) {
+        this.beansAccess = beansAccess;
     }
 
     @GET
@@ -121,7 +123,8 @@ public class API {
 
     private <T extends JSONItem> T getJSON(NodeAccessor nodeAccessor, ItemAccessor<T> itemAccessor,
                                            URI uri) throws RepositoryException {
-        final Session session = repository.login();
+        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
+                'o', 't', '1', '2', '3', '4'}));
         try {
             final JSONNode node = new JSONNode(nodeAccessor.getNode(session), uri, 1);
             return itemAccessor.getItem(node);
