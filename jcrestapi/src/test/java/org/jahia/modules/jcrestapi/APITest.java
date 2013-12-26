@@ -42,7 +42,6 @@ package org.jahia.modules.jcrestapi;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import com.sun.net.httpserver.HttpServer;
-import org.apache.jackrabbit.core.TransientRepository;
 import org.jboss.resteasy.plugins.server.sun.http.HttpContextBuilder;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.jboss.resteasy.test.TestPortProvider;
@@ -115,7 +114,6 @@ public class APITest {
 //        System.out.println(get(getURL("")).asString());
 
         expect().statusCode(SC_OK)
-                .contentType("application/hal+json")
                 .body(
                         "name", equalTo(""),
                         "type", equalTo("rep:root"),
@@ -229,7 +227,7 @@ public class APITest {
     public static class APIWithFixture extends API {
         public APIWithFixture() {
             SpringBeansAccess access = SpringBeansAccess.getInstance();
-            access.setRepository(new TransientRepository());
+            access.setRepository(new NoLoggingTransientRepository());
             setBeansAccess(access);
         }
     }
