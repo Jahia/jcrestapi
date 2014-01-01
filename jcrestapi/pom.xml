@@ -70,9 +70,39 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${jersey.version}</version>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>2.3.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.3.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.3.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.3.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-base</artifactId>
+            <version>2.3.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <version>2.3.1</version>
             <scope>provided</scope>
         </dependency>
         <!--<dependency>
@@ -169,16 +199,21 @@
                         <Private-Package>org.jahia.modules.jcrestapi,org.jahia.modules.jcrestapi.json</Private-Package>
                         <Import-Package>
                             javax.jcr.*,
+                            javax.xml.bind.annotation,
+                            javax.xml.bind.annotation.adapters,
                             javax.ws.rs,
                             javax.ws.rs.core,
                             javax.ws.rs.ext,
-                            org.glassfish.jersey.media.jackson,
+                            com.fasterxml.jackson.jaxrs.json,
+                            com.fasterxml.jackson.databind,
+                            com.fasterxml.jackson.module.jaxb,
+                            org.glassfish.jersey.server,
                             ${jahia.plugin.projectPackageImport}
                         </Import-Package>
                         <!-- would be nice if the macro didn't also include WADL-related class found on classpath -->
                         <!--<JAX-RS-Classes>$(classes;ANNOTATION;javax.ws.rs.Path)</JAX-RS-Classes>-->
-                        <JAX-RS-Classes>org.jahia.modules.jcrestapi.API</JAX-RS-Classes>
                         <JAX-RS-Alias>/api</JAX-RS-Alias>
+                        <JAX-RS-Application>org.jahia.modules.jcrestapi.APIApplication</JAX-RS-Application>
                     </instructions>
                 </configuration>
             </plugin>
