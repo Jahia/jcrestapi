@@ -76,6 +76,7 @@ public abstract class JSONItem<T extends Item> {
 
 
         if (nodetypesURI.get() == null) {
+            // todo: fix, http://localhost/modules/api -> http://localhost/api should keep modules
             URI api = UriBuilder.fromResource(API.class).build();
             UriBuilder builder = UriBuilder.fromUri(absoluteURI.resolve(api));
             URI uri = builder.segment("jcr__system", "jcr__nodeTypes").build();
