@@ -62,11 +62,11 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class JSONItem<T extends Item> {
     private static final AtomicReference<URI> nodetypesURI = new AtomicReference<URI>(null);
     @XmlElement
-    private String name;
+    private final String name;
     @XmlElement
-    private String type;
+    private final String type;
     @XmlElement(name = "_links")
-    private Map<String, JSONLink> links;
+    private final Map<String, JSONLink> links;
 
     public JSONItem(T item, URI absoluteURI) throws RepositoryException {
         this.name = item.getName();
