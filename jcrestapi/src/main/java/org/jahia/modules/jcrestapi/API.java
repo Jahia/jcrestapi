@@ -91,7 +91,6 @@ public class API {
     }
 
     @GET
-    @Path("")
     @Consumes(MediaType.APPLICATION_JSON)
     public JSONNode getRootNode(@Context UriInfo info) throws RepositoryException {
         return getJSON(NodeAccessor.ROOT_ACCESSOR, ItemAccessor.IDENTITY_ACCESSOR, info.getAbsolutePath());
