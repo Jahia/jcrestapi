@@ -76,11 +76,19 @@ public abstract class JSONItem<T extends Item> {
 
 
         if (nodetypesURI.get() == null) {
-            // todo: fix, http://localhost/modules/api -> http://localhost/api should keep modules
-            URI api = UriBuilder.fromResource(API.class).build();
-            UriBuilder builder = UriBuilder.fromUri(absoluteURI.resolve(api));
-            URI uri = builder.segment("jcr__system", "jcr__nodeTypes").build();
-            nodetypesURI.set(uri);
+            // extract the complete URI containing the full URL path and API URI
+            String api = UriBuilder.fromResource(API.class).build().toASCIIString();
+            final String absoluteURIAsString = absoluteURI.toASCIIString();
+            final String apiFullPath = absoluteURIAsString.substring(0, absoluteURIAsString.indexOf(api) + api.length());
+
+            // complete path to node types URI
+            String nodetypesURIAsString = apiFullPath + "/jcr__system/jcr__nodeTypes";
+            try {
+                nodetypesURI.set(new URI(nodetypesURIAsString));
+            } catch (URISyntaxException e) {
+                // shouldn't happen
+                throw new RuntimeException(e);
+            }
         }
 
         addLink(new JSONLink("type", getChildURI(nodetypesURI.get(), getTypeChildPath(item))));
