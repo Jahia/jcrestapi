@@ -134,6 +134,11 @@ public class JSONNode extends JSONItem<Node> {
     }
 
     public JSONProperty getProperty(String property) {
+        property = JSONItem.escape(property);
         return properties.get(property);
+    }
+
+    public Map<String, JSONProperty> getProperties() {
+        return properties;
     }
 }

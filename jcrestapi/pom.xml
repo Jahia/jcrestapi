@@ -196,7 +196,11 @@
                 <configuration>
                     <instructions>
                         <Jahia-Depends>default</Jahia-Depends>
-                        <Private-Package>org.jahia.modules.jcrestapi,org.jahia.modules.jcrestapi.json</Private-Package>
+                        <Private-Package>
+                            org.jahia.modules.jcrestapi,
+                            org.jahia.modules.jcrestapi.json,
+                            org.jahia.modules.jcrestapi.path
+                        </Private-Package>
                         <Import-Package>
                             javax.jcr.*,
                             javax.xml.bind.annotation,

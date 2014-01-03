@@ -41,10 +41,12 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.json.JSONItem;
 import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONProperty;
+import org.jahia.modules.jcrestapi.path.AccessorPair;
+import org.jahia.modules.jcrestapi.path.ItemAccessor;
+import org.jahia.modules.jcrestapi.path.NodeAccessor;
+import org.jahia.modules.jcrestapi.path.PathParser;
 import org.osgi.service.component.annotations.Component;
 
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
@@ -93,31 +95,18 @@ public class API {
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     public JSONNode getRootNode(@Context UriInfo info) throws RepositoryException {
-        return getJSON(NodeAccessor.ROOT_ACCESSOR, ItemAccessor.IDENTITY_ACCESSOR, info.getAbsolutePath());
+        final JSONNode node = getJSON(NodeAccessor.ROOT_ACCESSOR, ItemAccessor.IDENTITY_ACCESSOR, info.getAbsolutePath());
+        return node;
     }
 
     @GET
-    @Path("/properties/{property: .*}")
+    @Path("{path: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public JSONProperty getRootProperty(@PathParam("property") String property, @Context UriInfo info) throws
-            RepositoryException {
-        return getJSON(NodeAccessor.ROOT_ACCESSOR, new PropertyAccessor(property), info.getAbsolutePath());
-    }
+    public JSONItem getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
+        final AccessorPair accessors = PathParser.getAccessorsForPath(path);
 
-    @GET
-    @Path("/{path:.*}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public JSONNode getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
-        return getJSON(new PathNodeAccessor(path), ItemAccessor.IDENTITY_ACCESSOR, info.getAbsolutePath());
-    }
-
-    @GET
-    @Path("/{path: .*}/properties/{property: .*}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public JSONProperty getProperty(@PathParam("path") String path, @PathParam("property") String property,
-                                    @Context UriInfo info) throws
-            RepositoryException {
-        return getJSON(new PathNodeAccessor(path), new PropertyAccessor(property), info.getAbsolutePath());
+        final JSONItem node = getJSON(accessors.nodeAccessor, accessors.itemAccessor, info.getAbsolutePath());
+        return node;
     }
 
     private <T extends JSONItem> T getJSON(NodeAccessor nodeAccessor, ItemAccessor<T> itemAccessor,
@@ -129,54 +118,6 @@ public class API {
             return itemAccessor.getItem(node);
         } finally {
             session.logout();
-        }
-    }
-
-    private static interface NodeAccessor {
-        Node getNode(Session session) throws RepositoryException;
-
-        final static NodeAccessor ROOT_ACCESSOR = new NodeAccessor() {
-            @Override
-            public Node getNode(Session session) throws RepositoryException {
-                return session.getRootNode();
-            }
-        };
-    }
-
-    private static class PathNodeAccessor implements NodeAccessor {
-        private final String path;
-
-        private PathNodeAccessor(String path) {
-            this.path = JSONItem.unescape("/" + path);
-        }
-
-        @Override
-        public Node getNode(Session session) throws RepositoryException {
-            return session.getNode(path);
-        }
-    }
-
-    private static interface ItemAccessor<T extends JSONItem> {
-        T getItem(JSONNode parent);
-
-        static final ItemAccessor<JSONNode> IDENTITY_ACCESSOR = new ItemAccessor<JSONNode>() {
-            @Override
-            public JSONNode getItem(JSONNode parent) {
-                return parent;
-            }
-        };
-    }
-
-    private static class PropertyAccessor implements ItemAccessor<JSONProperty> {
-        private final String property;
-
-        public PropertyAccessor(String property) {
-            this.property = property;
-        }
-
-        @Override
-        public JSONProperty getItem(JSONNode parent) {
-            return parent.getProperty(property);
         }
     }
 }
