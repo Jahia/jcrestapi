@@ -102,6 +102,10 @@ public class PathParser {
             return new AccessorPair(new PathNodeAccessor(), new ChildrenAccessor());
         }
 
+        if ("mixins".equals(segment)) {
+            return new AccessorPair(new PathNodeAccessor(), new MixinsAccessor());
+        }
+
         return null;
     }
 }

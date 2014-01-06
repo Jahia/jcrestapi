@@ -149,4 +149,8 @@ public class JSONNode extends JSONItem<Node> {
     Map<String, JSONNode> getChildren() {
         return children;
     }
+
+    public JSONMixins getJSONMixins() {
+        return new JSONMixins(this);
+    }
 }
