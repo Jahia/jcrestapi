@@ -39,6 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -66,5 +68,9 @@ public class JSONLink {
 
     public URI getURI() {
         return uri;
+    }
+
+    public URI getChildURI(String escapedChildName) {
+        return URIUtils.getChildURI(getURI(), escapedChildName);
     }
 }

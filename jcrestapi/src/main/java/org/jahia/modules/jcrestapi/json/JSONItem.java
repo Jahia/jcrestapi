@@ -99,6 +99,10 @@ public abstract class JSONItem<T extends Item> {
         links.put(link.getRel(), link);
     }
 
+    protected JSONLink getLink(String relation) {
+        return links.get(relation);
+    }
+
     protected JSONLink getChildLink(URI parent, String childName) {
         return new JSONLink(childName, URIUtils.getChildURI(parent, childName));
     }

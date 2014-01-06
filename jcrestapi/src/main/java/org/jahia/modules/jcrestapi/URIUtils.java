@@ -64,9 +64,16 @@ public class URIUtils {
     }
 
     public static URI getChildURI(URI parent, String childName) {
+        return getChildURI(parent, childName, false);
+    }
+
+    public static URI getChildURI(URI parent, String childName, boolean escapeChildName) {
         try {
             if (childName.startsWith("/")) {
                 childName = childName.substring(1);
+                if (escapeChildName) {
+                    childName = escape(childName);
+                }
             }
             String parentURI = parent.toASCIIString();
             if (parentURI.endsWith("/")) {

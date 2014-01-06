@@ -41,12 +41,11 @@ package org.jahia.modules.jcrestapi.json;
 
 import org.jahia.modules.jcrestapi.URIUtils;
 
-import javax.jcr.*;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,13 +73,13 @@ import java.util.Map;
 @XmlRootElement
 public class JSONNode extends JSONItem<Node> {
     @XmlElement
-    private final Map<String, JSONProperty> properties;
+    private final JSONProperties properties;
     @XmlElement
-    private final List<Object> mixins;
+    private final JSONMixins mixins;
     @XmlElement
-    private final Map<String, JSONNode> children;
+    private final JSONChildren children;
     @XmlElement
-    private final List<Object> versions;
+    private final JSONVersions versions;
 
     public JSONNode(Node node, URI absoluteURI, int depth) throws RepositoryException {
         super(node, absoluteURI);
@@ -93,35 +92,13 @@ public class JSONNode extends JSONItem<Node> {
         addLink(getChildLink(absoluteURI, "versions"));
 
         if (depth > 0) {
-            final PropertyIterator props = node.getProperties();
+            properties = new JSONProperties(this, node);
 
-            // properties URI builder
-            properties = new HashMap<String, JSONProperty>((int) props.getSize());
-            while (props.hasNext()) {
-                Property property = props.nextProperty();
-                final String propertyName = property.getName();
-                final String escapedPropertyName = URIUtils.escape(propertyName);
+            mixins = new JSONMixins(this);
 
-                // add property
-                this.properties.put(escapedPropertyName, new JSONProperty(property, URIUtils.getChildURI(propertiesLink.getURI(), escapedPropertyName)));
-            }
+            children = new JSONChildren(this, node);
 
-            mixins = null;
-
-            final NodeIterator nodes = node.getNodes();
-            children = new HashMap<String, JSONNode>((int) nodes.getSize());
-
-            while (nodes.hasNext()) {
-                Node child = nodes.nextNode();
-
-                // build child resource URI
-                final String childName = child.getName();
-                final String escapedChildName = URIUtils.escape(childName);
-
-                children.put(escapedChildName, new JSONNode(child, URIUtils.getChildURI(absoluteURI, escapedChildName), depth - 1));
-            }
-
-            versions = null;
+            versions = new JSONVersions(this);
         } else {
             properties = null;
             mixins = null;
@@ -137,30 +114,30 @@ public class JSONNode extends JSONItem<Node> {
 
     public JSONProperty getProperty(String property) {
         property = URIUtils.escape(property);
-        return properties.get(property);
+        return getProperties().get(property);
     }
 
     public Map<String, JSONProperty> getProperties() {
-        return properties;
+        return properties.getProperties();
     }
 
     public JSONChildren getJSONChildren() {
-        return new JSONChildren(this);
-    }
-
-    Map<String, JSONNode> getChildren() {
         return children;
     }
 
+    Map<String, JSONNode> getChildren() {
+        return children.getChildren();
+    }
+
     public JSONMixins getJSONMixins() {
-        return new JSONMixins(this);
+        return mixins;
     }
 
     public JSONVersions getJSONVersions() {
-        return new JSONVersions(this);
+        return versions;
     }
 
     public JSONProperties getJSONProperties() {
-        return new JSONProperties(this);
+        return properties;
     }
 }

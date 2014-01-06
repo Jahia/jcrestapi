@@ -39,8 +39,16 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,12 +56,29 @@ import java.util.Map;
  */
 @XmlRootElement
 public class JSONProperties extends JSONSubElement {
-    public JSONProperties(JSONNode parent) {
+    private final Map<String, JSONProperty> properties;
+
+    public JSONProperties(JSONNode parent, Node node) throws RepositoryException {
         super(parent);
+
+        final PropertyIterator props = node.getProperties();
+
+        // properties URI builder
+        properties = new HashMap<String, JSONProperty>((int) props.getSize());
+        while (props.hasNext()) {
+            Property property = props.nextProperty();
+            final String propertyName = property.getName();
+            final String escapedPropertyName = URIUtils.escape(propertyName);
+
+            // add property
+            final JSONLink propertiesLink = parent.getLink("properties");
+            final URI propertyURI = propertiesLink.getChildURI(escapedPropertyName);
+            this.properties.put(escapedPropertyName, new JSONProperty(property, propertyURI));
+        }
     }
 
     @XmlElement
     public Map<String, JSONProperty> getProperties() {
-        return parent.getProperties();
+        return properties;
     }
 }
