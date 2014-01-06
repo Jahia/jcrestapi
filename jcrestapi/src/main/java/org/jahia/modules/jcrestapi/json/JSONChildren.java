@@ -49,11 +49,8 @@ import java.util.Map;
 @XmlRootElement
 public class JSONChildren extends JSONObject {
 
-    private final JSONNode parent;
-
     public JSONChildren(JSONNode parent) {
-        super();
-        this.parent = parent;
+        super(parent);
     }
 
     @XmlElement

@@ -43,9 +43,8 @@ package org.jahia.modules.jcrestapi.json;
  * @author Christophe Laprun
  */
 public class JSONMixins extends JSONObject {
-    private final JSONNode parent;
 
     public JSONMixins(JSONNode parent) {
-        this.parent = parent;
+        super(parent);
     }
 }

@@ -40,12 +40,11 @@
 package org.jahia.modules.jcrestapi.path;
 
 import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONObject;
 
 /**
  * @author Christophe Laprun
  */
-public interface ItemAccessor<T extends JSONObject> {
+public interface ItemAccessor<T> {
     T getItem(JSONNode parent);
 
     static final ItemAccessor<JSONNode> IDENTITY_ACCESSOR = new ItemAccessor<JSONNode>() {

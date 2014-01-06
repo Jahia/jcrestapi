@@ -59,7 +59,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public abstract class JSONItem<T extends Item> extends JSONObject {
+public abstract class JSONItem<T extends Item> {
     private static final AtomicReference<URI> nodetypesURI = new AtomicReference<URI>(null);
     @XmlElement
     private final String name;

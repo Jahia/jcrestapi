@@ -43,9 +43,8 @@ package org.jahia.modules.jcrestapi.json;
  * @author Christophe Laprun
  */
 public class JSONVersions extends JSONObject {
-    private final JSONNode parent;
 
     public JSONVersions(JSONNode parent) {
-        this.parent = parent;
+        super(parent);
     }
 }

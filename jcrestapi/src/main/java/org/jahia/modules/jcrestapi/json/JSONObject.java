@@ -49,4 +49,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class JSONObject {
+    protected final JSONNode parent;
+
+    public JSONObject(JSONNode parent) {
+        this.parent = parent;
+    }
 }
