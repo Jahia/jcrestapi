@@ -39,6 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -93,7 +95,7 @@ public class JSONProperty extends JSONItem<Property> {
         final NodeType declaringNodeType = item.getDefinition().getDeclaringNodeType();
 
         // get its name and escape it
-        final String parentName = escape(declaringNodeType.getName());
+        final String parentName = URIUtils.escape(declaringNodeType.getName());
 
         // get its property definitions
         final PropertyDefinition[] parentPropDefs = declaringNodeType.getDeclaredPropertyDefinitions();

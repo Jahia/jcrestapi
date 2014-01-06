@@ -40,6 +40,7 @@
 package org.jahia.modules.jcrestapi.json;
 
 import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
@@ -91,52 +92,19 @@ public abstract class JSONItem<T extends Item> {
             }
         }
 
-        addLink(new JSONLink("type", getChildURI(nodetypesURI.get(), getTypeChildPath(item))));
+        addLink(new JSONLink("type", URIUtils.getChildURI(nodetypesURI.get(), getTypeChildPath(item))));
     }
 
     protected void addLink(JSONLink link) {
         links.put(link.getRel(), link);
     }
 
-    public static String escape(String value) {
-        return value.replace(":", "__");
-    }
-
-    public static String unescape(String value) {
-        String replace = value.replace("__", ":");
-
-        final int indexMarker = replace.lastIndexOf("--");
-        if (indexMarker > 0) {
-            // we have an index marker that we need to replace
-            String index = replace.substring(indexMarker + 2);
-            replace = replace.substring(0, indexMarker) + "[" + index + "]";
-        }
-
-        return replace;
-    }
-
     protected JSONLink getChildLink(URI parent, String childName) {
-        return new JSONLink(childName, getChildURI(parent, childName));
-    }
-
-    protected URI getChildURI(URI parent, String childName) {
-        try {
-            if (childName.startsWith("/")) {
-                childName = childName.substring(1);
-            }
-            String parentURI = parent.toASCIIString();
-            if (parentURI.endsWith("/")) {
-                return new URI(parent + childName);
-            } else {
-                return new URI(parent + "/" + childName);
-            }
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        return new JSONLink(childName, URIUtils.getChildURI(parent, childName));
     }
 
     protected String getTypeChildPath(T item) throws RepositoryException {
-        return escape(type);
+        return URIUtils.escape(type);
     }
 
     protected abstract String getUnescapedTypeName(T item) throws RepositoryException;

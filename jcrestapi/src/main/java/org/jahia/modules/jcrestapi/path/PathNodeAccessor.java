@@ -39,7 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
-import org.jahia.modules.jcrestapi.json.JSONItem;
+import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -65,7 +65,7 @@ class PathNodeAccessor implements NodeAccessor {
 
     @Override
     public void initWith(String nodePath) {
-        path = JSONItem.unescape(nodePath);
+        path = URIUtils.unescape(nodePath);
     }
 
     String getPath() {

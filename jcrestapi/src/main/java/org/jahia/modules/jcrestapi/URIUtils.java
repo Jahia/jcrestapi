@@ -37,36 +37,45 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.path;
+package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONProperty;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @author Christophe Laprun
  */
-class PropertyAccessor implements ItemAccessor<JSONProperty> {
-    private String property;
-
-    public PropertyAccessor(String property) {
-        initWith(property);
+public class URIUtils {
+    public static String escape(String value) {
+        return value.replace(":", "__");
     }
 
-    PropertyAccessor() {
+    public static String unescape(String value) {
+        String replace = value.replace("__", ":");
+
+        final int indexMarker = replace.lastIndexOf("--");
+        if (indexMarker > 0) {
+            // we have an index marker that we need to replace
+            String index = replace.substring(indexMarker + 2);
+            replace = replace.substring(0, indexMarker) + "[" + index + "]";
+        }
+
+        return replace;
     }
 
-    @Override
-    public JSONProperty getItem(JSONNode parent) {
-        return parent.getProperty(property);
-    }
-
-    @Override
-    public void initWith(String item) {
-        property = URIUtils.unescape(item);
-    }
-
-    String getPropertyName() {
-        return property;
+    public static URI getChildURI(URI parent, String childName) {
+        try {
+            if (childName.startsWith("/")) {
+                childName = childName.substring(1);
+            }
+            String parentURI = parent.toASCIIString();
+            if (parentURI.endsWith("/")) {
+                return new URI(parent + childName);
+            } else {
+                return new URI(parent + "/" + childName);
+            }
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

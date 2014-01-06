@@ -39,6 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
 import javax.jcr.*;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -98,10 +100,10 @@ public class JSONNode extends JSONItem<Node> {
             while (props.hasNext()) {
                 Property property = props.nextProperty();
                 final String propertyName = property.getName();
-                final String escapedPropertyName = escape(propertyName);
+                final String escapedPropertyName = URIUtils.escape(propertyName);
 
                 // add property
-                this.properties.put(escapedPropertyName, new JSONProperty(property, getChildURI(propertiesLink.getURI(), escapedPropertyName)));
+                this.properties.put(escapedPropertyName, new JSONProperty(property, URIUtils.getChildURI(propertiesLink.getURI(), escapedPropertyName)));
             }
 
             mixins = null;
@@ -114,9 +116,9 @@ public class JSONNode extends JSONItem<Node> {
 
                 // build child resource URI
                 final String childName = child.getName();
-                final String escapedChildName = escape(childName);
+                final String escapedChildName = URIUtils.escape(childName);
 
-                children.put(escapedChildName, new JSONNode(child, getChildURI(absoluteURI, escapedChildName), depth - 1));
+                children.put(escapedChildName, new JSONNode(child, URIUtils.getChildURI(absoluteURI, escapedChildName), depth - 1));
             }
 
             versions = null;
@@ -134,7 +136,7 @@ public class JSONNode extends JSONItem<Node> {
     }
 
     public JSONProperty getProperty(String property) {
-        property = JSONItem.escape(property);
+        property = URIUtils.escape(property);
         return properties.get(property);
     }
 
