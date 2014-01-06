@@ -39,65 +39,34 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
+import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.UriBuilder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 public class PathParser {
-    static public AccessorPair getAccessorsForPath(String path) {
+    public static AccessorPair getAccessorsForPath(UriBuilder baseUriBuilder, List<PathSegment> segments) {
+        int index = 0;
+        for (PathSegment segment : segments) {
+            // first path segment corresponds to the resource mapping so we ignore it
+            if (index != 0) {
 
-        // while we can find a / in path, starting from offset
-        int next, offset = 0;
-        while ((next = path.indexOf('/', offset)) != -1) {
-            // extract segment
-            final String segment = path.substring(offset, next);
-
-            // only consider segment if it's not empty
-            if (!segment.isEmpty()) {
                 // check if segment is a sub-element marker
-                final AccessorPair pair = analyzeSegment(SegmentContext.forNode(segment, path, offset));
+                final AccessorPair pair = analyzeSegment(SegmentContext.forPathSegment(segment, segments, index));
                 if (pair != null) {
                     // we've found a sub-element marker, so we're done
                     return pair;
                 }
             }
-
-            // move offset
-            offset = next + 1;
+            index++;
         }
 
-        if (offset > 0) {
-            // we're not processing the root node and we've looked at all segments except potentially the last one
-            // so we need to look at whether we have a last segment defining a subelement
-            final AccessorPair accessorPair = analyzeSegment(SegmentContext.forNode(path.substring(offset,
-                    path.length()), path, offset));
-            if (accessorPair != null) {
-                return accessorPair;
-            }
-        } else {
-            // processing the root node: check if we're asking root sub-elements
-            final AccessorPair accessorPair = analyzeSegment(SegmentContext.forRoot(path));
-            if (accessorPair != null) {
-                return accessorPair;
-            }
-        }
-
-        // we haven't found a sub-element query so return the node
-        String node = normalizeNodePath(path);
-        return new AccessorPair(new PathNodeAccessor(node), ItemAccessor.IDENTITY_ACCESSOR);
-    }
-
-    private static String normalizeNodePath(String path) {
-        String node;
-        if (path.isEmpty() || "/".equals(path)) {
-            node = "/";
-        } else {
-            node = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-            node = path.startsWith("/") ? node : "/" + node;
-        }
-        return node;
+        return new AccessorPair(new PathNodeAccessor(computePathUpTo(segments, segments.size())),
+                ItemAccessor.IDENTITY_ACCESSOR);
     }
 
     private static AccessorPair analyzeSegment(SegmentContext context) {
@@ -110,40 +79,46 @@ public class PathParser {
         }
     }
 
-    private static class SegmentContext {
-        protected String segment;
-        protected String nodePath;
-        protected String subElement;
+    private static abstract class SegmentContext {
+        abstract String getSegment();
 
-        String getSegment() {
-            return segment;
-        }
+        abstract String getNodePath();
 
-        String getNodePath() {
-            return nodePath;
-        }
+        abstract String getSubElement();
 
-        String getSubElement() {
-            return subElement;
-        }
+        static SegmentContext forPathSegment(final PathSegment segment, final List<PathSegment> segments,
+                                             final int index) {
+            return new SegmentContext() {
+                @Override
+                String getSegment() {
+                    return segment.getPath();
+                }
 
-        static SegmentContext forNode(String segment, String path, int segmentOffset) {
-            final SegmentContext context = new SegmentContext();
-            final int subElementStart = segmentOffset + segment.length() + 1;
-            final int length = path.length();
-            context.subElement = subElementStart < length ? path.substring(subElementStart, length) : "";
-            context.nodePath = normalizeNodePath(path.substring(0, segmentOffset));
-            context.segment = segment;
-            return context;
-        }
+                @Override
+                String getNodePath() {
+                    return computePathUpTo(segments, index);
+                }
 
-        static SegmentContext forRoot(String path) {
-            final SegmentContext context = new SegmentContext();
-            context.segment = path.startsWith("/") ? path.substring(1) : path;
-            context.nodePath = "/";
-            context.subElement = "";
-            return context;
+                @Override
+                String getSubElement() {
+                    final int next = index + 1;
+                    if (next < segments.size()) {
+                        return segments.get(next).getPath();
+                    } else {
+                        return "";
+                    }
+                }
+            };
         }
+    }
+
+    private static String computePathUpTo(List<PathSegment> segments, int index) {
+        StringBuilder path = new StringBuilder(30 * index);
+        // first path segment corresponds to the resource mapping so we ignore it
+        for (int i = 1; i < index; i++) {
+            path.append("/").append(segments.get(i).getPath());
+        }
+        return path.toString();
     }
 
     private static interface AccessorPairGenerator {

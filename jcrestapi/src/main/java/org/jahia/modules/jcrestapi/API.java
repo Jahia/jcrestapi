@@ -93,6 +93,9 @@ public class API {
 
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
+    /**
+     * Needed to get URI without trailing / to work :(
+     */
     public Object getRootNode(@Context UriInfo info) throws RepositoryException {
         final Object node = getJSON(NodeAccessor.ROOT_ACCESSOR, ItemAccessor.IDENTITY_ACCESSOR,
                 info.getAbsolutePath());
@@ -103,7 +106,7 @@ public class API {
     @Path("{path: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
-        final AccessorPair accessors = PathParser.getAccessorsForPath(path);
+        final AccessorPair accessors = PathParser.getAccessorsForPath(info.getBaseUriBuilder(), info.getPathSegments());
 
         final Object node = getJSON(accessors.nodeAccessor, accessors.itemAccessor, info.getAbsolutePath());
         return node;
