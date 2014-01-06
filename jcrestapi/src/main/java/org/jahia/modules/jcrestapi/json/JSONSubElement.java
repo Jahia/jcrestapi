@@ -48,10 +48,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONObject {
+public class JSONSubElement {
     protected final JSONNode parent;
 
-    public JSONObject(JSONNode parent) {
+    public JSONSubElement(JSONNode parent) {
         this.parent = parent;
     }
 }

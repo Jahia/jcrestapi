@@ -47,7 +47,7 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONChildren extends JSONObject {
+public class JSONChildren extends JSONSubElement {
 
     public JSONChildren(JSONNode parent) {
         super(parent);
