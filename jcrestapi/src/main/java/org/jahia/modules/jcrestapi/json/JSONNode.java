@@ -153,4 +153,8 @@ public class JSONNode extends JSONItem<Node> {
     public JSONMixins getJSONMixins() {
         return new JSONMixins(this);
     }
+
+    public JSONVersions getJSONVersions() {
+        return new JSONVersions(this);
+    }
 }
