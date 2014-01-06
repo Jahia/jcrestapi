@@ -69,10 +69,17 @@ public class PathParser {
             offset = next + 1;
         }
 
-        // we haven't found a sub-element query so return the node
-        String node = normalizeNodePath(path);
-
-        return new AccessorPair(new PathNodeAccessor(node), ItemAccessor.IDENTITY_ACCESSOR);
+        // check if we're asking root sub-elements
+        final AccessorPair accessorPair = analyzeSegment(path);
+        if (accessorPair != null) {
+            // init node accessor to access root
+            accessorPair.initWith("/", null);
+            return accessorPair;
+        } else {
+            // we haven't found a sub-element query so return the node
+            String node = normalizeNodePath(path);
+            return new AccessorPair(new PathNodeAccessor(node), ItemAccessor.IDENTITY_ACCESSOR);
+        }
     }
 
     private static String normalizeNodePath(String path) {
@@ -89,6 +96,10 @@ public class PathParser {
     private static AccessorPair analyzeSegment(String segment) {
         if ("properties".equals(segment)) {
             return new AccessorPair(new PathNodeAccessor(), new PropertyAccessor());
+        }
+
+        if ("children".equals(segment)) {
+            return new AccessorPair(new PathNodeAccessor(), new ChildrenAccessor());
         }
 
         return null;

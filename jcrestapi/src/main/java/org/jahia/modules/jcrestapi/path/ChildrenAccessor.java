@@ -39,26 +39,20 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
+import org.jahia.modules.jcrestapi.json.JSONChildren;
 import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONObject;
 
 /**
  * @author Christophe Laprun
  */
-public interface ItemAccessor<T extends JSONObject> {
-    T getItem(JSONNode parent);
+public class ChildrenAccessor implements ItemAccessor<JSONChildren> {
+    @Override
+    public JSONChildren getItem(JSONNode parent) {
+        return parent.getJSONChildren();
+    }
 
-    static final ItemAccessor<JSONNode> IDENTITY_ACCESSOR = new ItemAccessor<JSONNode>() {
-        @Override
-        public JSONNode getItem(JSONNode parent) {
-            return parent;
-        }
-
-        @Override
-        public void initWith(String item) {
-            // nothing to do
-        }
-    };
-
-    void initWith(String item);
+    @Override
+    public void initWith(String item) {
+        // nothing to do
+    }
 }

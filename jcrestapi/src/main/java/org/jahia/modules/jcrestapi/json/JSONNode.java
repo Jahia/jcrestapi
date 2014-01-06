@@ -76,7 +76,7 @@ public class JSONNode extends JSONItem<Node> {
     @XmlElement
     private final List<Object> mixins;
     @XmlElement
-    private final Map<String, JSONItem> children;
+    private final Map<String, JSONNode> children;
     @XmlElement
     private final List<Object> versions;
 
@@ -107,7 +107,7 @@ public class JSONNode extends JSONItem<Node> {
             mixins = null;
 
             final NodeIterator nodes = node.getNodes();
-            children = new HashMap<String, JSONItem>((int) nodes.getSize());
+            children = new HashMap<String, JSONNode>((int) nodes.getSize());
 
             while (nodes.hasNext()) {
                 Node child = nodes.nextNode();
@@ -140,5 +140,13 @@ public class JSONNode extends JSONItem<Node> {
 
     public Map<String, JSONProperty> getProperties() {
         return properties;
+    }
+
+    public JSONChildren getJSONChildren() {
+        return new JSONChildren(this);
+    }
+
+    Map<String, JSONNode> getChildren() {
+        return children;
     }
 }

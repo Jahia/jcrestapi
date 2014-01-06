@@ -39,8 +39,8 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.json.JSONItem;
 import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.jcrestapi.json.JSONObject;
 import org.jahia.modules.jcrestapi.path.AccessorPair;
 import org.jahia.modules.jcrestapi.path.ItemAccessor;
 import org.jahia.modules.jcrestapi.path.NodeAccessor;
@@ -102,15 +102,15 @@ public class API {
     @GET
     @Path("{path: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public JSONItem getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
+    public JSONObject getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
         final AccessorPair accessors = PathParser.getAccessorsForPath(path);
 
-        final JSONItem node = getJSON(accessors.nodeAccessor, accessors.itemAccessor, info.getAbsolutePath());
+        final JSONObject node = getJSON(accessors.nodeAccessor, accessors.itemAccessor, info.getAbsolutePath());
         return node;
     }
 
-    private <T extends JSONItem> T getJSON(NodeAccessor nodeAccessor, ItemAccessor<T> itemAccessor,
-                                           URI uri) throws RepositoryException {
+    private <T extends JSONObject> T getJSON(NodeAccessor nodeAccessor, ItemAccessor<T> itemAccessor,
+                                             URI uri) throws RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
         try {

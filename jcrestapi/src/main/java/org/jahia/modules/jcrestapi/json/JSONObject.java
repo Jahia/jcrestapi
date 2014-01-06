@@ -37,28 +37,16 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.path;
+package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONObject;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * @author Christophe Laprun
  */
-public interface ItemAccessor<T extends JSONObject> {
-    T getItem(JSONNode parent);
-
-    static final ItemAccessor<JSONNode> IDENTITY_ACCESSOR = new ItemAccessor<JSONNode>() {
-        @Override
-        public JSONNode getItem(JSONNode parent) {
-            return parent;
-        }
-
-        @Override
-        public void initWith(String item) {
-            // nothing to do
-        }
-    };
-
-    void initWith(String item);
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public class JSONObject {
 }
