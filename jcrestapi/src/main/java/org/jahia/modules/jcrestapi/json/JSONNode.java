@@ -157,4 +157,8 @@ public class JSONNode extends JSONItem<Node> {
     public JSONVersions getJSONVersions() {
         return new JSONVersions(this);
     }
+
+    public JSONProperties getJSONProperties() {
+        return new JSONProperties(this);
+    }
 }

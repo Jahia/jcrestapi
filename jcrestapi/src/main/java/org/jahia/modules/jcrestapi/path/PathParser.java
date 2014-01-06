@@ -54,13 +54,9 @@ public class PathParser {
             // only consider segment if it's not empty
             if (!segment.isEmpty()) {
                 // check if segment is a sub-element marker
-                final AccessorPair pair = analyzeSegment(segment);
+                final AccessorPair pair = analyzeSegment(segment, path, offset);
                 if (pair != null) {
                     // we've found a sub-element marker, so we're done
-                    pair.initWith(
-                            normalizeNodePath(path.substring(0, offset)),
-                            path.substring(offset + segment.length() + 1, path.length())
-                    );
                     return pair;
                 }
             }
@@ -69,17 +65,26 @@ public class PathParser {
             offset = next + 1;
         }
 
-        // check if we're asking root sub-elements
-        final AccessorPair accessorPair = analyzeSegment(path);
-        if (accessorPair != null) {
-            // init node accessor to access root
-            accessorPair.initWith("/", null);
-            return accessorPair;
+        if (offset > 0) {
+            // we're not processing the root node and we've looked at all segments except potentially the last one
+            // so we need to look at whether we have a last segment defining a subelement
+            final AccessorPair accessorPair = analyzeSegment(path.substring(offset, path.length()), path, offset);
+            if (accessorPair != null) {
+                return accessorPair;
+            }
         } else {
-            // we haven't found a sub-element query so return the node
-            String node = normalizeNodePath(path);
-            return new AccessorPair(new PathNodeAccessor(node), ItemAccessor.IDENTITY_ACCESSOR);
+            // processing the root node: check if we're asking root sub-elements
+            final AccessorPair accessorPair = analyzeRootSegment(path);
+            if (accessorPair != null) {
+                // init node accessor to access root
+                accessorPair.initWith("/", null);
+                return accessorPair;
+            }
         }
+
+        // we haven't found a sub-element query so return the node
+        String node = normalizeNodePath(path);
+        return new AccessorPair(new PathNodeAccessor(node), ItemAccessor.IDENTITY_ACCESSOR);
     }
 
     private static String normalizeNodePath(String path) {
@@ -93,9 +98,28 @@ public class PathParser {
         return node;
     }
 
-    private static AccessorPair analyzeSegment(String segment) {
+    private static AccessorPair analyzeSegment(String segment, String path, int segmentOffset) {
+        final int subElementStart = segmentOffset + segment.length() + 1;
+        final int length = path.length();
+        final String subelement = subElementStart < length ? path.substring(subElementStart, length) : "";
+        final String nodePath = normalizeNodePath(path.substring(0, segmentOffset));
+
+        return analyzeSegment(segment, nodePath, subelement);
+    }
+
+    private static AccessorPair analyzeRootSegment(String path) {
+        final String segment = path.startsWith("/") ? path.substring(1) : path;
+        final String nodePath = normalizeNodePath(path);
+        return analyzeSegment(segment, nodePath, "");
+    }
+
+    private static AccessorPair analyzeSegment(String segment, String nodePath, String subelement) {
         if ("properties".equals(segment)) {
-            return new AccessorPair(new PathNodeAccessor(), new PropertyAccessor());
+            if (subelement.isEmpty()) {
+                return new AccessorPair(new PathNodeAccessor(nodePath), new PropertiesAccessor());
+            } else {
+                return new AccessorPair(new PathNodeAccessor(nodePath), new PropertyAccessor(subelement));
+            }
         }
 
         if ("children".equals(segment)) {
