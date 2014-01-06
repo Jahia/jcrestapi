@@ -65,7 +65,11 @@ class PathNodeAccessor implements NodeAccessor {
 
     @Override
     public void initWith(String nodePath) {
-        path = URIUtils.unescape(nodePath);
+        if (nodePath.isEmpty()) {
+            path = "/";
+        } else {
+            path = URIUtils.unescape(nodePath);
+        }
     }
 
     String getPath() {
