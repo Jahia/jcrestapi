@@ -50,9 +50,4 @@ public class AccessorPair {
         this.nodeAccessor = nodeAccessor;
         this.itemAccessor = itemAccessor;
     }
-
-    public void initWith(String nodePath, String item) {
-        nodeAccessor.initWith(nodePath);
-        itemAccessor.initWith(item);
-    }
 }

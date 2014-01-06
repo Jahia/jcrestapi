@@ -80,8 +80,6 @@ public class PathParser {
             // processing the root node: check if we're asking root sub-elements
             final AccessorPair accessorPair = analyzeSegment(SegmentContext.forRoot(path));
             if (accessorPair != null) {
-                // init node accessor to access root
-                accessorPair.initWith("/", null);
                 return accessorPair;
             }
         }
@@ -142,7 +140,7 @@ public class PathParser {
         static SegmentContext forRoot(String path) {
             final SegmentContext context = new SegmentContext();
             context.segment = path.startsWith("/") ? path.substring(1) : path;
-            context.nodePath = normalizeNodePath(path);
+            context.nodePath = "/";
             context.subElement = "";
             return context;
         }
