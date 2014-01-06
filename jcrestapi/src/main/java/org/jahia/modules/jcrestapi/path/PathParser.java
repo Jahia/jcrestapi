@@ -39,6 +39,9 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Christophe Laprun
  */
@@ -54,7 +57,7 @@ public class PathParser {
             // only consider segment if it's not empty
             if (!segment.isEmpty()) {
                 // check if segment is a sub-element marker
-                final AccessorPair pair = analyzeSegment(segment, path, offset);
+                final AccessorPair pair = analyzeSegment(SegmentContext.forNode(segment, path, offset));
                 if (pair != null) {
                     // we've found a sub-element marker, so we're done
                     return pair;
@@ -68,13 +71,14 @@ public class PathParser {
         if (offset > 0) {
             // we're not processing the root node and we've looked at all segments except potentially the last one
             // so we need to look at whether we have a last segment defining a subelement
-            final AccessorPair accessorPair = analyzeSegment(path.substring(offset, path.length()), path, offset);
+            final AccessorPair accessorPair = analyzeSegment(SegmentContext.forNode(path.substring(offset,
+                    path.length()), path, offset));
             if (accessorPair != null) {
                 return accessorPair;
             }
         } else {
             // processing the root node: check if we're asking root sub-elements
-            final AccessorPair accessorPair = analyzeRootSegment(path);
+            final AccessorPair accessorPair = analyzeSegment(SegmentContext.forRoot(path));
             if (accessorPair != null) {
                 // init node accessor to access root
                 accessorPair.initWith("/", null);
@@ -98,42 +102,95 @@ public class PathParser {
         return node;
     }
 
-    private static AccessorPair analyzeSegment(String segment, String path, int segmentOffset) {
-        final int subElementStart = segmentOffset + segment.length() + 1;
-        final int length = path.length();
-        final String subelement = subElementStart < length ? path.substring(subElementStart, length) : "";
-        final String nodePath = normalizeNodePath(path.substring(0, segmentOffset));
-
-        return analyzeSegment(segment, nodePath, subelement);
+    private static AccessorPair analyzeSegment(SegmentContext context) {
+        final String segment = context.getSegment();
+        final AccessorPairGenerator accessors = generators.get(segment);
+        if (accessors != null) {
+            return accessors.getAccessorPair(context);
+        } else {
+            return null;
+        }
     }
 
-    private static AccessorPair analyzeRootSegment(String path) {
-        final String segment = path.startsWith("/") ? path.substring(1) : path;
-        final String nodePath = normalizeNodePath(path);
-        return analyzeSegment(segment, nodePath, "");
+    private static class SegmentContext {
+        protected String segment;
+        protected String nodePath;
+        protected String subElement;
+
+        String getSegment() {
+            return segment;
+        }
+
+        String getNodePath() {
+            return nodePath;
+        }
+
+        String getSubElement() {
+            return subElement;
+        }
+
+        static SegmentContext forNode(String segment, String path, int segmentOffset) {
+            final SegmentContext context = new SegmentContext();
+            final int subElementStart = segmentOffset + segment.length() + 1;
+            final int length = path.length();
+            context.subElement = subElementStart < length ? path.substring(subElementStart, length) : "";
+            context.nodePath = normalizeNodePath(path.substring(0, segmentOffset));
+            context.segment = segment;
+            return context;
+        }
+
+        static SegmentContext forRoot(String path) {
+            final SegmentContext context = new SegmentContext();
+            context.segment = path.startsWith("/") ? path.substring(1) : path;
+            context.nodePath = normalizeNodePath(path);
+            context.subElement = "";
+            return context;
+        }
     }
 
-    private static AccessorPair analyzeSegment(String segment, String nodePath, String subelement) {
-        if ("properties".equals(segment)) {
-            if (subelement.isEmpty()) {
-                return new AccessorPair(new PathNodeAccessor(nodePath), new PropertiesAccessor());
-            } else {
-                return new AccessorPair(new PathNodeAccessor(nodePath), new PropertyAccessor(subelement));
+    private static interface AccessorPairGenerator {
+        AccessorPair getAccessorPair(SegmentContext context);
+
+        AccessorPairGenerator properties = new AccessorPairGenerator() {
+            @Override
+            public AccessorPair getAccessorPair(SegmentContext context) {
+                final String subElement = context.getSubElement();
+                if (subElement.isEmpty()) {
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new PropertiesAccessor());
+                } else {
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new PropertyAccessor(subElement));
+                }
             }
-        }
+        };
 
-        if ("children".equals(segment)) {
-            return new AccessorPair(new PathNodeAccessor(), new ChildrenAccessor());
-        }
+        AccessorPairGenerator children = new AccessorPairGenerator() {
+            @Override
+            public AccessorPair getAccessorPair(SegmentContext context) {
+                return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new ChildrenAccessor());
+            }
+        };
 
-        if ("mixins".equals(segment)) {
-            return new AccessorPair(new PathNodeAccessor(), new MixinsAccessor());
-        }
+        AccessorPairGenerator mixins = new AccessorPairGenerator() {
+            @Override
+            public AccessorPair getAccessorPair(SegmentContext context) {
+                return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new MixinsAccessor());
+            }
+        };
 
-        if ("versions".equals(segment)) {
-            return new AccessorPair(new PathNodeAccessor(), new VersionsAccessor());
-        }
+        AccessorPairGenerator versions = new AccessorPairGenerator() {
+            @Override
+            public AccessorPair getAccessorPair(SegmentContext context) {
+                return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new VersionsAccessor());
+            }
+        };
+    }
 
-        return null;
+    private static final Map<String, AccessorPairGenerator> generators = new HashMap<String, AccessorPairGenerator>(7);
+
+    static {
+        generators.put("properties", AccessorPairGenerator.properties);
+        generators.put("children", AccessorPairGenerator.children);
+        generators.put("mixins", AccessorPairGenerator.mixins);
+        generators.put("versions", AccessorPairGenerator.versions);
     }
 }

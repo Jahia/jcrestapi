@@ -176,6 +176,36 @@ public class PathParserTest {
         assertTrue(accessors.itemAccessor instanceof PropertiesAccessor);
     }
 
+    @Test
+    public void testGetChildren() {
+        AccessorPair accessors = PathParser.getAccessorsForPath("/foo/bar/baz/children/");
+
+        assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
+        assertEquals("/foo/bar/baz", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+
+        assertTrue(accessors.itemAccessor instanceof ChildrenAccessor);
+    }
+
+    @Test
+    public void testGetMixins() {
+        AccessorPair accessors = PathParser.getAccessorsForPath("/foo/mixins/");
+
+        assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
+        assertEquals("/foo", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+
+        assertTrue(accessors.itemAccessor instanceof MixinsAccessor);
+    }
+
+    @Test
+    public void testGetVersions() {
+        AccessorPair accessors = PathParser.getAccessorsForPath("/foo/bar/versions/");
+
+        assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
+        assertEquals("/foo/bar", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+
+        assertTrue(accessors.itemAccessor instanceof VersionsAccessor);
+    }
+
    /* @Test
     public void testPerf() {
         final long begin = System.currentTimeMillis();
