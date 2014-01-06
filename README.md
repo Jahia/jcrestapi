@@ -145,7 +145,7 @@ A node's properties are gathered within a `properties` object that has the follo
 Each property is represented by an object with the following structure:
 
     "name" : <unescaped name>,
-    "isMultiple" : <boolean indicating whether the property has multiple values or not>
+    "multiple" : <boolean indicating whether the property has multiple values or not>
     "value" : <value>,
     "type" : <type>,
     "_links" : {
@@ -156,7 +156,7 @@ Each property is represented by an object with the following structure:
 `type` is the case-insensitive name of the JCR property type, and is one of: `STRING`, `BINARY`, `LONG`, `DOUBLE`,
 `DATE`, `BOOLEAN`, `NAME`, `PATH`, `REFERENCE`, `WEAKREFERENCE`, `URI`, and `DECIMAL`.
 
-`isMultiple` is optional, if it's not present in the returned representation, it is assumed to be `false`,
+`multiple` is optional, if it's not present in the returned representation, it is assumed to be `false`,
 meaning that the property only has a single value. Having this field allows for easier processing of properties on
 the client side without having to examine the property's definition.
 
@@ -176,10 +176,10 @@ being defined by the `mix:referenceable` mixin:
         "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition" }
     }
 
-An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the `isMultiple` field:
+An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the `multiple` field:
 
     "name" : "jcr:mixinTypes",
-    "isMultiple" : true,
+    "multiple" : true,
     "value" : ["jmix:accessControlled" , "jmix:robots"],
     "type" : "string",
     "_links" : {
