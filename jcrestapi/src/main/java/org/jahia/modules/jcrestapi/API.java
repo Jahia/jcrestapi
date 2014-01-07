@@ -117,6 +117,7 @@ public class API {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
         try {
+            // todo: optimize: we shouldn't need to load the whole node if we only want part of it
             final JSONNode node = new JSONNode(nodeAccessor.getNode(session), uri, 1);
             return itemAccessor.getItem(node);
         } finally {
