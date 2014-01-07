@@ -49,6 +49,10 @@ import javax.jcr.Session;
 public interface NodeAccessor {
     Node getNode(Session session) throws RepositoryException;
 
+    void initWith(String nodePath);
+
+    String getNodePath();
+
     final static NodeAccessor ROOT_ACCESSOR = new NodeAccessor() {
         @Override
         public Node getNode(Session session) throws RepositoryException {
@@ -59,7 +63,10 @@ public interface NodeAccessor {
         public void initWith(String nodePath) {
             // nothing to do
         }
-    };
 
-    void initWith(String nodePath);
+        @Override
+        public String getNodePath() {
+            return "/";
+        }
+    };
 }

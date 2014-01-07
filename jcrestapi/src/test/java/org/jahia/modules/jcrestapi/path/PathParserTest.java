@@ -59,14 +59,14 @@ public class PathParserTest {
         AccessorPair accessors = getAccessorsForPath("");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/", accessors.nodeAccessor.getNodePath());
 
         assertEquals(accessors.itemAccessor, ItemAccessor.IDENTITY_ACCESSOR);
 
         accessors = getAccessorsForPath("/");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/", accessors.nodeAccessor.getNodePath());
 
         assertEquals(accessors.itemAccessor, ItemAccessor.IDENTITY_ACCESSOR);
     }
@@ -103,14 +103,14 @@ public class PathParserTest {
         AccessorPair accessors = getAccessorsForPath("properties");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof PropertiesAccessor);
 
         accessors = getAccessorsForPath("/properties");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof PropertiesAccessor);
     }
@@ -120,7 +120,7 @@ public class PathParserTest {
         AccessorPair accessors = getAccessorsForPath("/properties/property");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof PropertyAccessor);
         assertEquals("property", ((PropertyAccessor) accessors.itemAccessor).getPropertyName());
@@ -128,7 +128,7 @@ public class PathParserTest {
         accessors = getAccessorsForPath("properties/property");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof PropertyAccessor);
         assertEquals("property", ((PropertyAccessor) accessors.itemAccessor).getPropertyName());
@@ -156,8 +156,7 @@ public class PathParserTest {
         final AccessorPair accessors = getAccessorsForPath(path);
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/jcr:system/jcr:nodeTypes/nt:base/jcr:propertyDefinition[2]",
-                ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/jcr:system/jcr:nodeTypes/nt:base/jcr:propertyDefinition[2]", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof PropertyAccessor);
         assertEquals("jcr:protected", ((PropertyAccessor) accessors.itemAccessor).getPropertyName());
@@ -175,7 +174,7 @@ public class PathParserTest {
         }
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals(path, ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals(path, accessors.nodeAccessor.getNodePath());
 
         assertEquals(accessors.itemAccessor, ItemAccessor.IDENTITY_ACCESSOR);
     }
@@ -185,7 +184,7 @@ public class PathParserTest {
         final AccessorPair accessors = getAccessorsForPath("/foo/bar/baz/properties/property");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/foo/bar/baz", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/foo/bar/baz", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof PropertyAccessor);
         assertEquals("property", ((PropertyAccessor) accessors.itemAccessor).getPropertyName());
@@ -196,14 +195,14 @@ public class PathParserTest {
         AccessorPair accessors = getAccessorsForPath("/foo/bar/baz/properties/");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/foo/bar/baz", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/foo/bar/baz", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof PropertiesAccessor);
 
         accessors = getAccessorsForPath("/foo/bar/baz/properties");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/foo/bar/baz", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/foo/bar/baz", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof PropertiesAccessor);
     }
@@ -213,7 +212,7 @@ public class PathParserTest {
         AccessorPair accessors = getAccessorsForPath("/foo/bar/baz/children/");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/foo/bar/baz", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/foo/bar/baz", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof ChildrenAccessor);
     }
@@ -223,7 +222,7 @@ public class PathParserTest {
         AccessorPair accessors = getAccessorsForPath("/foo/mixins/");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/foo", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/foo", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof MixinsAccessor);
     }
@@ -233,12 +232,12 @@ public class PathParserTest {
         AccessorPair accessors = getAccessorsForPath("/foo/bar/versions/");
 
         assertTrue(accessors.nodeAccessor instanceof PathNodeAccessor);
-        assertEquals("/foo/bar", ((PathNodeAccessor) accessors.nodeAccessor).getPath());
+        assertEquals("/foo/bar", accessors.nodeAccessor.getNodePath());
 
         assertTrue(accessors.itemAccessor instanceof VersionsAccessor);
     }
 
-    @Test
+    /*@Test
     public void testPerf() {
         final long begin = System.currentTimeMillis();
 
@@ -247,5 +246,5 @@ public class PathParserTest {
         }
 
         System.out.println("Time: " + (System.currentTimeMillis() - begin) );
-    }
+    }*/
 }

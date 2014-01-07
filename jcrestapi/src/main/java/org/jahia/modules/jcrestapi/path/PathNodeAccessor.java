@@ -72,7 +72,8 @@ class PathNodeAccessor implements NodeAccessor {
         }
     }
 
-    String getPath() {
+    @Override
+    public String getNodePath() {
         return path;
     }
 }
