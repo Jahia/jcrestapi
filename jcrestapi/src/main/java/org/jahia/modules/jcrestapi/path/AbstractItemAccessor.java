@@ -61,11 +61,6 @@ public abstract class AbstractItemAccessor<T> implements ItemAccessor<T> {
 
     protected abstract Map<String, T> getChildrenMap(JSONNode parent);
 
-    @Override
-    public void initWith(String item) {
-        // nothing to do
-    }
-
     protected String getChildName() {
         return URIUtils.unescape(childName);
     }

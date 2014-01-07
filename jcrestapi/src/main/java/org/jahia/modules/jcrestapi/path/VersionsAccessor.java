@@ -51,8 +51,4 @@ public class VersionsAccessor implements ItemAccessor<JSONVersions> {
         return parent.getJSONVersions();
     }
 
-    @Override
-    public void initWith(String item) {
-
-    }
 }

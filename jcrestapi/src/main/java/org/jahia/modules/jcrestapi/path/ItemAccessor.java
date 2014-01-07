@@ -53,11 +53,6 @@ public interface ItemAccessor<T> {
             return parent;
         }
 
-        @Override
-        public void initWith(String item) {
-            // nothing to do
-        }
     };
 
-    void initWith(String item);
 }

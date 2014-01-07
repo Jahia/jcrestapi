@@ -51,8 +51,4 @@ public class PropertiesAccessor implements ItemAccessor<JSONProperties> {
         return parent.getJSONProperties();
     }
 
-    @Override
-    public void initWith(String item) {
-
-    }
 }

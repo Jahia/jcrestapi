@@ -51,8 +51,4 @@ public class ChildrenAccessor implements ItemAccessor<JSONChildren> {
         return parent.getJSONChildren();
     }
 
-    @Override
-    public void initWith(String item) {
-        // nothing to do
-    }
 }

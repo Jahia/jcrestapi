@@ -51,8 +51,4 @@ public class MixinsAccessor implements ItemAccessor<JSONMixins> {
         return parent.getJSONMixins();
     }
 
-    @Override
-    public void initWith(String item) {
-
-    }
 }
