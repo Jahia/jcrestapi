@@ -74,15 +74,18 @@ public class PathParserTest {
 
     private AccessorPair getAccessorsForPath(String path) {
         final String[] split = path.split("/");
+        final ResteasyUriBuilder builder = new ResteasyUriBuilder();
         List<PathSegment> segments = new ArrayList<PathSegment>(split.length + 1);
         segments.add(createPathSegment("api"));
+        builder.segment("api");
         for (String s : split) {
             if (!s.isEmpty()) {
                 segments.add(createPathSegment(s));
+                builder.segment(s);
             }
         }
 
-        return PathParser.getAccessorsForPath(new ResteasyUriBuilder(), segments);
+        return PathParser.getAccessorsForPath(builder, segments);
     }
 
     private PathSegment createPathSegment(final String path) {
