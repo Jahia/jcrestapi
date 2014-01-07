@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
+import org.jboss.resteasy.specimpl.ResteasyUriBuilder;
 import org.junit.Test;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -81,7 +82,7 @@ public class PathParserTest {
             }
         }
 
-        return PathParser.getAccessorsForPath(null, segments);
+        return PathParser.getAccessorsForPath(new ResteasyUriBuilder(), segments);
     }
 
     private PathSegment createPathSegment(final String path) {
