@@ -47,6 +47,7 @@ import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -143,9 +144,9 @@ public class JSONNode extends JSONItem<Node> {
     }
 
     @XmlElement
-    public Object getVersions() {
+    public Map<String, JSONVersion> getVersions() {
         // todo: implement
-        return null;
+        return Collections.emptyMap();
     }
 
     public JSONProperties getJSONProperties() {

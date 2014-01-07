@@ -150,21 +150,38 @@ public class PathParser {
         AccessorPairGenerator children = new AccessorPairGenerator() {
             @Override
             public AccessorPair getAccessorPair(SegmentContext context) {
-                return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new ChildrenAccessor());
+                final String subElement = context.getSubElement();
+                if (subElement.isEmpty()) {
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new ChildrenAccessor());
+                } else {
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new ChildAccessor(subElement));
+                }
             }
         };
 
         AccessorPairGenerator mixins = new AccessorPairGenerator() {
             @Override
             public AccessorPair getAccessorPair(SegmentContext context) {
-                return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new MixinsAccessor());
+                final String subElement = context.getSubElement();
+                if (subElement.isEmpty()) {
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new MixinsAccessor());
+                } else {
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()),
+                            new MixinAccessor(subElement));
+                }
             }
         };
 
         AccessorPairGenerator versions = new AccessorPairGenerator() {
             @Override
             public AccessorPair getAccessorPair(SegmentContext context) {
-                return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new VersionsAccessor());
+                final String subElement = context.getSubElement();
+                if (subElement.isEmpty()) {
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new VersionsAccessor());
+                } else {
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()),
+                            new VersionAccessor(subElement));
+                }
             }
         };
     }
