@@ -78,6 +78,11 @@ public class API {
         VERSION = props.getProperty("jcrestapi.version");
     }
 
+    public static final String PROPERTIES = "properties";
+    public static final String MIXINS = "mixins";
+    public static final String CHILDREN = "children";
+    public static final String VERSIONS = "versions";
+
     private SpringBeansAccess beansAccess = SpringBeansAccess.getInstance();
 
     void setBeansAccess(SpringBeansAccess beansAccess) {

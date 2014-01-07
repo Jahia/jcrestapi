@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
+import org.jahia.modules.jcrestapi.API;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriBuilder;
 import java.util.HashMap;
@@ -161,9 +162,9 @@ public class PathParser {
     private static final Map<String, AccessorPairGenerator> generators = new HashMap<String, AccessorPairGenerator>(7);
 
     static {
-        generators.put("properties", AccessorPairGenerator.properties);
-        generators.put("children", AccessorPairGenerator.children);
-        generators.put("mixins", AccessorPairGenerator.mixins);
-        generators.put("versions", AccessorPairGenerator.versions);
+        generators.put(API.PROPERTIES, AccessorPairGenerator.properties);
+        generators.put(API.CHILDREN, AccessorPairGenerator.children);
+        generators.put(API.MIXINS, AccessorPairGenerator.mixins);
+        generators.put(API.VERSIONS, AccessorPairGenerator.versions);
     }
 }

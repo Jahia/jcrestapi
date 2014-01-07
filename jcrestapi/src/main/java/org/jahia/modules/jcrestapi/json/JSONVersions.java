@@ -47,8 +47,6 @@ import java.net.URI;
  */
 public class JSONVersions extends JSONSubElement {
 
-    static final String VERSIONS = "versions";
-
     public JSONVersions(JSONNode parent, Node node, URI absoluteURI) {
         super(parent, absoluteURI);
     }

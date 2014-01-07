@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
@@ -56,8 +57,6 @@ import java.util.Map;
  */
 @XmlRootElement
 public class JSONChildren extends JSONSubElement {
-    static final String CHILDREN = "children";
-
     private final HashMap<String, JSONNode> children;
 
     public JSONChildren(JSONNode parent, Node node, URI absoluteURI) throws RepositoryException {
@@ -80,7 +79,7 @@ public class JSONChildren extends JSONSubElement {
     }
 
     @XmlElement
-    @Path(CHILDREN)
+    @Path(API.CHILDREN)
     Map<String, JSONNode> getChildren() {
         return children;
     }

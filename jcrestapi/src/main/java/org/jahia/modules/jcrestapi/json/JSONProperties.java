@@ -56,7 +56,6 @@ import java.util.Map;
  */
 @XmlRootElement
 public class JSONProperties extends JSONSubElement {
-    static final String PROPERTIES = "properties";
     private final Map<String, JSONProperty> properties;
 
     public JSONProperties(JSONNode parent, Node node, URI absoluteURI) throws RepositoryException {

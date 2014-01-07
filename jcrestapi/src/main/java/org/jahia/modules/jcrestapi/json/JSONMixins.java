@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
@@ -56,9 +57,6 @@ import java.util.Map;
  */
 @XmlRootElement
 public class JSONMixins extends JSONSubElement {
-
-    static final String MIXINS = "mixins";
-
     @XmlElement
     private final Map<String, JSONMixin> mixins;
 
@@ -75,7 +73,7 @@ public class JSONMixins extends JSONSubElement {
         }
     }
 
-    @Path(MIXINS)
+    @Path(API.MIXINS)
     public Map<String, JSONMixin> getMixins() {
         return mixins;
     }

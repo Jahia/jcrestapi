@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
@@ -85,13 +86,13 @@ public class JSONNode extends JSONItem<Node> {
         super(node, absoluteURI);
 
         // add links
-        final JSONLink propertiesLink = getChildLink(absoluteURI, JSONProperties.PROPERTIES);
+        final JSONLink propertiesLink = getChildLink(absoluteURI, API.PROPERTIES);
         addLink(propertiesLink);
-        final JSONLink childrenLink = getChildLink(absoluteURI, JSONChildren.CHILDREN);
+        final JSONLink childrenLink = getChildLink(absoluteURI, API.CHILDREN);
         addLink(childrenLink);
-        final JSONLink mixinsLink = getChildLink(absoluteURI, JSONMixins.MIXINS);
+        final JSONLink mixinsLink = getChildLink(absoluteURI, API.MIXINS);
         addLink(mixinsLink);
-        final JSONLink versionsLink = getChildLink(absoluteURI, JSONVersions.VERSIONS);
+        final JSONLink versionsLink = getChildLink(absoluteURI, API.VERSIONS);
         addLink(versionsLink);
 
         if (depth > 0) {
