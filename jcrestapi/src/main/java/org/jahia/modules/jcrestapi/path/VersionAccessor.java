@@ -42,23 +42,18 @@ package org.jahia.modules.jcrestapi.path;
 import org.jahia.modules.jcrestapi.json.JSONNode;
 import org.jahia.modules.jcrestapi.json.JSONVersion;
 
+import java.util.Map;
+
 /**
  * @author Christophe Laprun
  */
-public class VersionAccessor implements ItemAccessor<JSONVersion> {
-    private String version;
-
-    public VersionAccessor(String version) {
-        initWith(version);
+public class VersionAccessor extends AbstractItemAccessor<JSONVersion> {
+    public VersionAccessor(String childName) {
+        super(childName);
     }
 
     @Override
-    public JSONVersion getItem(JSONNode parent) {
-        return parent.getVersions().get(version);
-    }
-
-    @Override
-    public void initWith(String item) {
-        this.version = item;
+    protected Map<String, JSONVersion> getChildrenMap(JSONNode parent) {
+        return parent.getVersions();
     }
 }

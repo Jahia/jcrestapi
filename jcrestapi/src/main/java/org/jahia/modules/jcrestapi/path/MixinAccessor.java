@@ -42,23 +42,18 @@ package org.jahia.modules.jcrestapi.path;
 import org.jahia.modules.jcrestapi.json.JSONMixin;
 import org.jahia.modules.jcrestapi.json.JSONNode;
 
+import java.util.Map;
+
 /**
  * @author Christophe Laprun
  */
-public class MixinAccessor implements ItemAccessor<JSONMixin> {
-    private String mixinName;
-
+public class MixinAccessor extends AbstractItemAccessor<JSONMixin> {
     public MixinAccessor(String mixinName) {
-        initWith(mixinName);
+        super(mixinName);
     }
 
     @Override
-    public JSONMixin getItem(JSONNode parent) {
-        return parent.getMixins().get(mixinName);
-    }
-
-    @Override
-    public void initWith(String item) {
-        this.mixinName = item;
+    protected Map<String, JSONMixin> getChildrenMap(JSONNode parent) {
+        return parent.getMixins();
     }
 }

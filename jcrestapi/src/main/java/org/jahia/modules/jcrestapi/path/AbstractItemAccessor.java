@@ -39,25 +39,34 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONProperty;
 
 import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
-class PropertyAccessor extends AbstractItemAccessor<JSONProperty> {
-    PropertyAccessor(String childName) {
-        super(childName);
+public abstract class AbstractItemAccessor<T> implements ItemAccessor<T> {
+    private final String childName;
+
+    public AbstractItemAccessor(String childName) {
+        this.childName = URIUtils.escape(childName);
     }
 
     @Override
-    protected Map<String, JSONProperty> getChildrenMap(JSONNode parent) {
-        return parent.getProperties();
+    public T getItem(JSONNode parent) {
+        return getChildrenMap(parent).get(childName);
     }
 
-    String getPropertyName() {
-        return getChildName();
+    protected abstract Map<String, T> getChildrenMap(JSONNode parent);
+
+    @Override
+    public void initWith(String item) {
+        // nothing to do
+    }
+
+    protected String getChildName() {
+        return URIUtils.unescape(childName);
     }
 }

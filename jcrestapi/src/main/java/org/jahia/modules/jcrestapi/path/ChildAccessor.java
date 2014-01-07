@@ -41,23 +41,19 @@ package org.jahia.modules.jcrestapi.path;
 
 import org.jahia.modules.jcrestapi.json.JSONNode;
 
+import java.util.Map;
+
 /**
  * @author Christophe Laprun
  */
-public class ChildAccessor implements ItemAccessor<JSONNode> {
-    private String childName;
+public class ChildAccessor extends AbstractItemAccessor<JSONNode> {
 
     public ChildAccessor(String childName) {
-        initWith(childName);
+        super(childName);
     }
 
     @Override
-    public JSONNode getItem(JSONNode parent) {
-        return parent.getChildren().get(childName);
-    }
-
-    @Override
-    public void initWith(String item) {
-        this.childName = item;
+    protected Map<String, JSONNode> getChildrenMap(JSONNode parent) {
+        return parent.getChildren();
     }
 }
