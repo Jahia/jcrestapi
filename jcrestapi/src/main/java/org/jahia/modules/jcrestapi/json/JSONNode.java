@@ -85,20 +85,23 @@ public class JSONNode extends JSONItem<Node> {
         super(node, absoluteURI);
 
         // add links
-        final JSONLink propertiesLink = getChildLink(absoluteURI, "properties");
+        final JSONLink propertiesLink = getChildLink(absoluteURI, JSONProperties.PROPERTIES);
         addLink(propertiesLink);
-        addLink(getChildLink(absoluteURI, "children"));
-        addLink(getChildLink(absoluteURI, "mixins"));
-        addLink(getChildLink(absoluteURI, "versions"));
+        final JSONLink childrenLink = getChildLink(absoluteURI, JSONChildren.CHILDREN);
+        addLink(childrenLink);
+        final JSONLink mixinsLink = getChildLink(absoluteURI, JSONMixins.MIXINS);
+        addLink(mixinsLink);
+        final JSONLink versionsLink = getChildLink(absoluteURI, JSONVersions.VERSIONS);
+        addLink(versionsLink);
 
         if (depth > 0) {
-            properties = new JSONProperties(this, node);
+            properties = new JSONProperties(this, node, propertiesLink.getURI());
 
-            mixins = new JSONMixins(this);
+            mixins = new JSONMixins(this, node, mixinsLink.getURI());
 
-            children = new JSONChildren(this, node);
+            children = new JSONChildren(this, node, childrenLink.getURI());
 
-            versions = new JSONVersions(this);
+            versions = new JSONVersions(this, node, versionsLink.getURI());
         } else {
             properties = null;
             mixins = null;

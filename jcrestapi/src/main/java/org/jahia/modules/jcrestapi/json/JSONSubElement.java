@@ -42,16 +42,18 @@ package org.jahia.modules.jcrestapi.json;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.net.URI;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONSubElement {
+public class JSONSubElement extends JSONLinkable {
     protected final JSONNode parent;
 
-    public JSONSubElement(JSONNode parent) {
+    public JSONSubElement(JSONNode parent, URI absoluteURI) {
+        super(absoluteURI);
         this.parent = parent;
     }
 }

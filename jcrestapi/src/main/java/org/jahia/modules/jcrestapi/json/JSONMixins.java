@@ -39,12 +39,44 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
+import javax.ws.rs.Path;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Christophe Laprun
  */
+@XmlRootElement
 public class JSONMixins extends JSONSubElement {
 
-    public JSONMixins(JSONNode parent) {
-        super(parent);
+    static final String MIXINS = "mixins";
+
+    @XmlElement
+    private final Map<String, JSONMixin> mixins;
+
+    public JSONMixins(JSONNode parent, Node node, URI absoluteURI) throws RepositoryException {
+        super(parent, absoluteURI);
+
+        final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
+        mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
+        for (NodeType mixinNodeType : mixinNodeTypes) {
+            final String name = mixinNodeType.getName();
+            final String escapedName = URIUtils.escape(name);
+            final URI mixinURI = URIUtils.getChildURI(absoluteURI, escapedName);
+            mixins.put(escapedName, new JSONMixin(mixinNodeType, mixinURI));
+        }
+    }
+
+    @Path(MIXINS)
+    public Map<String, JSONMixin> getMixins() {
+        return mixins;
     }
 }

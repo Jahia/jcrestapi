@@ -39,17 +39,62 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import javax.jcr.Node;
+import org.jahia.modules.jcrestapi.API;
+
+import javax.ws.rs.core.UriBuilder;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Christophe Laprun
  */
-public class JSONVersions extends JSONSubElement {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public class JSONLinkable {
+    static final String SELF = "self";
+    private static final AtomicReference<URI> nodetypesURI = new AtomicReference<URI>(null);
 
-    static final String VERSIONS = "versions";
+    @XmlElement(name = "_links")
+    private final Map<String, JSONLink> links;
 
-    public JSONVersions(JSONNode parent, Node node, URI absoluteURI) {
-        super(parent, absoluteURI);
+    public JSONLinkable(URI absoluteURI) {
+        links = new HashMap<String, JSONLink>(7);
+
+        addLink(new JSONLink(SELF, absoluteURI));
+
+        if (nodetypesURI.get() == null) {
+            // extract the complete URI containing the full URL path and API URI
+            String api = UriBuilder.fromResource(API.class).build().toASCIIString();
+            final String absoluteURIAsString = absoluteURI.toASCIIString();
+            final String apiFullPath = absoluteURIAsString.substring(0, absoluteURIAsString.indexOf(api) + api.length());
+
+            // complete path to node types URI
+            String nodetypesURIAsString = apiFullPath + "/jcr__system/jcr__nodeTypes";
+            try {
+                nodetypesURI.set(new URI(nodetypesURIAsString));
+            } catch (URISyntaxException e) {
+                // shouldn't happen
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    protected static URI getNodeTypesURI() {
+        return nodetypesURI.get();
+    }
+
+    protected void addLink(JSONLink link) {
+        links.put(link.getRel(), link);
+    }
+
+    protected JSONLink getLink(String relation) {
+        return links.get(relation);
     }
 }

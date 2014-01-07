@@ -39,17 +39,17 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URI;
 
 /**
  * @author Christophe Laprun
  */
-public class JSONVersions extends JSONSubElement {
-
-    static final String VERSIONS = "versions";
-
-    public JSONVersions(JSONNode parent, Node node, URI absoluteURI) {
-        super(parent, absoluteURI);
+@XmlRootElement
+public class JSONMixin extends JSONLinkable {
+    public JSONMixin(NodeType item, URI absoluteURI) throws RepositoryException {
+        super(absoluteURI);
     }
 }

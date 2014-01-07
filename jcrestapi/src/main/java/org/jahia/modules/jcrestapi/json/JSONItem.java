@@ -39,72 +39,41 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public abstract class JSONItem<T extends Item> {
-    private static final AtomicReference<URI> nodetypesURI = new AtomicReference<URI>(null);
+public abstract class JSONItem<T extends Item> extends JSONLinkable {
     @XmlElement
     private final String name;
     @XmlElement
     private final String type;
-    @XmlElement(name = "_links")
-    private final Map<String, JSONLink> links;
 
     public JSONItem(T item, URI absoluteURI) throws RepositoryException {
+        super(absoluteURI);
         this.name = item.getName();
         this.type = getUnescapedTypeName(item);
-        links = new HashMap<String, JSONLink>(7);
-        addLink(new JSONLink("self", absoluteURI));
 
-
-        if (nodetypesURI.get() == null) {
-            // extract the complete URI containing the full URL path and API URI
-            String api = UriBuilder.fromResource(API.class).build().toASCIIString();
-            final String absoluteURIAsString = absoluteURI.toASCIIString();
-            final String apiFullPath = absoluteURIAsString.substring(0, absoluteURIAsString.indexOf(api) + api.length());
-
-            // complete path to node types URI
-            String nodetypesURIAsString = apiFullPath + "/jcr__system/jcr__nodeTypes";
-            try {
-                nodetypesURI.set(new URI(nodetypesURIAsString));
-            } catch (URISyntaxException e) {
-                // shouldn't happen
-                throw new RuntimeException(e);
-            }
-        }
-
-        addLink(new JSONLink("type", URIUtils.getChildURI(nodetypesURI.get(), getTypeChildPath(item))));
-    }
-
-    protected void addLink(JSONLink link) {
-        links.put(link.getRel(), link);
-    }
-
-    protected JSONLink getLink(String relation) {
-        return links.get(relation);
+        addLink(new JSONLink("type", URIUtils.getChildURI(getNodeTypesURI(), getTypeChildPath(item))));
     }
 
     protected JSONLink getChildLink(URI parent, String childName) {
-        return new JSONLink(childName, URIUtils.getChildURI(parent, childName));
+        return getChildLink(childName, URIUtils.getChildURI(parent, childName));
+    }
+
+    protected JSONLink getChildLink(String childName, URI uri) {
+        return new JSONLink(childName, uri);
     }
 
     protected String getTypeChildPath(T item) throws RepositoryException {

@@ -44,8 +44,10 @@ import org.jahia.modules.jcrestapi.URIUtils;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.Path;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,11 +56,12 @@ import java.util.Map;
  */
 @XmlRootElement
 public class JSONChildren extends JSONSubElement {
+    static final String CHILDREN = "children";
 
     private final HashMap<String, JSONNode> children;
 
-    public JSONChildren(JSONNode parent, Node node) throws RepositoryException {
-        super(parent);
+    public JSONChildren(JSONNode parent, Node node, URI absoluteURI) throws RepositoryException {
+        super(parent, absoluteURI);
 
         final NodeIterator nodes = node.getNodes();
         children = new HashMap<String, JSONNode>((int) nodes.getSize());
@@ -70,11 +73,14 @@ public class JSONChildren extends JSONSubElement {
             final String childName = child.getName();
             final String escapedChildName = URIUtils.escape(childName);
 
-            children.put(escapedChildName, new JSONNode(child, parent.getLink("self").getChildURI(escapedChildName), 0));
+            children.put(escapedChildName, new JSONNode(child, parent.getLink(JSONLinkable.SELF).getChildURI
+                    (escapedChildName),
+                    0));
         }
     }
 
     @XmlElement
+    @Path(CHILDREN)
     Map<String, JSONNode> getChildren() {
         return children;
     }

@@ -56,10 +56,11 @@ import java.util.Map;
  */
 @XmlRootElement
 public class JSONProperties extends JSONSubElement {
+    static final String PROPERTIES = "properties";
     private final Map<String, JSONProperty> properties;
 
-    public JSONProperties(JSONNode parent, Node node) throws RepositoryException {
-        super(parent);
+    public JSONProperties(JSONNode parent, Node node, URI absoluteURI) throws RepositoryException {
+        super(parent, absoluteURI);
 
         final PropertyIterator props = node.getProperties();
 
@@ -71,8 +72,7 @@ public class JSONProperties extends JSONSubElement {
             final String escapedPropertyName = URIUtils.escape(propertyName);
 
             // add property
-            final JSONLink propertiesLink = parent.getLink("properties");
-            final URI propertyURI = propertiesLink.getChildURI(escapedPropertyName);
+            final URI propertyURI = URIUtils.getChildURI(absoluteURI, escapedPropertyName);
             this.properties.put(escapedPropertyName, new JSONProperty(property, propertyURI));
         }
     }
