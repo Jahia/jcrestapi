@@ -42,7 +42,7 @@ package org.jahia.modules.jcrestapi.path;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import java.net.URI;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * @author Christophe Laprun
@@ -50,14 +50,14 @@ import java.net.URI;
 public interface NodeAccessor {
     Node getNode(Session session) throws RepositoryException;
 
-    void initWith(String nodePath, URI nodeAbsoluteURI);
+    void initWith(String nodePath, UriBuilder absoluteUriBuilder);
 
     String getNodePath();
 
-    URI getAbsoluteNodeURI();
+    UriBuilder getUriBuilder();
 
     final static NodeAccessor ROOT_ACCESSOR = new NodeAccessor() {
-        private URI rootURI;
+        private UriBuilder uriBuilder;
 
         @Override
         public Node getNode(Session session) throws RepositoryException {
@@ -65,8 +65,8 @@ public interface NodeAccessor {
         }
 
         @Override
-        public void initWith(String nodePath, URI nodeAbsoluteURI) {
-            rootURI = nodeAbsoluteURI;
+        public void initWith(String nodePath, UriBuilder absoluteUriBuilder) {
+            uriBuilder = absoluteUriBuilder;
         }
 
         @Override
@@ -75,8 +75,8 @@ public interface NodeAccessor {
         }
 
         @Override
-        public URI getAbsoluteNodeURI() {
-            return rootURI;
+        public UriBuilder getUriBuilder() {
+            return uriBuilder;
         }
     };
 }

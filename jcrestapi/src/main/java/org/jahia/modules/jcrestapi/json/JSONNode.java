@@ -44,9 +44,9 @@ import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.net.URI;
 import java.util.Map;
 
 /**
@@ -73,36 +73,35 @@ import java.util.Map;
  */
 @XmlRootElement
 public class JSONNode extends JSONItem<Node> {
-    @XmlElement
     private final JSONProperties properties;
-    @XmlElement
     private final JSONMixins mixins;
-    @XmlElement
     private final JSONChildren children;
-    @XmlElement
     private final JSONVersions versions;
 
-    public JSONNode(Node node, URI absoluteURI, int depth) throws RepositoryException {
-        super(node, absoluteURI);
+    public JSONNode(Node node, UriBuilder absoluteUriBuilder, int depth) throws RepositoryException {
+        super(node, absoluteUriBuilder);
 
         // add links
-        final JSONLink propertiesLink = getChildLink(absoluteURI, API.PROPERTIES);
-        addLink(propertiesLink);
-        final JSONLink childrenLink = getChildLink(absoluteURI, API.CHILDREN);
-        addLink(childrenLink);
-        final JSONLink mixinsLink = getChildLink(absoluteURI, API.MIXINS);
-        addLink(mixinsLink);
-        final JSONLink versionsLink = getChildLink(absoluteURI, API.VERSIONS);
-        addLink(versionsLink);
+        final UriBuilder propertiesUriBuilder = absoluteUriBuilder.clone().segment(API.PROPERTIES);
+        addLink(new JSONLink(API.PROPERTIES, propertiesUriBuilder.build()));
+
+        final UriBuilder mixinsUriBuilder = absoluteUriBuilder.clone().segment(API.MIXINS);
+        addLink(new JSONLink(API.MIXINS, mixinsUriBuilder.build()));
+
+        final UriBuilder childrenUriBuilder = absoluteUriBuilder.clone().segment(API.CHILDREN);
+        addLink(new JSONLink(API.CHILDREN, childrenUriBuilder.build()));
+
+        final UriBuilder versionsUriBuilder = absoluteUriBuilder.clone().segment(API.VERSIONS);
+        addLink(new JSONLink(API.VERSIONS, versionsUriBuilder.build()));
 
         if (depth > 0) {
-            properties = new JSONProperties(this, node, propertiesLink.getURI());
+            properties = new JSONProperties(this, node, propertiesUriBuilder);
 
-            mixins = new JSONMixins(this, node, mixinsLink.getURI());
+            mixins = new JSONMixins(this, node, mixinsUriBuilder);
 
-            children = new JSONChildren(this, node, childrenLink.getURI());
+            children = new JSONChildren(this, node, childrenUriBuilder);
 
-            versions = new JSONVersions(this, node, versionsLink.getURI());
+            versions = new JSONVersions(this, node, versionsUriBuilder);
         } else {
             properties = null;
             mixins = null;
@@ -121,27 +120,40 @@ public class JSONNode extends JSONItem<Node> {
         return getProperties().get(property);
     }
 
-    public Map<String, JSONProperty> getProperties() {
-        return properties.getProperties();
-    }
-
     public JSONChildren getJSONChildren() {
         return children;
     }
 
-    Map<String, JSONNode> getChildren() {
-        return children.getChildren();
+    @XmlElement
+    public Map<String, JSONNode> getChildren() {
+        return children != null ? children.getChildren() : null;
     }
 
     public JSONMixins getJSONMixins() {
         return mixins;
     }
 
+    @XmlElement
+    public Map<String, JSONMixin> getMixins() {
+        return mixins != null ? mixins.getMixins() : null;
+    }
+
     public JSONVersions getJSONVersions() {
         return versions;
     }
 
+    @XmlElement
+    public Object getVersions() {
+        // todo: implement
+        return null;
+    }
+
     public JSONProperties getJSONProperties() {
         return properties;
+    }
+
+    @XmlElement
+    public Map<String, JSONProperty> getProperties() {
+        return properties != null ? properties.getProperties() : null;
     }
 }

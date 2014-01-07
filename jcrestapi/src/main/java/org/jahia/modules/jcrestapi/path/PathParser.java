@@ -43,7 +43,6 @@ import org.jahia.modules.jcrestapi.API;
 
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +68,7 @@ public class PathParser {
             index++;
         }
 
-        return new AccessorPair(new PathNodeAccessor(computePathUpTo(segments, segments.size()), baseUriBuilder.build()),
+        return new AccessorPair(new PathNodeAccessor(computePathUpTo(segments, segments.size()), baseUriBuilder),
                 ItemAccessor.IDENTITY_ACCESSOR);
     }
 
@@ -90,7 +89,7 @@ public class PathParser {
 
         abstract String getSubElement();
 
-        abstract URI getNodeURI();
+        abstract UriBuilder getNodeURI();
 
         static SegmentContext forPathSegment(final PathSegment segment, final List<PathSegment> segments,
                                              final int index, final UriBuilder baseURIBuilder) {
@@ -116,8 +115,8 @@ public class PathParser {
                 }
 
                 @Override
-                URI getNodeURI() {
-                    return baseURIBuilder.build();
+                UriBuilder getNodeURI() {
+                    return baseURIBuilder;
                 }
             };
         }

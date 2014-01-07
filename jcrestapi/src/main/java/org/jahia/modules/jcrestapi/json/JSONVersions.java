@@ -40,14 +40,14 @@
 package org.jahia.modules.jcrestapi.json;
 
 import javax.jcr.Node;
-import java.net.URI;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * @author Christophe Laprun
  */
 public class JSONVersions extends JSONSubElement {
 
-    public JSONVersions(JSONNode parent, Node node, URI absoluteURI) {
+    public JSONVersions(JSONNode parent, Node node, UriBuilder absoluteURI) {
         super(parent, absoluteURI);
     }
 }

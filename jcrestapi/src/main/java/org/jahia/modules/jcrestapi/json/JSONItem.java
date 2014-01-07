@@ -39,15 +39,16 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.net.URI;
 
 /**
  * @author Christophe Laprun
@@ -60,24 +61,16 @@ public abstract class JSONItem<T extends Item> extends JSONLinkable {
     @XmlElement
     private final String type;
 
-    public JSONItem(T item, URI absoluteURI) throws RepositoryException {
+    public JSONItem(T item, UriBuilder absoluteURI) throws RepositoryException {
         super(absoluteURI);
         this.name = item.getName();
         this.type = getUnescapedTypeName(item);
 
-        addLink(new JSONLink("type", URIUtils.getChildURI(getNodeTypesURI(), getTypeChildPath(item))));
+        addLink(new JSONLink(API.TYPE, UriBuilder.fromUri(getNodeTypesURI()).segment(getTypeChildPath(item)).build()));
     }
 
-    protected JSONLink getChildLink(URI parent, String childName) {
-        return getChildLink(childName, URIUtils.getChildURI(parent, childName));
-    }
-
-    protected JSONLink getChildLink(String childName, URI uri) {
-        return new JSONLink(childName, uri);
-    }
-
-    protected String getTypeChildPath(T item) throws RepositoryException {
-        return URIUtils.escape(type);
+    protected String[] getTypeChildPath(T item) throws RepositoryException {
+        return new String[]{URIUtils.escape(type)};
     }
 
     protected abstract String getUnescapedTypeName(T item) throws RepositoryException;

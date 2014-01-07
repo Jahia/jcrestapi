@@ -64,9 +64,10 @@ public class JSONLinkable {
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
 
-    public JSONLinkable(URI absoluteURI) {
+    public JSONLinkable(UriBuilder uriBuilder) {
         links = new HashMap<String, JSONLink>(7);
 
+        final URI absoluteURI = uriBuilder.build();
         addLink(new JSONLink(SELF, absoluteURI));
 
         if (nodetypesURI.get() == null) {

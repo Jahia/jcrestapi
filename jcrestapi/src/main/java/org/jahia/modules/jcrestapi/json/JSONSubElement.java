@@ -39,10 +39,10 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.net.URI;
 
 /**
  * @author Christophe Laprun
@@ -52,7 +52,7 @@ import java.net.URI;
 public class JSONSubElement extends JSONLinkable {
     protected final JSONNode parent;
 
-    public JSONSubElement(JSONNode parent, URI absoluteURI) {
+    public JSONSubElement(JSONNode parent, UriBuilder absoluteURI) {
         super(absoluteURI);
         this.parent = parent;
     }

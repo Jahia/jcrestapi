@@ -47,9 +47,9 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.net.URI;
 
 /**
  * @author Christophe Laprun
@@ -61,7 +61,7 @@ public class JSONProperty extends JSONItem<Property> {
     @XmlElement
     private final Object value;
 
-    public JSONProperty(Property property, URI absoluteURI) throws RepositoryException {
+    public JSONProperty(Property property, UriBuilder absoluteURI) throws RepositoryException {
         super(property, absoluteURI);
 
         this.multiple = property.isMultiple();
@@ -85,12 +85,13 @@ public class JSONProperty extends JSONItem<Property> {
      * Property types are a little bit more tricky: we need to get the declaring node type and figure out in its array
      * of property definitions which one matches our property to be able to build the proper type link.
      *
+     *
      * @param item
      * @return
      * @throws RepositoryException
      */
     @Override
-    protected String getTypeChildPath(Property item) throws RepositoryException {
+    protected String[] getTypeChildPath(Property item) throws RepositoryException {
         // get declaring node type
         final NodeType declaringNodeType = item.getDefinition().getDeclaringNodeType();
 
@@ -103,7 +104,7 @@ public class JSONProperty extends JSONItem<Property> {
 
         // if we only have one property definition, we're done
         if (numberOfPropertyDefinitions == 1) {
-            return parentName + "/jcr__propertyDefinition";
+            return new String[]{parentName, "jcr__propertyDefinition"};
         } else {
             // we need to figure out which property definition matches ours in the array
             int index = 1; // JCR indexes start at 1
@@ -115,7 +116,7 @@ public class JSONProperty extends JSONItem<Property> {
                 }
             }
             // create the indexed escaped link, if index = 1, no need for an index
-            return parentName + "/jcr__propertyDefinition" + (index > 1 ? "--" + index : "");
+            return new String[]{parentName, "jcr__propertyDefinition" + (index > 1 ? "--" + index : "")};
         }
     }
 }

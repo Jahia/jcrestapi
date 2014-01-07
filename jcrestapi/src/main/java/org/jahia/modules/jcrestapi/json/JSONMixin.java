@@ -41,15 +41,15 @@ package org.jahia.modules.jcrestapi.json;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.net.URI;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
 public class JSONMixin extends JSONLinkable {
-    public JSONMixin(NodeType item, URI absoluteURI) throws RepositoryException {
+    public JSONMixin(NodeType item, UriBuilder absoluteURI) throws RepositoryException {
         super(absoluteURI);
     }
 }
