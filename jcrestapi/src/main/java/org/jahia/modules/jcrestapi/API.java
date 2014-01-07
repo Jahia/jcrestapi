@@ -53,7 +53,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
 import java.util.Properties;
 
 /**
@@ -102,8 +101,8 @@ public class API {
      * Needed to get URI without trailing / to work :(
      */
     public Object getRootNode(@Context UriInfo info) throws RepositoryException {
-        final Object node = getJSON(NodeAccessor.ROOT_ACCESSOR, ItemAccessor.IDENTITY_ACCESSOR,
-                info.getAbsolutePath());
+        NodeAccessor.ROOT_ACCESSOR.initWith("/", info.getRequestUri());
+        final Object node = getJSON(NodeAccessor.ROOT_ACCESSOR, ItemAccessor.IDENTITY_ACCESSOR);
         return node;
     }
 
@@ -113,17 +112,16 @@ public class API {
     public Object getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
         final AccessorPair accessors = PathParser.getAccessorsForPath(info.getBaseUriBuilder(), info.getPathSegments());
 
-        final Object node = getJSON(accessors.nodeAccessor, accessors.itemAccessor, info.getAbsolutePath());
+        final Object node = getJSON(accessors.nodeAccessor, accessors.itemAccessor);
         return node;
     }
 
-    private Object getJSON(NodeAccessor nodeAccessor, ItemAccessor itemAccessor,
-                           URI uri) throws RepositoryException {
+    private Object getJSON(NodeAccessor nodeAccessor, ItemAccessor itemAccessor) throws RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
         try {
             // todo: optimize: we shouldn't need to load the whole node if we only want part of it
-            final JSONNode node = new JSONNode(nodeAccessor.getNode(session), uri, 1);
+            final JSONNode node = new JSONNode(nodeAccessor.getNode(session), nodeAccessor.getAbsoluteNodeURI(), 1);
             return itemAccessor.getItem(node);
         } finally {
             session.logout();

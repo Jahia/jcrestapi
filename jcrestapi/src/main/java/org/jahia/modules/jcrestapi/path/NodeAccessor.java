@@ -42,6 +42,7 @@ package org.jahia.modules.jcrestapi.path;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import java.net.URI;
 
 /**
  * @author Christophe Laprun
@@ -49,24 +50,33 @@ import javax.jcr.Session;
 public interface NodeAccessor {
     Node getNode(Session session) throws RepositoryException;
 
-    void initWith(String nodePath);
+    void initWith(String nodePath, URI nodeAbsoluteURI);
 
     String getNodePath();
 
+    URI getAbsoluteNodeURI();
+
     final static NodeAccessor ROOT_ACCESSOR = new NodeAccessor() {
+        private URI rootURI;
+
         @Override
         public Node getNode(Session session) throws RepositoryException {
             return session.getRootNode();
         }
 
         @Override
-        public void initWith(String nodePath) {
-            // nothing to do
+        public void initWith(String nodePath, URI nodeAbsoluteURI) {
+            rootURI = nodeAbsoluteURI;
         }
 
         @Override
         public String getNodePath() {
             return "/";
+        }
+
+        @Override
+        public URI getAbsoluteNodeURI() {
+            return rootURI;
         }
     };
 }

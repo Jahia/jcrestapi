@@ -44,18 +44,17 @@ import org.jahia.modules.jcrestapi.URIUtils;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import java.net.URI;
 
 /**
  * @author Christophe Laprun
  */
 class PathNodeAccessor implements NodeAccessor {
     private String path;
+    private URI nodeURI;
 
-    public PathNodeAccessor(String path) {
-        initWith(path);
-    }
-
-    PathNodeAccessor() {
+    public PathNodeAccessor(String path, URI absoluteURI) {
+        initWith(path, absoluteURI);
     }
 
     @Override
@@ -64,17 +63,23 @@ class PathNodeAccessor implements NodeAccessor {
     }
 
     @Override
-    public void initWith(String nodePath) {
+    public void initWith(String nodePath, URI nodeAbsoluteURI) {
         if (nodePath.isEmpty()) {
             path = "/";
         } else {
             path = URIUtils.unescape(nodePath);
         }
+        nodeURI = nodeAbsoluteURI;
     }
 
     @Override
     public String getNodePath() {
         return path;
+    }
+
+    @Override
+    public URI getAbsoluteNodeURI() {
+        return nodeURI;
     }
 }
 

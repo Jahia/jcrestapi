@@ -40,8 +40,10 @@
 package org.jahia.modules.jcrestapi.path;
 
 import org.jahia.modules.jcrestapi.API;
+
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,16 +59,17 @@ public class PathParser {
             if (index != 0) {
 
                 // check if segment is a sub-element marker
-                final AccessorPair pair = analyzeSegment(SegmentContext.forPathSegment(segment, segments, index));
+                final AccessorPair pair = analyzeSegment(SegmentContext.forPathSegment(segment, segments, index, baseUriBuilder));
                 if (pair != null) {
                     // we've found a sub-element marker, so we're done
                     return pair;
                 }
             }
+            baseUriBuilder.segment(segment.getPath());
             index++;
         }
 
-        return new AccessorPair(new PathNodeAccessor(computePathUpTo(segments, segments.size())),
+        return new AccessorPair(new PathNodeAccessor(computePathUpTo(segments, segments.size()), baseUriBuilder.build()),
                 ItemAccessor.IDENTITY_ACCESSOR);
     }
 
@@ -87,8 +90,10 @@ public class PathParser {
 
         abstract String getSubElement();
 
+        abstract URI getNodeURI();
+
         static SegmentContext forPathSegment(final PathSegment segment, final List<PathSegment> segments,
-                                             final int index) {
+                                             final int index, final UriBuilder baseURIBuilder) {
             return new SegmentContext() {
                 @Override
                 String getSegment() {
@@ -108,6 +113,11 @@ public class PathParser {
                     } else {
                         return "";
                     }
+                }
+
+                @Override
+                URI getNodeURI() {
+                    return baseURIBuilder.build();
                 }
             };
         }
@@ -130,9 +140,10 @@ public class PathParser {
             public AccessorPair getAccessorPair(SegmentContext context) {
                 final String subElement = context.getSubElement();
                 if (subElement.isEmpty()) {
-                    return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new PropertiesAccessor());
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()),
+                            new PropertiesAccessor());
                 } else {
-                    return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new PropertyAccessor(subElement));
+                    return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new PropertyAccessor(subElement));
                 }
             }
         };
@@ -140,21 +151,21 @@ public class PathParser {
         AccessorPairGenerator children = new AccessorPairGenerator() {
             @Override
             public AccessorPair getAccessorPair(SegmentContext context) {
-                return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new ChildrenAccessor());
+                return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new ChildrenAccessor());
             }
         };
 
         AccessorPairGenerator mixins = new AccessorPairGenerator() {
             @Override
             public AccessorPair getAccessorPair(SegmentContext context) {
-                return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new MixinsAccessor());
+                return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new MixinsAccessor());
             }
         };
 
         AccessorPairGenerator versions = new AccessorPairGenerator() {
             @Override
             public AccessorPair getAccessorPair(SegmentContext context) {
-                return new AccessorPair(new PathNodeAccessor(context.getNodePath()), new VersionsAccessor());
+                return new AccessorPair(new PathNodeAccessor(context.getNodePath(), context.getNodeURI()), new VersionsAccessor());
             }
         };
     }
