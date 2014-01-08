@@ -41,15 +41,31 @@ package org.jahia.modules.jcrestapi.json;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.PropertyDefinition;
 import javax.ws.rs.core.UriBuilder;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
 public class JSONMixin extends JSONLinkable {
+    @XmlElement
+    private final String name;
+    @XmlElement
+    private final Map<String, String> properties;
+
     public JSONMixin(NodeType item, UriBuilder absoluteURI) throws RepositoryException {
         super(absoluteURI);
+        this.name = item.getName();
+
+        final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
+        properties = new HashMap<String, String>(propertyDefinitions.length);
+        for (PropertyDefinition property : propertyDefinitions) {
+            properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
+        }
     }
 }

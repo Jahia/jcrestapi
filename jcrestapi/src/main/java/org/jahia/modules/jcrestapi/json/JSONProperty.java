@@ -78,7 +78,11 @@ public class JSONProperty extends JSONItem<Property> {
 
     @Override
     protected String getUnescapedTypeName(Property item) throws RepositoryException {
-        return PropertyType.nameFromValue(item.getType());
+        return getHumanReadablePropertyType(item.getType());
+    }
+
+    static String getHumanReadablePropertyType(int type) throws RepositoryException {
+        return PropertyType.nameFromValue(type);
     }
 
     /**
