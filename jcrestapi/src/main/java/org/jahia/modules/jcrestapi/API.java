@@ -49,7 +49,10 @@ import org.osgi.service.component.annotations.Component;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
@@ -97,7 +100,7 @@ public class API {
     }
 
     @GET
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     /**
      * Needed to get URI without trailing / to work :(
      */
@@ -108,8 +111,24 @@ public class API {
     }
 
     @GET
+    @Path("/nodes/{id: .*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getNodeById(@PathParam("id") String id, @Context UriInfo info) throws RepositoryException {
+        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
+                'o', 't', '1', '2', '3', '4'}));
+
+        try {
+            // todo: optimize: we shouldn't need to load the whole node if we only want part of it
+            final JSONNode node = new JSONNode(session.getNodeByIdentifier(id), info.getRequestUriBuilder(), 1);
+            return node;
+        } finally {
+            session.logout();
+        }
+    }
+
+    @GET
     @Path("{path: .*}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Object getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
         final AccessorPair accessors = PathParser.getAccessorsForPath(info.getBaseUriBuilder(), info.getPathSegments());
 
