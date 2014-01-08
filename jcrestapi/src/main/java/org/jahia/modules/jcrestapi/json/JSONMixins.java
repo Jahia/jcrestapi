@@ -46,7 +46,6 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
@@ -60,15 +59,14 @@ public class JSONMixins extends JSONSubElement {
     @XmlElement
     private final Map<String, JSONMixin> mixins;
 
-    public JSONMixins(JSONNode parent, Node node, UriBuilder absoluteURI) throws RepositoryException {
-        super(parent, absoluteURI);
+    public JSONMixins(JSONNode parent, Node node) throws RepositoryException {
+        super(parent, API.MIXINS);
 
         final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
         mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
         for (NodeType mixinNodeType : mixinNodeTypes) {
             final String name = mixinNodeType.getName();
-            final String escapedName = URIUtils.escape(name);
-            mixins.put(escapedName, new JSONMixin(mixinNodeType, absoluteURI.clone().segment(escapedName)));
+            mixins.put(URIUtils.escape(name), new JSONMixin(this, mixinNodeType));
         }
     }
 

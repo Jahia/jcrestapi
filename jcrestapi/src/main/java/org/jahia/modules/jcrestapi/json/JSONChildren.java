@@ -46,7 +46,6 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
@@ -59,8 +58,8 @@ import java.util.Map;
 public class JSONChildren extends JSONSubElement {
     private final HashMap<String, JSONNode> children;
 
-    public JSONChildren(JSONNode parent, Node node, UriBuilder absoluteURI) throws RepositoryException {
-        super(parent, absoluteURI);
+    public JSONChildren(JSONNode parent, Node node) throws RepositoryException {
+        super(parent, API.CHILDREN);
 
         final NodeIterator nodes = node.getNodes();
         children = new HashMap<String, JSONNode>((int) nodes.getSize());
@@ -70,9 +69,8 @@ public class JSONChildren extends JSONSubElement {
 
             // build child resource URI
             final String childName = child.getName();
-            final String escapedChildName = URIUtils.escape(childName);
 
-            children.put(escapedChildName, new JSONNode(child, absoluteURI.clone().segment(escapedChildName), 0));
+            children.put(URIUtils.escape(childName), new JSONNode(child, 0));
         }
     }
 

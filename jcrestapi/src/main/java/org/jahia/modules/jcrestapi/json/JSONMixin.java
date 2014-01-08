@@ -39,10 +39,11 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
@@ -58,8 +59,8 @@ public class JSONMixin extends JSONLinkable {
     @XmlElement
     private final Map<String, String> properties;
 
-    public JSONMixin(NodeType item, UriBuilder absoluteURI) throws RepositoryException {
-        super(absoluteURI);
+    public JSONMixin(JSONMixins jsonMixins, NodeType item) throws RepositoryException {
+        super(URIUtils.getChildURI(jsonMixins.getURI(), item.getName(), true));
         this.name = item.getName();
 
         final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
@@ -68,4 +69,6 @@ public class JSONMixin extends JSONLinkable {
             properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
         }
     }
+
+
 }

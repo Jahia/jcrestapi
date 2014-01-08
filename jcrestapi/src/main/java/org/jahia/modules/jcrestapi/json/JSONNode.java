@@ -44,7 +44,6 @@ import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Collections;
@@ -79,30 +78,21 @@ public class JSONNode extends JSONItem<Node> {
     private final JSONChildren children;
     private final JSONVersions versions;
 
-    public JSONNode(Node node, UriBuilder absoluteUriBuilder, int depth) throws RepositoryException {
-        super(node, absoluteUriBuilder);
-
-        // add links
-        final UriBuilder propertiesUriBuilder = absoluteUriBuilder.clone().segment(API.PROPERTIES);
-        addLink(new JSONLink(API.PROPERTIES, propertiesUriBuilder.build()));
-
-        final UriBuilder mixinsUriBuilder = absoluteUriBuilder.clone().segment(API.MIXINS);
-        addLink(new JSONLink(API.MIXINS, mixinsUriBuilder.build()));
-
-        final UriBuilder childrenUriBuilder = absoluteUriBuilder.clone().segment(API.CHILDREN);
-        addLink(new JSONLink(API.CHILDREN, childrenUriBuilder.build()));
-
-        final UriBuilder versionsUriBuilder = absoluteUriBuilder.clone().segment(API.VERSIONS);
-        addLink(new JSONLink(API.VERSIONS, versionsUriBuilder.build()));
+    public JSONNode(Node node, int depth) throws RepositoryException {
+        super(node, URIUtils.getIdURI(node.getIdentifier()));
 
         if (depth > 0) {
-            properties = new JSONProperties(this, node, propertiesUriBuilder);
+            properties = new JSONProperties(this, node);
+            addLink(new JSONLink(API.PROPERTIES, properties.getURI()));
 
-            mixins = new JSONMixins(this, node, mixinsUriBuilder);
+            mixins = new JSONMixins(this, node);
+            addLink(new JSONLink(API.MIXINS, mixins.getURI()));
 
-            children = new JSONChildren(this, node, childrenUriBuilder);
+            children = new JSONChildren(this, node);
+            addLink(new JSONLink(API.CHILDREN, children.getURI()));
 
-            versions = new JSONVersions(this, node, versionsUriBuilder);
+            versions = new JSONVersions(this, node);
+            addLink(new JSONLink(API.VERSIONS, versions.getURI()));
         } else {
             properties = null;
             mixins = null;

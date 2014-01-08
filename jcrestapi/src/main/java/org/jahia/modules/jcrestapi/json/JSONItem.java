@@ -44,7 +44,6 @@ import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -61,16 +60,16 @@ public abstract class JSONItem<T extends Item> extends JSONLinkable {
     @XmlElement
     private final String type;
 
-    public JSONItem(T item, UriBuilder absoluteURI) throws RepositoryException {
-        super(absoluteURI);
+    public JSONItem(T item, String uri) throws RepositoryException {
+        super(uri);
         this.name = item.getName();
         this.type = getUnescapedTypeName(item);
 
-        addLink(new JSONLink(API.TYPE, UriBuilder.fromUri(getNodeTypesURI()).segment(getTypeChildPath(item)).build()));
+        addLink(new JSONLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
     }
 
-    protected String[] getTypeChildPath(T item) throws RepositoryException {
-        return new String[]{URIUtils.escape(type)};
+    protected String getTypeChildPath(T item) throws RepositoryException {
+        return URIUtils.escape(type);
     }
 
     protected abstract String getUnescapedTypeName(T item) throws RepositoryException;

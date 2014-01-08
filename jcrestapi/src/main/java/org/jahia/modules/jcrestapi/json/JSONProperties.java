@@ -40,13 +40,13 @@
 package org.jahia.modules.jcrestapi.json;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
@@ -59,8 +59,8 @@ import java.util.Map;
 public class JSONProperties extends JSONSubElement {
     private final Map<String, JSONProperty> properties;
 
-    public JSONProperties(JSONNode parent, Node node, UriBuilder absoluteURI) throws RepositoryException {
-        super(parent, absoluteURI);
+    public JSONProperties(JSONNode parent, Node node) throws RepositoryException {
+        super(parent, API.PROPERTIES);
 
         final PropertyIterator props = node.getProperties();
 
@@ -69,10 +69,9 @@ public class JSONProperties extends JSONSubElement {
         while (props.hasNext()) {
             Property property = props.nextProperty();
             final String propertyName = property.getName();
-            final String escapedPropertyName = URIUtils.escape(propertyName);
 
             // add property
-            this.properties.put(escapedPropertyName, new JSONProperty(property, absoluteURI.clone().segment(escapedPropertyName)));
+            this.properties.put(URIUtils.escape(propertyName), new JSONProperty(this, property));
         }
     }
 

@@ -47,7 +47,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -61,8 +60,8 @@ public class JSONProperty extends JSONItem<Property> {
     @XmlElement
     private final Object value;
 
-    public JSONProperty(Property property, UriBuilder absoluteURI) throws RepositoryException {
-        super(property, absoluteURI);
+    public JSONProperty(JSONProperties jsonProperties, Property property) throws RepositoryException {
+        super(property, URIUtils.getChildURI(jsonProperties.getURI(), property.getName(), true));
 
         this.multiple = property.isMultiple();
         if (multiple) {
@@ -95,7 +94,7 @@ public class JSONProperty extends JSONItem<Property> {
      * @throws RepositoryException
      */
     @Override
-    protected String[] getTypeChildPath(Property item) throws RepositoryException {
+    protected String getTypeChildPath(Property item) throws RepositoryException {
         // get declaring node type
         final NodeType declaringNodeType = item.getDefinition().getDeclaringNodeType();
 
@@ -108,7 +107,7 @@ public class JSONProperty extends JSONItem<Property> {
 
         // if we only have one property definition, we're done
         if (numberOfPropertyDefinitions == 1) {
-            return new String[]{parentName, "jcr__propertyDefinition"};
+            return parentName + "/jcr__propertyDefinition";
         } else {
             // we need to figure out which property definition matches ours in the array
             int index = 1; // JCR indexes start at 1
@@ -120,7 +119,7 @@ public class JSONProperty extends JSONItem<Property> {
                 }
             }
             // create the indexed escaped link, if index = 1, no need for an index
-            return new String[]{parentName, "jcr__propertyDefinition" + (index > 1 ? "--" + index : "")};
+            return parentName + "/jcr__propertyDefinition" + (index > 1 ? "--" + index : "");
         }
     }
 }

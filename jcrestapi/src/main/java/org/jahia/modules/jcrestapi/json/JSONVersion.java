@@ -39,13 +39,11 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import javax.ws.rs.core.UriBuilder;
-
 /**
  * @author Christophe Laprun
  */
 public class JSONVersion extends JSONLinkable {
-    public JSONVersion(UriBuilder uriBuilder) {
-        super(uriBuilder);
+    public JSONVersion(String uri) {
+        super(uri);
     }
 }

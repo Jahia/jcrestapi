@@ -39,15 +39,16 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.API;
+
 import javax.jcr.Node;
-import javax.ws.rs.core.UriBuilder;
 
 /**
  * @author Christophe Laprun
  */
 public class JSONVersions extends JSONSubElement {
 
-    public JSONVersions(JSONNode parent, Node node, UriBuilder absoluteURI) {
-        super(parent, absoluteURI);
+    public JSONVersions(JSONNode parent, Node node) {
+        super(parent, API.VERSIONS);
     }
 }

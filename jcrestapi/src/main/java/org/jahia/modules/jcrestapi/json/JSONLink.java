@@ -39,13 +39,10 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.net.URI;
 
 /**
  * @author Christophe Laprun
@@ -55,9 +52,9 @@ import java.net.URI;
 public class JSONLink {
     private final String rel;
     @XmlElement(name = "href")
-    private final URI uri;
+    private final String uri;
 
-    public JSONLink(String rel, URI link) {
+    public JSONLink(String rel, String link) {
         this.rel = rel;
         this.uri = link;
     }
@@ -66,11 +63,7 @@ public class JSONLink {
         return rel;
     }
 
-    public URI getURI() {
+    public String getURI() {
         return uri;
-    }
-
-    public URI getChildURI(String escapedChildName) {
-        return URIUtils.getChildURI(getURI(), escapedChildName);
     }
 }

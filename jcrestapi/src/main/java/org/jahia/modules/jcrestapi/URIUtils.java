@@ -39,13 +39,29 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Christophe Laprun
  */
 public class URIUtils {
+    private static final AtomicReference<String> baseURI = new AtomicReference<String>(UriBuilder.fromResource(API
+            .class).build().toASCIIString());
+    private static final AtomicReference<String> idURI = new AtomicReference<String>(baseURI + "/nodes/");
+    private static final AtomicReference<String> nodetypesURI = new AtomicReference<String>(baseURI +
+            "/jcr__system/jcr__nodeTypes/");
+
+    public static String getTypeURI(String typeName) {
+        return nodetypesURI.get() + typeName;
+    }
+
+    public static String getIdURI(String identifier) {
+        return idURI.get() + identifier;
+    }
+
     public static String escape(String value) {
         return value.replace(":", "__");
     }
@@ -69,20 +85,23 @@ public class URIUtils {
 
     public static URI getChildURI(URI parent, String childName, boolean escapeChildName) {
         try {
-            if (childName.startsWith("/")) {
-                childName = childName.substring(1);
-                if (escapeChildName) {
-                    childName = escape(childName);
-                }
-            }
-            String parentURI = parent.toASCIIString();
-            if (parentURI.endsWith("/")) {
-                return new URI(parent + childName);
-            } else {
-                return new URI(parent + "/" + childName);
-            }
+            return new URI(getChildURI(parent.toASCIIString(), childName, escapeChildName));
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static String getChildURI(String parent, String childName, boolean escapeChildName) {
+        if (childName.startsWith("/")) {
+            childName = childName.substring(1);
+            if (escapeChildName) {
+                childName = escape(childName);
+            }
+        }
+        if (parent.endsWith("/")) {
+            return parent + childName;
+        } else {
+            return parent + "/" + childName;
         }
     }
 }

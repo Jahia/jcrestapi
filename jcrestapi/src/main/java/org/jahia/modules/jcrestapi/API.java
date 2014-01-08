@@ -119,7 +119,7 @@ public class API {
 
         try {
             // todo: optimize: we shouldn't need to load the whole node if we only want part of it
-            final JSONNode node = new JSONNode(session.getNodeByIdentifier(id), info.getRequestUriBuilder(), 1);
+            final JSONNode node = new JSONNode(session.getNodeByIdentifier(id), 1);
             return node;
         } finally {
             session.logout();
@@ -141,7 +141,7 @@ public class API {
                 'o', 't', '1', '2', '3', '4'}));
         try {
             // todo: optimize: we shouldn't need to load the whole node if we only want part of it
-            final JSONNode node = new JSONNode(nodeAccessor.getNode(session), nodeAccessor.getUriBuilder(), 1);
+            final JSONNode node = new JSONNode(nodeAccessor.getNode(session), 1);
             return itemAccessor.getItem(node);
         } finally {
             session.logout();
