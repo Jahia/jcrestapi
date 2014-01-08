@@ -39,14 +39,24 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.glassfish.jersey.server.ResourceConfig;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.MultivaluedMap;
+import java.io.IOException;
 
 /**
  * @author Christophe Laprun
  */
-public class APIApplication extends ResourceConfig {
-    public APIApplication() {
-        super(API.class, JacksonJaxbJsonProvider.class, CORSHeadersResponseFilter.class);
+public class CORSHeadersResponseFilter implements ContainerResponseFilter {
+
+    @Override
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws
+            IOException {
+        final MultivaluedMap<String, Object> headers = responseContext.getHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+        headers.add("Access-Control-Allow-Credentials", "true");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
     }
 }
