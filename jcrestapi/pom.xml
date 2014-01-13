@@ -206,9 +206,7 @@
                             javax.xml.bind.annotation,
                             javax.xml.bind.annotation.adapters,
                             javax.ws.rs.*,
-                            com.fasterxml.jackson.jaxrs.json,
-                            com.fasterxml.jackson.databind,
-                            com.fasterxml.jackson.module.jaxb,
+                            com.fasterxml.jackson.*,
                             org.glassfish.jersey.server,
                             ${jahia.plugin.projectPackageImport}
                         </Import-Package>
