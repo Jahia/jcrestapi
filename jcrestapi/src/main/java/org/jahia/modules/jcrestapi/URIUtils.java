@@ -39,6 +39,12 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.jahia.modules.jcrestapi.json.JSONLinkable;
+
+import javax.jcr.Item;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -60,6 +66,49 @@ public class URIUtils {
 
     public static String getIdURI(String identifier) {
         return idURI.get() + identifier;
+    }
+
+    public static String getURIFor(Item item) {
+        if (item instanceof Node) {
+            Node node = (Node) item;
+            return getURIFor(node);
+        } else {
+            return getURIFor((Property) item);
+        }
+    }
+
+    public static String getURIFor(Node node) {
+        try {
+            return getIdURI(node.getIdentifier());
+        } catch (RepositoryException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String getURIFor(Property property)  {
+        final String properties;
+        try {
+            properties = getURIForProperties(property.getParent());
+            return getChildURI(properties, property.getName(), true);
+        } catch (RepositoryException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String getURIForChildren(JSONLinkable parentURI) {
+        return getURIForChildren(parentURI.getURI());
+    }
+
+    public static String getURIForChildren(String parentURI) {
+        return getChildURI(parentURI, API.CHILDREN, false);
+    }
+
+    public static String getURIForProperties(Node node) {
+        return getChildURI(getURIFor(node), API.PROPERTIES, false);
+    }
+
+    public static String getURIForMixins(Node node) {
+        return getChildURI(getURIFor(node), API.MIXINS, false);
     }
 
     public static String escape(String value) {
