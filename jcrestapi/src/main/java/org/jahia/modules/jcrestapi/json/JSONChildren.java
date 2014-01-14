@@ -68,9 +68,7 @@ public class JSONChildren extends JSONSubElement {
             Node child = nodes.nextNode();
 
             // build child resource URI
-            final String childName = child.getName();
-
-            children.put(URIUtils.escape(childName), new JSONNode(child, 0));
+            children.put(URIUtils.escape(child.getName(), child.getIndex()), new JSONNode(child, 0));
         }
     }
 

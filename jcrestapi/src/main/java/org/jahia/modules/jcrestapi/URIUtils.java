@@ -112,6 +112,13 @@ public class URIUtils {
     }
 
     public static String escape(String value) {
+        return escape(value, 1);
+    }
+
+    public static String escape(String value, int index) {
+        if (index > 1) {
+            value += "--" + index;
+        }
         return value.replace(":", "__");
     }
 
