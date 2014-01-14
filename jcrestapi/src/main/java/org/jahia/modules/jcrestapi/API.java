@@ -124,6 +124,11 @@ public class API {
                 'o', 't', '1', '2', '3', '4'}));
 
         try {
+            // check if we're trying to access root's sub-elements
+            if (accessors.containsKey(id)) {
+                subElementType = id;
+                id = "";
+            }
             final Node node = getNode(id, session);
 
             if (subElementType.isEmpty()) {
