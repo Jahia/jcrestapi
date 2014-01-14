@@ -194,8 +194,7 @@ public class API {
     @Path("/nodes/{id}/{child}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object createChildNode(@PathParam("id") String id, @PathParam("child") String child, JSONNode childData,
-                                  @Context UriInfo context) throws
-            RepositoryException {
+                                  @Context UriInfo context) throws RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
         try {
@@ -207,6 +206,29 @@ public class API {
             session.save();
 
             return Response.created(context.getAbsolutePath()).entity(entity).build();
+
+        } finally {
+            session.logout();
+        }
+    }
+
+    @DELETE
+    @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
+            "|" + API.MIXINS +
+            "|" + API.PROPERTIES +
+            "|" + API.VERSIONS +
+            "))?}{subElement: .*}")
+    public Object deleteNode(@PathParam("id") String id, @Context UriInfo context) throws RepositoryException {
+        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
+                'o', 't', '1', '2', '3', '4'}));
+        try {
+            Node node = id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
+
+            node.remove();
+
+            session.save();
+
+            return Response.noContent().build();
 
         } finally {
             session.logout();
