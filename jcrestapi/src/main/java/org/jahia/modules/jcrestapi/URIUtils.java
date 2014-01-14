@@ -150,10 +150,12 @@ public class URIUtils {
     public static String getChildURI(String parent, String childName, boolean escapeChildName) {
         if (childName.startsWith("/")) {
             childName = childName.substring(1);
-            if (escapeChildName) {
-                childName = escape(childName);
-            }
         }
+
+        if (escapeChildName) {
+            childName = escape(childName);
+        }
+
         if (parent.endsWith("/")) {
             return parent + childName;
         } else {
