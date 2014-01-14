@@ -56,16 +56,23 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class JSONItem<T extends Item> extends JSONLinkable {
     @XmlElement
-    private final String name;
+    private String name;
     @XmlElement
-    private final String type;
+    private String type;
 
-    public JSONItem(T item, String uri) throws RepositoryException {
-        super(uri);
+    public JSONItem() {
+    }
+
+    public void initWith(T item) throws RepositoryException {
+        initWith(URIUtils.getURIFor(item));
         this.name = item.getName();
         this.type = getUnescapedTypeName(item);
 
         addLink(new JSONLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
+    }
+
+    public JSONItem(T item) throws RepositoryException {
+        initWith(item);
     }
 
     protected String getTypeChildPath(T item) throws RepositoryException {

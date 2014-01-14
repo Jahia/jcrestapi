@@ -57,14 +57,22 @@ public class JSONLinkable {
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
 
-    public JSONLinkable(String uri) {
+    public JSONLinkable() {
         links = new HashMap<String, JSONLink>(7);
-
-        addLink(new JSONLink(SELF, uri));
     }
 
-    String getURI() {
+    public JSONLinkable(String uri) {
+        this();
+
+        initWith(uri);
+    }
+
+    public String getURI() {
         return getLink(SELF).getURI();
+    }
+
+    public void initWith(String uri) {
+        addLink(new JSONLink(SELF, uri));
     }
 
     protected void addLink(JSONLink link) {

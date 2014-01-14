@@ -39,7 +39,14 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
@@ -47,20 +54,33 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
+@JsonDeserialize(using = JSONProperties.PropertiesDeserializer.class)
 public class JSONProperties extends JSONSubElement {
-    private final Map<String, JSONProperty> properties;
+    private Map<String, JSONProperty> properties;
+
+    public JSONProperties() {
+    }
 
     public JSONProperties(JSONNode parent, Node node) throws RepositoryException {
-        super(parent, API.PROPERTIES);
+        initWith(parent, node);
+    }
+
+    public void initWith(JSONNode parent, Node node) throws RepositoryException {
+        super.initWith(parent, API.PROPERTIES);
 
         final PropertyIterator props = node.getProperties();
 
@@ -71,13 +91,43 @@ public class JSONProperties extends JSONSubElement {
             final String propertyName = property.getName();
 
             // add property
-            this.properties.put(URIUtils.escape(propertyName), new JSONProperty(this, property));
+            this.properties.put(URIUtils.escape(propertyName), new JSONProperty(property));
         }
     }
 
     @XmlElement
-    @JsonUnwrapped
     public Map<String, JSONProperty> getProperties() {
         return properties;
+    }
+
+    @PUT
+    @Path("{name}")
+    public void addProperty(@PathParam("name") String name, JSONProperty property) {
+        if (properties == null) {
+            properties = new HashMap<String, JSONProperty>(7);
+        }
+        properties.put(name, property);
+    }
+
+    public static class PropertiesDeserializer extends JsonDeserializer<JSONProperties> {
+        @Override
+        public JSONProperties deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
+            ObjectCodec codec = parser.getCodec();
+            ObjectNode root = codec.readTree(parser);
+
+            final int size = root.size();
+            if (size > 0) {
+                final JSONProperties properties = new JSONProperties();
+                final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
+                while (fields.hasNext()) {
+                    final Map.Entry<String, JsonNode> field = fields.next();
+                    properties.addProperty(field.getKey(), codec.treeToValue(field.getValue(), JSONProperty.class));
+                }
+
+                return properties;
+            } else {
+                return null;
+            }
+        }
     }
 }

@@ -44,9 +44,10 @@ import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -72,14 +73,22 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
 public class JSONNode extends JSONItem<Node> {
-    private final JSONProperties properties;
-    private final JSONMixins mixins;
-    private final JSONChildren children;
-    private final JSONVersions versions;
+    private JSONProperties properties;
+    private JSONMixins mixins;
+    private JSONChildren children;
+    private JSONVersions versions;
+
+    public JSONNode() {
+    }
 
     public JSONNode(Node node, int depth) throws RepositoryException {
-        super(node, URIUtils.getIdURI(node.getIdentifier()));
+        initWith(node, depth);
+    }
+
+    public void initWith(Node node, int depth) throws RepositoryException {
+        super.initWith(node);
 
         if (depth > 0) {
             properties = new JSONProperties(this, node);
@@ -136,7 +145,7 @@ public class JSONNode extends JSONItem<Node> {
     @XmlElement
     public Map<String, JSONVersion> getVersions() {
         // todo: implement
-        return Collections.emptyMap();
+        return null;
     }
 
     public JSONProperties getJSONProperties() {

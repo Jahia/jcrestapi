@@ -56,12 +56,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class JSONProperty extends JSONItem<Property> {
     @XmlElement
-    private final boolean multiple;
-    @XmlElement
-    private final Object value;
+    private boolean multiple;
 
-    public JSONProperty(JSONProperties jsonProperties, Property property) throws RepositoryException {
-        super(property, URIUtils.getChildURI(jsonProperties.getURI(), property.getName(), true));
+    @XmlElement
+    private Object value;
+
+    public JSONProperty() {
+    }
+
+    public void initWith(Property property) throws RepositoryException {
+        super.initWith(property);
 
         this.multiple = property.isMultiple();
         if (multiple) {
@@ -73,6 +77,10 @@ public class JSONProperty extends JSONItem<Property> {
         } else {
             this.value = property.getString();
         }
+    }
+
+    public JSONProperty(Property property) throws RepositoryException {
+        initWith(property);
     }
 
     @Override
@@ -87,7 +95,6 @@ public class JSONProperty extends JSONItem<Property> {
     /**
      * Property types are a little bit more tricky: we need to get the declaring node type and figure out in its array
      * of property definitions which one matches our property to be able to build the proper type link.
-     *
      *
      * @param item
      * @return

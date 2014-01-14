@@ -51,10 +51,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class JSONSubElement extends JSONLinkable {
-    protected final JSONNode parent;
+    protected JSONNode parent;
+
+    public JSONSubElement() {
+    }
 
     public JSONSubElement(JSONNode parent, String name) {
-        super(URIUtils.getChildURI(parent.getURI(), name, false));
+        initWith(parent, name);
+    }
+
+    public void initWith(JSONNode parent, String name) {
+        super.initWith(URIUtils.getChildURI(parent.getURI(), name, false));
         this.parent = parent;
     }
+
+
 }

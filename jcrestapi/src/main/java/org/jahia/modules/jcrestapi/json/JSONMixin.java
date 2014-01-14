@@ -69,6 +69,4 @@ public class JSONMixin extends JSONLinkable {
             properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
         }
     }
-
-
 }
