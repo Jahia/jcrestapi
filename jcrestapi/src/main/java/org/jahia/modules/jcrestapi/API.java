@@ -132,9 +132,9 @@ public class API {
                 return null; // todo
             }
         });
-        accessors.put("", new ElementAccessor<JSONSubElement, JSONNode>() {
+        accessors.put("", new ElementAccessor<JSONSubElementContainer, JSONNode>() {
             @Override
-            JSONSubElement getSubElementContainer(Node node) throws RepositoryException {
+            JSONSubElementContainer getSubElementContainer(Node node) throws RepositoryException {
                 throw new IllegalArgumentException("Cannot get a sub-element container for root node!");
             }
 

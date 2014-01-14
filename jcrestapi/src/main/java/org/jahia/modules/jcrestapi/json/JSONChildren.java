@@ -55,7 +55,7 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONChildren extends JSONSubElement {
+public class JSONChildren extends JSONSubElementContainer {
     private final HashMap<String, JSONNode> children;
 
     public JSONChildren(JSONNode parent, Node node) throws RepositoryException {

@@ -69,7 +69,7 @@ import java.util.Map;
  */
 @XmlRootElement
 @JsonDeserialize(using = JSONProperties.PropertiesDeserializer.class)
-public class JSONProperties extends JSONSubElement {
+public class JSONProperties extends JSONSubElementContainer {
     private Map<String, JSONProperty> properties;
 
     public JSONProperties() {

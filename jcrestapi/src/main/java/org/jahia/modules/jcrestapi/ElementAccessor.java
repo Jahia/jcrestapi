@@ -41,15 +41,16 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.json.JSONLinkable;
 import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONSubElement;
+import org.jahia.modules.jcrestapi.json.JSONSubElementContainer;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+
 /**
  * @author Christophe Laprun
  */
-public abstract class ElementAccessor<C extends JSONSubElement, T extends JSONLinkable> {
+public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable> {
     Object getElement(Node node, String subElement) throws RepositoryException {
         if (subElement.isEmpty()) {
             return getSubElementContainer(node);

@@ -55,7 +55,7 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONMixins extends JSONSubElement {
+public class JSONMixins extends JSONSubElementContainer {
     @XmlElement
     private final Map<String, JSONMixin> mixins;
 

@@ -50,13 +50,13 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONSubElement extends JSONLinkable {
+public class JSONSubElementContainer extends JSONLinkable {
     protected JSONNode parent;
 
-    public JSONSubElement() {
+    public JSONSubElementContainer() {
     }
 
-    public JSONSubElement(JSONNode parent, String name) {
+    public JSONSubElementContainer(JSONNode parent, String name) {
         initWith(parent, name);
     }
 

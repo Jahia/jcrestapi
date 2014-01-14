@@ -46,7 +46,7 @@ import javax.jcr.Node;
 /**
  * @author Christophe Laprun
  */
-public class JSONVersions extends JSONSubElement {
+public class JSONVersions extends JSONSubElementContainer {
 
     public JSONVersions(JSONNode parent, Node node) {
         super(parent, API.VERSIONS);
