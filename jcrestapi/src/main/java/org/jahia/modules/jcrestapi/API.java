@@ -46,9 +46,15 @@ import org.jahia.modules.jcrestapi.path.NodeAccessor;
 import org.jahia.modules.jcrestapi.path.PathParser;
 import org.osgi.service.component.annotations.Component;
 
-import javax.jcr.*;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.Properties;
 
 /**
@@ -183,10 +189,60 @@ public class API {
             session.logout();
         }
     }
+
+    @PUT
+    @Path("/nodes/{id}/{child}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object createChildNode(@PathParam("id") String id, @PathParam("child") String child, JSONNode childData,
+                                  @Context UriInfo context) throws
+            RepositoryException {
+        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
+                'o', 't', '1', '2', '3', '4'}));
+        try {
+            Node node = id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
+
+            Node newNode = node.addNode(child);
+            final JSONNode entity = new JSONNode(newNode, 0);
+
+            session.save();
+
+            return Response.created(context.getAbsolutePath()).entity(entity).build();
+
         } finally {
             session.logout();
         }
     }
+
+    /*@PUT
+    @Path("/nodes/{id}/mixins/{mixinName}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response createMixin(@PathParam("id") String id, @PathParam("mixinName") String mixinName,
+                                @Context UriInfo info) throws RepositoryException, URISyntaxException {
+        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
+                'o', 't', '1', '2', '3', '4'}));
+        try {
+            Node node = id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
+            return Response.created(info.getAbsolutePath()).build();
+
+        } finally {
+            session.logout();
+        }
+    }
+
+    @Path("/nodes/{id}/" + API.MIXINS)
+    public JSONMixins getMixins(@PathParam("id") String id) throws RepositoryException {
+        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
+                'o', 't', '1', '2', '3', '4'}));
+        try {
+            Node node = id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
+            final JSONNode parent = new JSONNode(node, 0);
+            return new JSONMixins(parent, node);
+
+        } finally {
+            session.logout();
+        }
+    }*/
+
 
     @GET
     @Path("{path: .*}")
