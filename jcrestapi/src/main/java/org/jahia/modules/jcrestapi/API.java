@@ -39,23 +39,16 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.jcrestapi.json.*;
 import org.jahia.modules.jcrestapi.path.AccessorPair;
 import org.jahia.modules.jcrestapi.path.ItemAccessor;
 import org.jahia.modules.jcrestapi.path.NodeAccessor;
 import org.jahia.modules.jcrestapi.path.PathParser;
 import org.osgi.service.component.annotations.Component;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
+import javax.jcr.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import java.util.Properties;
 
 /**
@@ -111,16 +104,85 @@ public class API {
     }
 
     @GET
-    @Path("/nodes/{id: .*}")
+    @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
+            "|" + API.MIXINS +
+            "|" + API.PROPERTIES +
+            "|" + API.VERSIONS +
+            "))?}{subElement: .*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getNodeById(@PathParam("id") String id, @Context UriInfo info) throws RepositoryException {
+    public Object getNodeById(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
+                              @PathParam("subElement") String subElement, @Context UriInfo info)
+            throws
+            RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
 
         try {
-            // todo: optimize: we shouldn't need to load the whole node if we only want part of it
-            final JSONNode node = new JSONNode(session.getNodeByIdentifier(id), 1);
-            return node;
+            final Node node;
+            if (id.isEmpty()) {
+                node = session.getRootNode();
+            } else {
+                node = session.getNodeByIdentifier(id);
+            }
+
+            if (subElementType.isEmpty()) {
+                return new JSONNode(node, 1);
+            } else {
+                if (subElementType.startsWith("/")) {
+                    subElementType = subElementType.substring(1);
+                }
+
+                if (subElement.startsWith("/")) {
+                    subElement = subElement.substring(1);
+                }
+
+                if (subElement.isEmpty()) {
+                    // we're asking for a full set of node sub-elements
+                    final JSONNode parent = new JSONNode(node, 0);
+
+                    if (CHILDREN.equals(subElementType)) {
+                        return new JSONChildren(parent, node);
+                    }
+
+                    if (PROPERTIES.equals(subElementType)) {
+                        return new JSONProperties(parent, node);
+                    }
+
+                    if (MIXINS.equals(subElementType)) {
+                        return new JSONMixins(parent, node);
+                    }
+
+                    if (VERSIONS.equals(subElementType)) {
+                        return new JSONVersions(parent, node);
+                    }
+                } else {
+                    // we only want one specific sub-element
+                    if (CHILDREN.equals(subElementType)) {
+                        return new JSONNode(node.getNode(subElement), 1);
+                    }
+
+                    if (PROPERTIES.equals(subElementType)) {
+                        return new JSONProperty(node.getProperty(subElement));
+                    }
+
+                    if (MIXINS.equals(subElementType)) {
+                        final JSONNode parent = new JSONNode(node, 0);
+                        JSONMixins mixins = new JSONMixins(parent, node);
+                        return mixins.getMixins().get(subElement);
+                    }
+
+                    if (VERSIONS.equals(subElementType)) {
+                        return null;
+                    }
+                }
+            }
+
+            return null;
+
+        } finally {
+            session.logout();
+        }
+    }
         } finally {
             session.logout();
         }
