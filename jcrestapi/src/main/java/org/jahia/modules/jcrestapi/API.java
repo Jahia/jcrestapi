@@ -134,17 +134,18 @@ public class API {
         });
         accessors.put("", new ElementAccessor<JSONSubElementContainer, JSONNode>() {
             @Override
+            Object getElement(Node node, String subElement) throws RepositoryException {
+                return new JSONNode(node, 1);
+            }
+
+            @Override
             JSONSubElementContainer getSubElementContainer(Node node) throws RepositoryException {
-                throw new IllegalArgumentException("Cannot get a sub-element container for root node!");
+                throw new IllegalStateException("Cannot call getSubElementContainer on identity ElementAccessor");
             }
 
             @Override
             JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
-                if (!subElement.isEmpty()) {
-                    throw new IllegalArgumentException("Shouldn't have been called on root node accessor. Asked sub-element: "
-                            + subElement);
-                }
-                return new JSONNode(node, 1);
+                throw new IllegalStateException("Cannot call getSubElement on identity ElementAccessor");
             }
         });
     }
