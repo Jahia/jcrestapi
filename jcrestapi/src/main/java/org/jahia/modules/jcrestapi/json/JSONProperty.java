@@ -129,4 +129,12 @@ public class JSONProperty extends JSONItem<Property> {
             return URIUtils.getChildURI(parentName, URIUtils.escape("jcr__propertyDefinition", index), false);
         }
     }
+
+    public Object getValue() {
+        return value;
+    }
+
+    public boolean isMultiple() {
+        return multiple;
+    }
 }

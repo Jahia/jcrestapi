@@ -46,10 +46,8 @@ import org.jahia.modules.jcrestapi.path.NodeAccessor;
 import org.jahia.modules.jcrestapi.path.PathParser;
 import org.osgi.service.component.annotations.Component;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
+import javax.jcr.*;
+import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -98,6 +96,20 @@ public class API {
             JSONProperty getSubElement(Node node, String subElement) throws RepositoryException {
                 return new JSONProperty(node.getProperty(subElement));
             }
+
+            @Override
+            JSONProperty delete(Node node, String subElement) throws RepositoryException {
+                node.setProperty(subElement, (Value) null);
+                return null;
+            }
+
+            @Override
+            JSONProperty create(Node node, String subElement, JSONProperty childData) throws RepositoryException {
+                final Object value = childData.getValue();
+                final String[] stringValue =  childData.isMultiple() ? (String[]) value : new String[] {(String)value};
+                final Property property = node.setProperty(subElement, stringValue);
+                return new JSONProperty(property);
+            }
         });
         accessors.put(CHILDREN, new ElementAccessor<JSONChildren, JSONNode>() {
             @Override
@@ -108,6 +120,20 @@ public class API {
             @Override
             JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
                 return new JSONNode(node.getNode(subElement), 1);
+            }
+
+            @Override
+            JSONNode delete(Node node, String subElement) throws RepositoryException {
+                final Node child = node.getNode(subElement);
+                child.remove();
+                return null;
+            }
+
+            @Override
+            JSONNode create(Node node, String subElement, JSONNode childData) throws RepositoryException {
+                final Node child = node.addNode(subElement);
+                // todo: copy data from childData to child
+                return new JSONNode(child, 1);
             }
         });
         accessors.put(MIXINS, new ElementAccessor<JSONMixins, JSONMixin>() {
@@ -120,6 +146,28 @@ public class API {
             JSONMixin getSubElement(Node node, String subElement) throws RepositoryException {
                 return getSubElementContainer(node).getMixins().get(subElement);
             }
+
+            @Override
+            JSONMixin delete(Node node, String subElement) throws RepositoryException {
+                node.removeMixin(subElement);
+                return null;
+            }
+
+            @Override
+            JSONMixin create(Node node, String subElement, JSONMixin childData) throws RepositoryException {
+                node.addMixin(subElement);
+
+                final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
+                NodeType mixin = null;
+                for (NodeType mixinNodeType : mixinNodeTypes) {
+                    if(mixinNodeType.getName().equals(subElement)) {
+                        mixin = mixinNodeType;
+                        break;
+                    }
+                }
+
+                return new JSONMixin(getSubElementContainer(node), mixin);
+            }
         });
         accessors.put(VERSIONS, new ElementAccessor<JSONVersions, JSONVersion>() {
             @Override
@@ -129,6 +177,16 @@ public class API {
 
             @Override
             JSONVersion getSubElement(Node node, String subElement) throws RepositoryException {
+                return null; // todo
+            }
+
+            @Override
+            JSONVersion delete(Node node, String subElement) throws RepositoryException {
+                return null; // todo
+            }
+
+            @Override
+            JSONVersion create(Node node, String subElement, JSONVersion childData) throws RepositoryException {
                 return null; // todo
             }
         });
@@ -146,6 +204,16 @@ public class API {
             @Override
             JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
                 throw new IllegalStateException("Cannot call getSubElement on identity ElementAccessor");
+            }
+
+            @Override
+            JSONNode delete(Node node, String subElement) throws RepositoryException {
+                throw new IllegalStateException("Cannot call delete on identity ElementAccessor"); // todo?
+            }
+
+            @Override
+            JSONNode create(Node node, String subElement, JSONNode childData) throws RepositoryException {
+                throw new IllegalStateException("Cannot call create on identity ElementAccessor"); // todo?
             }
         });
     }
@@ -218,21 +286,45 @@ public class API {
     }
 
     @PUT
-    @Path("/nodes/{id}/{child}")
+    @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
+            "|" + API.MIXINS +
+            "|" + API.PROPERTIES +
+            "|" + API.VERSIONS +
+            "))?}{subElement: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Object createChildNode(@PathParam("id") String id, @PathParam("child") String child, JSONNode childData,
-                                  @Context UriInfo context) throws RepositoryException {
+    public Object createChildNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
+                                  @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context)
+            throws RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
         try {
-            Node node = getNode(id, session);
 
-            Node newNode = node.addNode(child);
-            final JSONNode entity = new JSONNode(newNode, 0);
+            // check if we're trying to access root's sub-elements
+            if (accessors.containsKey(id)) {
+                subElementType = id;
+                id = "";
+            }
 
-            session.save();
+            final Node node = getNode(id, session);
 
-            return Response.created(context.getAbsolutePath()).entity(entity).build();
+            if (subElementType.startsWith("/")) {
+                subElementType = subElementType.substring(1);
+            }
+
+            if (subElement.startsWith("/")) {
+                subElement = subElement.substring(1);
+            }
+
+            final ElementAccessor accessor = accessors.get(subElementType);
+            if (accessor != null) {
+                Object entity = accessor.perform(node, URIUtils.unescape(subElement), "create", childData);
+
+                session.save();
+
+                return Response.created(context.getAbsolutePath()).entity(entity).build();
+            } else {
+                return null;
+            }
 
         } finally {
             session.logout();
@@ -245,17 +337,39 @@ public class API {
             "|" + API.PROPERTIES +
             "|" + API.VERSIONS +
             "))?}{subElement: .*}")
-    public Object deleteNode(@PathParam("id") String id, @Context UriInfo context) throws RepositoryException {
+    public Object deleteNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
+                             @PathParam("subElement") String subElement, @Context UriInfo context) throws RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
         try {
-            Node node = getNode(id, session);
 
-            node.remove();
+            // check if we're trying to access root's sub-elements
+            if (accessors.containsKey(id)) {
+                subElementType = id;
+                id = "";
+            }
 
-            session.save();
+            final Node node = getNode(id, session);
 
-            return Response.noContent().build();
+            if (subElementType.startsWith("/")) {
+                subElementType = subElementType.substring(1);
+            }
+
+            if (subElement.startsWith("/")) {
+                subElement = subElement.substring(1);
+            }
+
+            final ElementAccessor accessor = accessors.get(subElementType);
+            if(accessor != null) {
+                accessor.perform(node, URIUtils.unescape(subElement), "delete", null);
+
+                session.save();
+
+                return Response.noContent().build();
+            }
+            else {
+                return null;
+            }
 
         } finally {
             session.logout();
