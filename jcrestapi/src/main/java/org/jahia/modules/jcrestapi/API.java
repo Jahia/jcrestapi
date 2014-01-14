@@ -55,6 +55,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -68,6 +70,14 @@ public class API {
 
     static final String API_PATH = "/api";
 
+    public static final String PROPERTIES = "properties";
+    public static final String MIXINS = "mixins";
+    public static final String CHILDREN = "children";
+    public static final String VERSIONS = "versions";
+    public static final String TYPE = "type";
+
+    private final static Map<String, ElementAccessor> accessors = new HashMap<String, ElementAccessor>(7);
+
     static {
         Properties props = new Properties();
         try {
@@ -77,13 +87,67 @@ public class API {
         }
 
         VERSION = props.getProperty("jcrestapi.version");
-    }
 
-    public static final String PROPERTIES = "properties";
-    public static final String MIXINS = "mixins";
-    public static final String CHILDREN = "children";
-    public static final String VERSIONS = "versions";
-    public static final String TYPE = "type";
+        accessors.put(PROPERTIES, new ElementAccessor<JSONProperties, JSONProperty>() {
+            @Override
+            JSONProperties getSubElementContainer(Node node) throws RepositoryException {
+                return new JSONProperties(getParentFrom(node), node);
+            }
+
+            @Override
+            JSONProperty getSubElement(Node node, String subElement) throws RepositoryException {
+                return new JSONProperty(node.getProperty(subElement));
+            }
+        });
+        accessors.put(CHILDREN, new ElementAccessor<JSONChildren, JSONNode>() {
+            @Override
+            JSONChildren getSubElementContainer(Node node) throws RepositoryException {
+                return new JSONChildren(getParentFrom(node), node);
+            }
+
+            @Override
+            JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
+                return new JSONNode(node.getNode(subElement), 1);
+            }
+        });
+        accessors.put(MIXINS, new ElementAccessor<JSONMixins, JSONMixin>() {
+            @Override
+            JSONMixins getSubElementContainer(Node node) throws RepositoryException {
+                return new JSONMixins(getParentFrom(node), node);
+            }
+
+            @Override
+            JSONMixin getSubElement(Node node, String subElement) throws RepositoryException {
+                return getSubElementContainer(node).getMixins().get(subElement);
+            }
+        });
+        accessors.put(VERSIONS, new ElementAccessor<JSONVersions, JSONVersion>() {
+            @Override
+            JSONVersions getSubElementContainer(Node node) throws RepositoryException {
+                return new JSONVersions(getParentFrom(node), node);
+            }
+
+            @Override
+            JSONVersion getSubElement(Node node, String subElement) throws RepositoryException {
+                return null; // todo
+            }
+        });
+        accessors.put("", new ElementAccessor<JSONSubElement, JSONNode>() {
+            @Override
+            JSONSubElement getSubElementContainer(Node node) throws RepositoryException {
+                throw new IllegalArgumentException("Cannot get a sub-element container for root node!");
+            }
+
+            @Override
+            JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
+                if (!subElement.isEmpty()) {
+                    throw new IllegalArgumentException("Shouldn't have been called on root node accessor. Asked sub-element: "
+                            + subElement);
+                }
+                return new JSONNode(node, 1);
+            }
+        });
+    }
 
     private SpringBeansAccess beansAccess = SpringBeansAccess.getInstance();
 
@@ -129,61 +193,19 @@ public class API {
                 subElementType = id;
                 id = "";
             }
+
             final Node node = getNode(id, session);
 
-            if (subElementType.isEmpty()) {
-                return new JSONNode(node, 1);
-            } else {
-                if (subElementType.startsWith("/")) {
-                    subElementType = subElementType.substring(1);
-                }
-
-                if (subElement.startsWith("/")) {
-                    subElement = subElement.substring(1);
-                }
-
-                if (subElement.isEmpty()) {
-                    // we're asking for a full set of node sub-elements
-                    final JSONNode parent = new JSONNode(node, 0);
-
-                    if (CHILDREN.equals(subElementType)) {
-                        return new JSONChildren(parent, node);
-                    }
-
-                    if (PROPERTIES.equals(subElementType)) {
-                        return new JSONProperties(parent, node);
-                    }
-
-                    if (MIXINS.equals(subElementType)) {
-                        return new JSONMixins(parent, node);
-                    }
-
-                    if (VERSIONS.equals(subElementType)) {
-                        return new JSONVersions(parent, node);
-                    }
-                } else {
-                    // we only want one specific sub-element
-                    if (CHILDREN.equals(subElementType)) {
-                        return new JSONNode(node.getNode(subElement), 1);
-                    }
-
-                    if (PROPERTIES.equals(subElementType)) {
-                        return new JSONProperty(node.getProperty(subElement));
-                    }
-
-                    if (MIXINS.equals(subElementType)) {
-                        final JSONNode parent = new JSONNode(node, 0);
-                        JSONMixins mixins = new JSONMixins(parent, node);
-                        return mixins.getMixins().get(subElement);
-                    }
-
-                    if (VERSIONS.equals(subElementType)) {
-                        return null;
-                    }
-                }
+            if (subElementType.startsWith("/")) {
+                subElementType = subElementType.substring(1);
             }
 
-            return null;
+            if (subElement.startsWith("/")) {
+                subElement = subElement.substring(1);
+            }
+
+            final ElementAccessor accessor = accessors.get(subElementType);
+            return accessor == null ? null : accessor.getElement(node, URIUtils.unescape(subElement));
 
         } finally {
             session.logout();
