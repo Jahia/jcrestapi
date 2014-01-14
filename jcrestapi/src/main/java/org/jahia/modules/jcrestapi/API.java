@@ -124,12 +124,7 @@ public class API {
                 'o', 't', '1', '2', '3', '4'}));
 
         try {
-            final Node node;
-            if (id.isEmpty()) {
-                node = session.getRootNode();
-            } else {
-                node = session.getNodeByIdentifier(id);
-            }
+            final Node node = getNode(id, session);
 
             if (subElementType.isEmpty()) {
                 return new JSONNode(node, 1);
@@ -190,6 +185,10 @@ public class API {
         }
     }
 
+    private Node getNode(String id, Session session) throws RepositoryException {
+        return id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
+    }
+
     @PUT
     @Path("/nodes/{id}/{child}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -198,7 +197,7 @@ public class API {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
         try {
-            Node node = id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
+            Node node = getNode(id, session);
 
             Node newNode = node.addNode(child);
             final JSONNode entity = new JSONNode(newNode, 0);
@@ -222,7 +221,7 @@ public class API {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
         try {
-            Node node = id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
+            Node node = getNode(id, session);
 
             node.remove();
 
