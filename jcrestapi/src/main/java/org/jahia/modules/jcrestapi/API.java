@@ -106,7 +106,7 @@ public class API {
             @Override
             JSONProperty create(Node node, String subElement, JSONProperty childData) throws RepositoryException {
                 final Object value = childData.getValue();
-                final String[] stringValue =  childData.isMultiple() ? (String[]) value : new String[] {(String)value};
+                final String[] stringValue = childData.isMultiple() ? (String[]) value : new String[]{(String) value};
                 final Property property = node.setProperty(subElement, stringValue);
                 return new JSONProperty(property);
             }
@@ -160,7 +160,7 @@ public class API {
                 final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
                 NodeType mixin = null;
                 for (NodeType mixinNodeType : mixinNodeTypes) {
-                    if(mixinNodeType.getName().equals(subElement)) {
+                    if (mixinNodeType.getName().equals(subElement)) {
                         mixin = mixinNodeType;
                         break;
                     }
@@ -240,12 +240,12 @@ public class API {
     @Produces(MediaType.APPLICATION_JSON)
     public Object getNodeById(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
                               @PathParam("subElement") String subElement, @Context UriInfo context)
-    throws
-            RepositoryException {
+            throws RepositoryException {
         return perform(id, subElementType, subElement, context, "read", null);
     }
 
-    private Object perform(String id, String subElementType, String subElement, UriInfo context, String operation, Object data) throws RepositoryException {
+    private Object perform(String id, String subElementType, String subElement, UriInfo context, String operation, Object data)
+            throws RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
 
