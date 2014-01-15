@@ -226,6 +226,16 @@ public class API {
     }
 
     @GET
+    @Path("/nodes")
+    @Produces(MediaType.APPLICATION_JSON)
+    /**
+     * Needed to get URI without trailing / to work :(
+     */
+    public Object getRootNode(@Context UriInfo context) throws RepositoryException {
+        return perform("", "", "", context, "read", null);
+    }
+
+    @GET
     @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
             "|" + API.MIXINS +
             "|" + API.PROPERTIES +
