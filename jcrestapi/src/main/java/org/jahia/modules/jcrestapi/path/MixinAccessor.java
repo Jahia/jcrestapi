@@ -39,8 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
-import org.jahia.modules.jcrestapi.json.JSONMixin;
-import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.jcrestapi.model.JSONMixin;
+import org.jahia.modules.jcrestapi.model.JSONNode;
 
 import java.util.Map;
 

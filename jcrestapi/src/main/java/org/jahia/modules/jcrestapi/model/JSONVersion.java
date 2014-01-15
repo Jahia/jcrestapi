@@ -37,18 +37,13 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
-
-import org.jahia.modules.jcrestapi.API;
-
-import javax.jcr.Node;
+package org.jahia.modules.jcrestapi.model;
 
 /**
  * @author Christophe Laprun
  */
-public class JSONVersions extends JSONSubElementContainer {
-
-    public JSONVersions(JSONNode parent, Node node) {
-        super(parent, API.VERSIONS);
+public class JSONVersion extends JSONLinkable {
+    public JSONVersion(String uri) {
+        super(uri);
     }
 }

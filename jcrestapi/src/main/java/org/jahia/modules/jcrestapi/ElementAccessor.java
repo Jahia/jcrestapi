@@ -39,9 +39,9 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.json.JSONLinkable;
-import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONSubElementContainer;
+import org.jahia.modules.jcrestapi.model.JSONLinkable;
+import org.jahia.modules.jcrestapi.model.JSONNode;
+import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;

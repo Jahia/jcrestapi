@@ -37,47 +37,36 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.jcrestapi.model;
 
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
-import javax.jcr.Item;
 import javax.jcr.RepositoryException;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.NONE)
-public abstract class JSONItem<T extends Item> extends JSONLinkable {
+public class JSONMixin extends JSONLinkable {
     @XmlElement
-    private String name;
+    private final String name;
     @XmlElement
-    private String type;
+    private final Map<String, String> properties;
 
-    public JSONItem() {
-    }
-
-    public void initWith(T item) throws RepositoryException {
-        initWith(URIUtils.getURIFor(item));
+    public JSONMixin(JSONMixins jsonMixins, NodeType item) throws RepositoryException {
+        super(URIUtils.getChildURI(jsonMixins.getURI(), item.getName(), true));
         this.name = item.getName();
-        this.type = getUnescapedTypeName(item);
 
-        addLink(new JSONLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
+        final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
+        properties = new HashMap<String, String>(propertyDefinitions.length);
+        for (PropertyDefinition property : propertyDefinitions) {
+            properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
+        }
     }
-
-    public JSONItem(T item) throws RepositoryException {
-        initWith(item);
-    }
-
-    protected String getTypeChildPath(T item) throws RepositoryException {
-        return URIUtils.escape(type);
-    }
-
-    protected abstract String getUnescapedTypeName(T item) throws RepositoryException;
 }

@@ -37,36 +37,33 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.jcrestapi.model;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.PropertyDefinition;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONMixin extends JSONLinkable {
-    @XmlElement
-    private final String name;
-    @XmlElement
-    private final Map<String, String> properties;
+@XmlAccessorType(XmlAccessType.NONE)
+public class JSONLink {
+    private final String rel;
+    @XmlElement(name = "href")
+    private final String uri;
 
-    public JSONMixin(JSONMixins jsonMixins, NodeType item) throws RepositoryException {
-        super(URIUtils.getChildURI(jsonMixins.getURI(), item.getName(), true));
-        this.name = item.getName();
+    public JSONLink(String rel, String link) {
+        this.rel = rel;
+        this.uri = link;
+    }
 
-        final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
-        properties = new HashMap<String, String>(propertyDefinitions.length);
-        for (PropertyDefinition property : propertyDefinitions) {
-            properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
-        }
+    String getRel() {
+        return rel;
+    }
+
+    public String getURI() {
+        return uri;
     }
 }

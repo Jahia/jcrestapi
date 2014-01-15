@@ -37,13 +37,49 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.jcrestapi.model;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
-public class JSONVersion extends JSONLinkable {
-    public JSONVersion(String uri) {
-        super(uri);
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public class JSONLinkable {
+    static final String SELF = "self";
+
+    @XmlElement(name = "_links")
+    private final Map<String, JSONLink> links;
+
+    public JSONLinkable() {
+        links = new HashMap<String, JSONLink>(7);
+    }
+
+    public JSONLinkable(String uri) {
+        this();
+
+        initWith(uri);
+    }
+
+    public String getURI() {
+        return getLink(SELF).getURI();
+    }
+
+    public void initWith(String uri) {
+        addLink(new JSONLink(SELF, uri));
+    }
+
+    protected void addLink(JSONLink link) {
+        links.put(link.getRel(), link);
+    }
+
+    protected JSONLink getLink(String relation) {
+        return links.get(relation);
     }
 }

@@ -37,41 +37,18 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.jcrestapi.model;
 
 import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
-import javax.ws.rs.Path;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
-@XmlRootElement
-public class JSONMixins extends JSONSubElementContainer {
-    @XmlElement
-    private final Map<String, JSONMixin> mixins;
+public class JSONVersions extends JSONSubElementContainer {
 
-    public JSONMixins(JSONNode parent, Node node) throws RepositoryException {
-        super(parent, API.MIXINS);
-
-        final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
-        mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
-        for (NodeType mixinNodeType : mixinNodeTypes) {
-            final String name = mixinNodeType.getName();
-            mixins.put(URIUtils.escape(name), new JSONMixin(this, mixinNodeType));
-        }
-    }
-
-    @Path(API.MIXINS)
-    public Map<String, JSONMixin> getMixins() {
-        return mixins;
+    public JSONVersions(JSONNode parent, Node node) {
+        super(parent, API.VERSIONS);
     }
 }

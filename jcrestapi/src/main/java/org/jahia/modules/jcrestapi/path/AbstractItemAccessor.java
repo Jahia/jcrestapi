@@ -40,7 +40,7 @@
 package org.jahia.modules.jcrestapi.path;
 
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.jcrestapi.model.JSONNode;
 
 import java.util.Map;
 

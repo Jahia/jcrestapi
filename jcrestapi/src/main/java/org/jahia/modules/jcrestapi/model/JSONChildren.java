@@ -37,33 +37,44 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.jcrestapi.model;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.URIUtils;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.ws.rs.Path;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.NONE)
-public class JSONLink {
-    private final String rel;
-    @XmlElement(name = "href")
-    private final String uri;
+public class JSONChildren extends JSONSubElementContainer {
+    private final HashMap<String, JSONNode> children;
 
-    public JSONLink(String rel, String link) {
-        this.rel = rel;
-        this.uri = link;
+    public JSONChildren(JSONNode parent, Node node) throws RepositoryException {
+        super(parent, API.CHILDREN);
+
+        final NodeIterator nodes = node.getNodes();
+        children = new HashMap<String, JSONNode>((int) nodes.getSize());
+
+        while (nodes.hasNext()) {
+            Node child = nodes.nextNode();
+
+            // build child resource URI
+            children.put(URIUtils.escape(child.getName(), child.getIndex()), new JSONNode(child, 0));
+        }
     }
 
-    String getRel() {
-        return rel;
-    }
-
-    public String getURI() {
-        return uri;
+    @XmlElement
+    @Path(API.CHILDREN)
+    Map<String, JSONNode> getChildren() {
+        return children;
     }
 }

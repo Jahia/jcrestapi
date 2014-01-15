@@ -37,10 +37,15 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.jcrestapi.model;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.URIUtils;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
+import javax.ws.rs.Path;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
@@ -50,36 +55,23 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.NONE)
-public class JSONLinkable {
-    static final String SELF = "self";
+public class JSONMixins extends JSONSubElementContainer {
+    @XmlElement
+    private final Map<String, JSONMixin> mixins;
 
-    @XmlElement(name = "_links")
-    private final Map<String, JSONLink> links;
+    public JSONMixins(JSONNode parent, Node node) throws RepositoryException {
+        super(parent, API.MIXINS);
 
-    public JSONLinkable() {
-        links = new HashMap<String, JSONLink>(7);
+        final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
+        mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
+        for (NodeType mixinNodeType : mixinNodeTypes) {
+            final String name = mixinNodeType.getName();
+            mixins.put(URIUtils.escape(name), new JSONMixin(this, mixinNodeType));
+        }
     }
 
-    public JSONLinkable(String uri) {
-        this();
-
-        initWith(uri);
-    }
-
-    public String getURI() {
-        return getLink(SELF).getURI();
-    }
-
-    public void initWith(String uri) {
-        addLink(new JSONLink(SELF, uri));
-    }
-
-    protected void addLink(JSONLink link) {
-        links.put(link.getRel(), link);
-    }
-
-    protected JSONLink getLink(String relation) {
-        return links.get(relation);
+    @Path(API.MIXINS)
+    public Map<String, JSONMixin> getMixins() {
+        return mixins;
     }
 }

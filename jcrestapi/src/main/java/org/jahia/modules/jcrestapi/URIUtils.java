@@ -39,7 +39,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.json.JSONLinkable;
+import org.jahia.modules.jcrestapi.model.JSONLinkable;
 
 import javax.jcr.Item;
 import javax.jcr.Node;

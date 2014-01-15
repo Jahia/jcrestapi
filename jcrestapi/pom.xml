@@ -198,7 +198,7 @@
                         <Jahia-Depends>default</Jahia-Depends>
                         <Private-Package>
                             org.jahia.modules.jcrestapi,
-                            org.jahia.modules.jcrestapi.json,
+                            org.jahia.modules.jcrestapi.model,
                             org.jahia.modules.jcrestapi.path
                         </Private-Package>
                         <Import-Package>

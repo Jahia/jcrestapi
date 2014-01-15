@@ -39,7 +39,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.json.*;
+import org.jahia.modules.jcrestapi.model.*;
 import org.jahia.modules.jcrestapi.path.AccessorPair;
 import org.jahia.modules.jcrestapi.path.ItemAccessor;
 import org.jahia.modules.jcrestapi.path.NodeAccessor;

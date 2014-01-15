@@ -39,8 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.path;
 
-import org.jahia.modules.jcrestapi.json.JSONMixins;
-import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.jcrestapi.model.JSONMixins;
+import org.jahia.modules.jcrestapi.model.JSONNode;
 
 /**
  * @author Christophe Laprun

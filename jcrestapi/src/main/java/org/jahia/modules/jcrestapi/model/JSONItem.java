@@ -37,44 +37,47 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.jcrestapi.model;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
+import javax.jcr.Item;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.Path;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONChildren extends JSONSubElementContainer {
-    private final HashMap<String, JSONNode> children;
-
-    public JSONChildren(JSONNode parent, Node node) throws RepositoryException {
-        super(parent, API.CHILDREN);
-
-        final NodeIterator nodes = node.getNodes();
-        children = new HashMap<String, JSONNode>((int) nodes.getSize());
-
-        while (nodes.hasNext()) {
-            Node child = nodes.nextNode();
-
-            // build child resource URI
-            children.put(URIUtils.escape(child.getName(), child.getIndex()), new JSONNode(child, 0));
-        }
-    }
-
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class JSONItem<T extends Item> extends JSONLinkable {
     @XmlElement
-    @Path(API.CHILDREN)
-    Map<String, JSONNode> getChildren() {
-        return children;
+    private String name;
+    @XmlElement
+    private String type;
+
+    public JSONItem() {
     }
+
+    public void initWith(T item) throws RepositoryException {
+        initWith(URIUtils.getURIFor(item));
+        this.name = item.getName();
+        this.type = getUnescapedTypeName(item);
+
+        addLink(new JSONLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
+    }
+
+    public JSONItem(T item) throws RepositoryException {
+        initWith(item);
+    }
+
+    protected String getTypeChildPath(T item) throws RepositoryException {
+        return URIUtils.escape(type);
+    }
+
+    protected abstract String getUnescapedTypeName(T item) throws RepositoryException;
 }
