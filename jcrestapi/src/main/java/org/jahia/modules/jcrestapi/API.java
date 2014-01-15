@@ -268,7 +268,7 @@ public class API {
 
             final ElementAccessor accessor = accessors.get(subElementType);
             if (accessor != null) {
-                final Response response = accessor.perform(node, URIUtils.unescape(subElement), operation, null,
+                final Response response = accessor.perform(node, URIUtils.unescape(subElement), operation, data,
                         context);
 
                 session.save();
