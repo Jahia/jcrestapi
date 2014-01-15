@@ -40,20 +40,14 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.model.*;
-import org.jahia.modules.jcrestapi.path.AccessorPair;
-import org.jahia.modules.jcrestapi.path.ItemAccessor;
-import org.jahia.modules.jcrestapi.path.NodeAccessor;
-import org.jahia.modules.jcrestapi.path.PathParser;
 import org.osgi.service.component.annotations.Component;
 
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -244,19 +238,24 @@ public class API {
         return perform(id, subElementType, subElement, context, "read", null);
     }
 
-    private Object perform(String id, String subElementType, String subElement, UriInfo context, String operation, Object data)
-            throws RepositoryException {
+    private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
+                           String operation, JSONLinkable data) throws RepositoryException {
+        return perform(idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.byId);
+    }
+
+    private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
+                           String operation, JSONLinkable data, NodeAccessor nodeAccessor) throws RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
 
         try {
             // check if we're trying to access root's sub-elements
-            if (accessors.containsKey(id)) {
-                subElementType = id;
-                id = "";
+            if (subElementType.isEmpty() && accessors.containsKey(idOrPath)) {
+                subElementType = idOrPath;
+                idOrPath = "";
             }
 
-            final Node node = getNode(id, session);
+            final Node node = nodeAccessor.getNode(idOrPath, session);
 
             if (subElementType.startsWith("/")) {
                 subElementType = subElementType.substring(1);
@@ -283,8 +282,22 @@ public class API {
         }
     }
 
-    private Node getNode(String id, Session session) throws RepositoryException {
-        return id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
+    private static interface NodeAccessor {
+        Node getNode(String idOrPath, Session session) throws RepositoryException;
+
+        NodeAccessor byId = new NodeAccessor() {
+            @Override
+            public Node getNode(String idOrPath, Session session) throws RepositoryException {
+                return idOrPath.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(idOrPath);
+            }
+        };
+
+        NodeAccessor byPath = new NodeAccessor() {
+            @Override
+            public Node getNode(String idOrPath, Session session) throws RepositoryException {
+                return idOrPath.isEmpty() ? session.getRootNode() : session.getNode(idOrPath);
+            }
+        };
     }
 
     @PUT
@@ -312,24 +325,47 @@ public class API {
     }
 
     @GET
-    @Path("{path: .*}")
+    @Path("/byPath{path: /.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getNode(@PathParam("path") String path, @Context UriInfo info) throws RepositoryException {
-        final AccessorPair accessors = PathParser.getAccessorsForPath(info.getBaseUriBuilder(), info.getPathSegments());
+    public Object getByPath(@PathParam("path") String path, @Context UriInfo context) throws RepositoryException {
+        int index = 0;
+        final List<PathSegment> segments = context.getPathSegments();
+        for (PathSegment segment : segments) {
+            // first path segment corresponds to the resource mapping so we ignore it
+            // and second path corresponds to byPath so we ignore it as well
+            String subElementType = segment.getPath();
+            if (index > 1) {
 
-        final Object node = getJSON(accessors.nodeAccessor, accessors.itemAccessor);
-        return node;
+                // check if segment is a sub-element marker
+                ElementAccessor accessor = accessors.get(subElementType);
+                if (accessor != null) {
+                    String nodePath = computePathUpTo(segments, index);
+                    String subElement = getSubElement(segments, index);
+                    return perform(nodePath, subElementType, subElement, context, "read", null, NodeAccessor.byPath);
+                }
+            }
+            index++;
+        }
+
+        return perform(computePathUpTo(segments, segments.size()), "", "", context, "read", null, NodeAccessor.byPath);
     }
 
-    private Object getJSON(NodeAccessor nodeAccessor, ItemAccessor itemAccessor) throws RepositoryException {
-        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
-                'o', 't', '1', '2', '3', '4'}));
-        try {
-            // todo: optimize: we shouldn't need to load the whole node if we only want part of it
-            final JSONNode node = new JSONNode(nodeAccessor.getNode(session), 1);
-            return itemAccessor.getItem(node);
-        } finally {
-            session.logout();
+    private static String computePathUpTo(List<PathSegment> segments, int index) {
+        StringBuilder path = new StringBuilder(30 * index);
+        // first path segment corresponds to the resource mapping so we ignore it
+        // and second path corresponds to byPath so we ignore it as well
+        for (int i = 2; i < index; i++) {
+            path.append("/").append(segments.get(i).getPath());
+        }
+        return path.toString();
+    }
+
+    private static String getSubElement(List<PathSegment> segments, int index) {
+        final int next = index + 1;
+        if (next < segments.size()) {
+            return segments.get(next).getPath();
+        } else {
+            return "";
         }
     }
 }
