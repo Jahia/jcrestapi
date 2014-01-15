@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class JSONLink {
+    @XmlElement
     private final String rel;
     @XmlElement(name = "href")
     private final String uri;
