@@ -250,8 +250,8 @@ public class API {
             "))?}{subElement: .*}")
     @Produces(MediaType.APPLICATION_JSON)
     public Object getNodeById(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
-                              @PathParam("subElement") String subElement, @Context UriInfo info)
-            throws
+                              @PathParam("subElement") String subElement, @Context UriInfo context)
+    throws
             RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
@@ -274,7 +274,16 @@ public class API {
             }
 
             final ElementAccessor accessor = accessors.get(subElementType);
-            return accessor == null ? null : accessor.getElement(node, URIUtils.unescape(subElement));
+            if (accessor != null) {
+                final Response response = accessor.perform(node, URIUtils.unescape(subElement), "read", null,
+                        context);
+
+                session.save();
+
+                return response;
+            } else {
+                return null;
+            }
 
         } finally {
             session.logout();
@@ -317,11 +326,12 @@ public class API {
 
             final ElementAccessor accessor = accessors.get(subElementType);
             if (accessor != null) {
-                Object entity = accessor.perform(node, URIUtils.unescape(subElement), "create", childData);
+                final Response response = accessor.perform(node, URIUtils.unescape(subElement), "create", childData,
+                        context);
 
                 session.save();
 
-                return Response.created(context.getAbsolutePath()).entity(entity).build();
+                return response;
             } else {
                 return null;
             }
@@ -361,11 +371,12 @@ public class API {
 
             final ElementAccessor accessor = accessors.get(subElementType);
             if(accessor != null) {
-                accessor.perform(node, URIUtils.unescape(subElement), "delete", null);
+                final Response response = accessor.perform(node, URIUtils.unescape(subElement), "delete", null,
+                        context);
 
                 session.save();
 
-                return Response.noContent().build();
+                return response;
             }
             else {
                 return null;
