@@ -242,6 +242,10 @@ public class API {
                               @PathParam("subElement") String subElement, @Context UriInfo context)
     throws
             RepositoryException {
+        return perform(id, subElementType, subElement, context, "read", null);
+    }
+
+    private Object perform(String id, String subElementType, String subElement, UriInfo context, String operation, Object data) throws RepositoryException {
         final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
                 'o', 't', '1', '2', '3', '4'}));
 
@@ -264,7 +268,7 @@ public class API {
 
             final ElementAccessor accessor = accessors.get(subElementType);
             if (accessor != null) {
-                final Response response = accessor.perform(node, URIUtils.unescape(subElement), "read", null,
+                final Response response = accessor.perform(node, URIUtils.unescape(subElement), operation, null,
                         context);
 
                 session.save();
@@ -293,41 +297,7 @@ public class API {
     public Object createChildNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
                                   @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context)
             throws RepositoryException {
-        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
-                'o', 't', '1', '2', '3', '4'}));
-        try {
-
-            // check if we're trying to access root's sub-elements
-            if (accessors.containsKey(id)) {
-                subElementType = id;
-                id = "";
-            }
-
-            final Node node = getNode(id, session);
-
-            if (subElementType.startsWith("/")) {
-                subElementType = subElementType.substring(1);
-            }
-
-            if (subElement.startsWith("/")) {
-                subElement = subElement.substring(1);
-            }
-
-            final ElementAccessor accessor = accessors.get(subElementType);
-            if (accessor != null) {
-                final Response response = accessor.perform(node, URIUtils.unescape(subElement), "create", childData,
-                        context);
-
-                session.save();
-
-                return response;
-            } else {
-                return null;
-            }
-
-        } finally {
-            session.logout();
-        }
+        return perform(id, subElementType, subElement, context, "create", childData);
     }
 
     @DELETE
@@ -338,42 +308,7 @@ public class API {
             "))?}{subElement: .*}")
     public Object deleteNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
                              @PathParam("subElement") String subElement, @Context UriInfo context) throws RepositoryException {
-        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
-                'o', 't', '1', '2', '3', '4'}));
-        try {
-
-            // check if we're trying to access root's sub-elements
-            if (accessors.containsKey(id)) {
-                subElementType = id;
-                id = "";
-            }
-
-            final Node node = getNode(id, session);
-
-            if (subElementType.startsWith("/")) {
-                subElementType = subElementType.substring(1);
-            }
-
-            if (subElement.startsWith("/")) {
-                subElement = subElement.substring(1);
-            }
-
-            final ElementAccessor accessor = accessors.get(subElementType);
-            if(accessor != null) {
-                final Response response = accessor.perform(node, URIUtils.unescape(subElement), "delete", null,
-                        context);
-
-                session.save();
-
-                return response;
-            }
-            else {
-                return null;
-            }
-
-        } finally {
-            session.logout();
-        }
+        return perform(id, subElementType, subElement, context, "delete", null);
     }
 
     @GET
