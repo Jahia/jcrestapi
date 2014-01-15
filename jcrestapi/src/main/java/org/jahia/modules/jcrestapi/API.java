@@ -387,37 +387,6 @@ public class API {
         }
     }
 
-    /*@PUT
-    @Path("/nodes/{id}/mixins/{mixinName}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response createMixin(@PathParam("id") String id, @PathParam("mixinName") String mixinName,
-                                @Context UriInfo info) throws RepositoryException, URISyntaxException {
-        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
-                'o', 't', '1', '2', '3', '4'}));
-        try {
-            Node node = id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
-            return Response.created(info.getAbsolutePath()).build();
-
-        } finally {
-            session.logout();
-        }
-    }
-
-    @Path("/nodes/{id}/" + API.MIXINS)
-    public JSONMixins getMixins(@PathParam("id") String id) throws RepositoryException {
-        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
-                'o', 't', '1', '2', '3', '4'}));
-        try {
-            Node node = id.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(id);
-            final JSONNode parent = new JSONNode(node, 0);
-            return new JSONMixins(parent, node);
-
-        } finally {
-            session.logout();
-        }
-    }*/
-
-
     @GET
     @Path("{path: .*}")
     @Produces(MediaType.APPLICATION_JSON)
