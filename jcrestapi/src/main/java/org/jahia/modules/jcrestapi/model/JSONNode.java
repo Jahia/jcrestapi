@@ -79,6 +79,9 @@ public class JSONNode extends JSONItem<Node> {
     private JSONMixins mixins;
     private JSONChildren children;
     private JSONVersions versions;
+    @XmlElement
+    private String id;
+
 
     public JSONNode() {
     }
@@ -89,6 +92,7 @@ public class JSONNode extends JSONItem<Node> {
 
     public void initWith(Node node, int depth) throws RepositoryException {
         super.initWith(node);
+        id = node.getIdentifier();
 
         if (depth > 0) {
             properties = new JSONProperties(this, node);
