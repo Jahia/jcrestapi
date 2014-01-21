@@ -265,7 +265,7 @@ public class API {
                 idOrPath = "";
             }
 
-            final Node node = nodeAccessor.getNode(idOrPath, session);
+            final Node node = nodeAccessor.getNode(URIUtils.unescape(idOrPath), session);
 
             if (subElementType.startsWith("/")) {
                 subElementType = subElementType.substring(1);
@@ -286,7 +286,6 @@ public class API {
             } else {
                 return null;
             }
-
         } finally {
             session.logout();
         }
