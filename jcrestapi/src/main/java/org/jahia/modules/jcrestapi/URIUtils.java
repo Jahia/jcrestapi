@@ -58,7 +58,7 @@ public class URIUtils {
             .class).build().toASCIIString());
     private static final AtomicReference<String> idURI = new AtomicReference<String>(baseURI + "/nodes/");
     private static final AtomicReference<String> nodetypesURI = new AtomicReference<String>(baseURI +
-            "/jcr__system/jcr__nodeTypes/");
+            "/byPath/jcr__system/jcr__nodeTypes/");
 
     public static String getTypeURI(String typeName) {
         return nodetypesURI.get() + typeName;
