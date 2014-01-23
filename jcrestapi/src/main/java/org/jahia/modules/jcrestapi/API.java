@@ -44,12 +44,11 @@ import org.osgi.service.component.annotations.Component;
 
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
+import javax.jcr.query.QueryResult;
+import javax.jcr.query.qom.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author Christophe Laprun
@@ -357,6 +356,63 @@ public class API {
         }
 
         return perform(computePathUpTo(segments, segments.size()), "", "", context, "read", null, NodeAccessor.byPath);
+    }
+
+    @GET
+    @Path("/byType/{type}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getByType(@PathParam("type") String type,
+                            @QueryParam("named") String name,
+                            @QueryParam("orderBy") String orderBy,
+                            @QueryParam("limit") int limit,
+                            @QueryParam("offset") int offset,
+                            @Context UriInfo context)
+            throws RepositoryException {
+        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
+                'o', 't', '1', '2', '3', '4'}));
+
+        try {
+            final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();
+            final ValueFactory valueFactory = session.getValueFactory();
+            final Selector selector = qomFactory.selector(URIUtils.unescape(type), "type");
+
+            // if we have passed a "named" query parameter, only return nodes with the specified name
+            Constraint constraint = null;
+            if (exists(name)) {
+                constraint = qomFactory.comparison(qomFactory.nodeLocalName("type"), QueryObjectModelFactory.JCR_OPERATOR_EQUAL_TO, qomFactory.literal(valueFactory.createValue(name,
+                        PropertyType.STRING)));
+            }
+
+            Ordering[] orderings = null;
+            // ordering deactivated because it currently doesn't work, probably due to a bug in QueryServiceImpl
+            /*if (exists(orderBy)) {
+                if ("desc".equalsIgnoreCase(orderBy)) {
+                    orderings = new Ordering[]{qomFactory.descending(qomFactory.nodeLocalName("type"))};
+                } else {
+                    orderings = new Ordering[]{qomFactory.ascending(qomFactory.nodeLocalName("type"))};
+                }
+            }*/
+
+            final QueryObjectModel query = qomFactory.createQuery(selector, constraint, orderings, new Column[]{qomFactory.column("type", null, null)});
+            query.setLimit(limit);
+            query.setOffset(offset);
+
+            final QueryResult queryResult = query.execute();
+
+            final NodeIterator nodes = queryResult.getNodes();
+            final List<JSONNode> result = new LinkedList<JSONNode>();
+            while (nodes.hasNext()) {
+                result.add(new JSONNode(nodes.nextNode(), 0));
+            }
+
+            return Response.ok(result).build();
+        } finally {
+            session.logout();
+        }
+    }
+
+    private boolean exists(String name) {
+        return name != null && !name.isEmpty();
     }
 
     private static String computePathUpTo(List<PathSegment> segments, int index) {
