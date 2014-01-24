@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.model.*;
 import org.osgi.service.component.annotations.Component;
 
@@ -65,6 +66,7 @@ public class API {
     public static final String MIXINS = "mixins";
     public static final String CHILDREN = "children";
     public static final String VERSIONS = "versions";
+    private static final String SELECTOR_NAME = "type";
     public static final String TYPE = "type";
 
     private final static Map<String, ElementAccessor> accessors = new HashMap<String, ElementAccessor>(7);
@@ -365,6 +367,7 @@ public class API {
                             @QueryParam("orderBy") String orderBy,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
+                            @QueryParam("depth") int depth,
                             @Context UriInfo context)
             throws RepositoryException {
         final Session session = beansAccess.getRepository().login(getRoot());
@@ -372,26 +375,30 @@ public class API {
         try {
             final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();
             final ValueFactory valueFactory = session.getValueFactory();
-            final Selector selector = qomFactory.selector(URIUtils.unescape(type), "type");
+            final Selector selector = qomFactory.selector(URIUtils.unescape(type), SELECTOR_NAME);
+
+            // hardcode constraint on language for now: either jcr:language doesn't exist or jcr:language is "en"
+            Constraint constraint = qomFactory.or(
+                    qomFactory.not(qomFactory.propertyExistence(SELECTOR_NAME, Constants.JCR_LANGUAGE)),
+                    stringComparisonConstraint(qomFactory.propertyValue(SELECTOR_NAME, Constants.JCR_LANGUAGE), "en", qomFactory, valueFactory)
+            );
 
             // if we have passed a "named" query parameter, only return nodes with the specified name
-            Constraint constraint = null;
             if (exists(name)) {
-                constraint = qomFactory.comparison(qomFactory.nodeLocalName("type"), QueryObjectModelFactory.JCR_OPERATOR_EQUAL_TO, qomFactory.literal(valueFactory.createValue(name,
-                        PropertyType.STRING)));
+                constraint = qomFactory.or(constraint, stringComparisonConstraint(qomFactory.nodeLocalName(SELECTOR_NAME), name, qomFactory, valueFactory));
             }
 
             Ordering[] orderings = null;
             // ordering deactivated because it currently doesn't work, probably due to a bug in QueryServiceImpl
-            /*if (exists(orderBy)) {
+            if (exists(orderBy)) {
                 if ("desc".equalsIgnoreCase(orderBy)) {
-                    orderings = new Ordering[]{qomFactory.descending(qomFactory.nodeLocalName("type"))};
+                    orderings = new Ordering[]{qomFactory.descending(qomFactory.nodeLocalName(SELECTOR_NAME))};
                 } else {
-                    orderings = new Ordering[]{qomFactory.ascending(qomFactory.nodeLocalName("type"))};
+                    orderings = new Ordering[]{qomFactory.ascending(qomFactory.nodeLocalName(SELECTOR_NAME))};
                 }
-            }*/
+            }
 
-            final QueryObjectModel query = qomFactory.createQuery(selector, constraint, orderings, null);
+            final QueryObjectModel query = qomFactory.createQuery(selector, constraint, orderings, new Column[]{qomFactory.column(SELECTOR_NAME, null, null)});
             if (limit > 0) {
                 query.setLimit(limit);
             }
@@ -402,13 +409,18 @@ public class API {
             final NodeIterator nodes = queryResult.getNodes();
             final List<JSONNode> result = new LinkedList<JSONNode>();
             while (nodes.hasNext()) {
-                result.add(new JSONNode(nodes.nextNode(), 0));
+                result.add(new JSONNode(nodes.nextNode(), depth));
             }
 
             return Response.ok(result).build();
         } finally {
             session.logout();
         }
+    }
+
+    private Comparison stringComparisonConstraint(DynamicOperand operand, String valueOperandShouldBe, QueryObjectModelFactory qomFactory, ValueFactory valueFactory) throws RepositoryException {
+        return qomFactory.comparison(operand, QueryObjectModelFactory.JCR_OPERATOR_EQUAL_TO, qomFactory.literal(valueFactory.createValue(valueOperandShouldBe,
+                PropertyType.STRING)));
     }
 
     private SimpleCredentials getRoot() {
