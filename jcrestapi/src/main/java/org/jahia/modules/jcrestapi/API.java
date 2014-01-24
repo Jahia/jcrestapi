@@ -391,8 +391,10 @@ public class API {
                 }
             }*/
 
-            final QueryObjectModel query = qomFactory.createQuery(selector, constraint, orderings, new Column[]{qomFactory.column("type", null, null)});
-            query.setLimit(limit);
+            final QueryObjectModel query = qomFactory.createQuery(selector, constraint, orderings, null);
+            if (limit > 0) {
+                query.setLimit(limit);
+            }
             query.setOffset(offset);
 
             final QueryResult queryResult = query.execute();
