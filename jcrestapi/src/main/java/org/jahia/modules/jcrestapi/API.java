@@ -254,8 +254,7 @@ public class API {
 
     private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
                            String operation, JSONLinkable data, NodeAccessor nodeAccessor) throws RepositoryException {
-        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
-                'o', 't', '1', '2', '3', '4'}));
+        final Session session = beansAccess.getRepository().login(getRoot());
 
         try {
             // check if we're trying to access root's sub-elements
@@ -368,8 +367,7 @@ public class API {
                             @QueryParam("offset") int offset,
                             @Context UriInfo context)
             throws RepositoryException {
-        final Session session = beansAccess.getRepository().login(new SimpleCredentials("root", new char[]{'r', 'o',
-                'o', 't', '1', '2', '3', '4'}));
+        final Session session = beansAccess.getRepository().login(getRoot());
 
         try {
             final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();
@@ -409,6 +407,10 @@ public class API {
         } finally {
             session.logout();
         }
+    }
+
+    private SimpleCredentials getRoot() {
+        return new SimpleCredentials("root", new char[]{'r', 'o', 'o', 't', '1', '2', '3', '4'});
     }
 
     private boolean exists(String name) {
