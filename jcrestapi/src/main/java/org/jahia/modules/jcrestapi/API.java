@@ -41,6 +41,7 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.model.*;
+import org.jahia.services.content.JCRSessionFactory;
 import org.osgi.service.component.annotations.Component;
 
 import javax.jcr.*;
@@ -256,7 +257,7 @@ public class API {
 
     private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
                            String operation, JSONLinkable data, NodeAccessor nodeAccessor) throws RepositoryException {
-        final Session session = beansAccess.getRepository().login(getRoot());
+        final Session session = getSession();
 
         try {
             // check if we're trying to access root's sub-elements
@@ -288,6 +289,17 @@ public class API {
             }
         } finally {
             session.logout();
+        }
+    }
+
+    private Session getSession() throws RepositoryException {
+        final Repository repository = beansAccess.getRepository();
+        if (repository instanceof JCRSessionFactory) {
+            JCRSessionFactory factory = (JCRSessionFactory) repository;
+            return factory.getCurrentUserSession("live", Locale.ENGLISH);
+        }
+        else {
+            return repository.login(getRoot());
         }
     }
 
@@ -370,7 +382,7 @@ public class API {
                             @QueryParam("depth") int depth,
                             @Context UriInfo context)
             throws RepositoryException {
-        final Session session = beansAccess.getRepository().login(getRoot());
+        final Session session = getSession();
 
         try {
             final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();

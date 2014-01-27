@@ -208,6 +208,7 @@
                             javax.ws.rs.*,
                             com.fasterxml.jackson.*,
                             org.glassfish.jersey.server,
+                            org.jahia.services.content.*,
                             ${jahia.plugin.projectPackageImport}
                         </Import-Package>
                         <!-- would be nice if the macro didn't also include WADL-related class found on classpath -->
