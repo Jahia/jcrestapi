@@ -4,6 +4,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <bean id="SpringBeansAccess" class="org.jahia.modules.jcrestapi.SpringBeansAccess" factory-method="getInstance">
-    <property name="repository" ref="jcrSessionFactory"/>
+        <property name="repository" ref="jcrSessionFactory"/>
     </bean>
 </beans>
