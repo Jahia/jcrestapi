@@ -77,6 +77,10 @@ public class JSONMixin extends JSONNodeContent {
         initWith(jsonMixins, item);
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     protected String getUnescapedTypeName(Node item) throws RepositoryException {
         return null;
