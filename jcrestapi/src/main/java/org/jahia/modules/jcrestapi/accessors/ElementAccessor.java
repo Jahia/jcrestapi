@@ -82,6 +82,6 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
             return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
         }
 
-        return null;
+        throw new IllegalArgumentException("Unknown operation: '" + operation + "'");
     }
 }
