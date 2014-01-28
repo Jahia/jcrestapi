@@ -62,6 +62,9 @@ import java.util.*;
 @Produces({MediaType.APPLICATION_JSON})
 public class API {
     public static final String VERSION;
+    public static final String DELETE = "delete";
+    public static final String CREATE = "create";
+    public static final String READ = "read";
 
     static final String API_PATH = "/api";
 
@@ -111,7 +114,7 @@ public class API {
      * Needed to get URI without trailing / to work :(
      */
     public Object getRootNode(@Context UriInfo context) throws RepositoryException {
-        return perform("", "", "", context, "read", null);
+        return perform("", "", "", context, READ, null);
     }
 
     @GET
@@ -124,7 +127,7 @@ public class API {
     public Object getNodeById(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
                               @PathParam("subElement") String subElement, @Context UriInfo context)
             throws RepositoryException {
-        return perform(id, subElementType, subElement, context, "read", null);
+        return perform(id, subElementType, subElement, context, READ, null);
     }
 
     private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
@@ -215,7 +218,7 @@ public class API {
                 final ElementAccessor accessor = accessors.get(subElementType);
                 if (accessor != null) {
                     // this creates the mixin object but more importantly adds the mixin to the parent node
-                    final Response response = accessor.perform(node, subElement, "create", data, context);
+                    final Response response = accessor.perform(node, subElement, CREATE, data, context);
 
                     // we now need to use the rest of the given child data to add / update the parent node content
 //                    final NodeElementAccessor nodeAccessor = (NodeElementAccessor) accessors.get(CHILDREN);
@@ -243,7 +246,7 @@ public class API {
             "))?}{subElement: .*}")
     public Object deleteNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
                              @PathParam("subElement") String subElement, @Context UriInfo context) throws RepositoryException {
-        return perform(id, subElementType, subElement, context, "delete", null);
+        return perform(id, subElementType, subElement, context, DELETE, null);
     }
 
     @GET
@@ -263,13 +266,13 @@ public class API {
                 if (accessor != null) {
                     String nodePath = computePathUpTo(segments, index);
                     String subElement = getSubElement(segments, index);
-                    return perform(nodePath, subElementType, subElement, context, "read", null, NodeAccessor.byPath);
+                    return perform(nodePath, subElementType, subElement, context, READ, null, NodeAccessor.byPath);
                 }
             }
             index++;
         }
 
-        return perform(computePathUpTo(segments, segments.size()), "", "", context, "read", null, NodeAccessor.byPath);
+        return perform(computePathUpTo(segments, segments.size()), "", "", context, READ, null, NodeAccessor.byPath);
     }
 
     @GET

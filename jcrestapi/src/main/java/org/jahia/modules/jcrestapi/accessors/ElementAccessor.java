@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.model.JSONLinkable;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
@@ -53,6 +54,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Christophe Laprun
  */
 public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable> {
+
     protected Object getElement(Node node, String subElement) throws RepositoryException {
         if (subElement.isEmpty()) {
             return getSubElementContainer(node);
@@ -71,13 +73,13 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
     protected abstract T create(Node node, String subElement, T childData) throws RepositoryException;
 
     public Response perform(Node node, String subElement, String operation, T childData, UriInfo context) throws RepositoryException {
-        if("delete".equals(operation)) {
+        if (API.DELETE.equals(operation)) {
             delete(node, subElement);
             return Response.noContent().build();
-        } else if("create".equals(operation)) {
+        } else if (API.CREATE.equals(operation)) {
             final T entity = create(node, subElement, childData);
             return Response.created(context.getAbsolutePath()).entity(entity).build();
-        } else if ("read".equals(operation)) {
+        } else if (API.READ.equals(operation)) {
             final Object element = getElement(node, subElement);
             return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
         }
