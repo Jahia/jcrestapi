@@ -141,15 +141,11 @@ public class API {
         final Session session = getSession();
 
         try {
-            String idOrPath = processor.getIdOrPath();
-            String subElementType = processor.getSubElementType();
-            String subElement = processor.getSubElement();
+            final Node node = nodeAccessor.getNode(processor.getIdOrPath(), session);
 
-            final Node node = nodeAccessor.getNode(URIUtils.unescape(idOrPath), session);
-
-            final ElementAccessor accessor = accessors.get(subElementType);
+            final ElementAccessor accessor = accessors.get(processor.getSubElementType());
             if (accessor != null) {
-                final Response response = accessor.perform(node, URIUtils.unescape(subElement), operation, data, context);
+                final Response response = accessor.perform(node, processor.getSubElement(), operation, data, context);
 
                 session.save();
 
@@ -207,22 +203,19 @@ public class API {
         subElement = processor.getSubElement();
 
         if(childData != null && MIXINS.equals(subElementType)) {
-
-            final String unescapedSubElement = URIUtils.unescape(subElement);
-
             // initialize mixin from childData: we only need to get its name to create it
             final JSONMixin data = new JSONMixin();
-            data.setName(unescapedSubElement);
+            data.setName(subElement);
 
             final Session session = getSession();
             try {
 
-                final Node node = NodeAccessor.byId.getNode(URIUtils.unescape(id), session);
+                final Node node = NodeAccessor.byId.getNode(id, session);
 
                 final ElementAccessor accessor = accessors.get(subElementType);
                 if (accessor != null) {
                     // this creates the mixin object but more importantly adds the mixin to the parent node
-                    final Response response = accessor.perform(node, unescapedSubElement, "create", data, context);
+                    final Response response = accessor.perform(node, subElement, "create", data, context);
 
                     // we now need to use the rest of the given child data to add / update the parent node content
 //                    final NodeElementAccessor nodeAccessor = (NodeElementAccessor) accessors.get(CHILDREN);
@@ -390,9 +383,9 @@ public class API {
                 subElement = subElement.substring(1);
             }
 
-            this.idOrPath = idOrPath;
+            this.idOrPath = URIUtils.unescape(idOrPath);
             this.subElementType = subElementType;
-            this.subElement = subElement;
+            this.subElement = URIUtils.unescape(subElement);
         }
 
         public String getIdOrPath() {
