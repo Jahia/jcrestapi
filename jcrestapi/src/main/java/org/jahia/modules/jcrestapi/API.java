@@ -132,29 +132,22 @@ public class API {
 
     private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
                            String operation, JSONLinkable data, NodeAccessor nodeAccessor) throws RepositoryException {
+        return perform(context, operation, data, nodeAccessor, new ElementsProcessor(idOrPath, subElementType, subElement));
+    }
+
+    private Object perform(UriInfo context, String operation, JSONLinkable data, NodeAccessor nodeAccessor, ElementsProcessor processor) throws RepositoryException {
         final Session session = getSession();
 
         try {
-            // check if we're trying to access root's sub-elements
-            if (subElementType.isEmpty() && accessors.containsKey(idOrPath)) {
-                subElementType = idOrPath;
-                idOrPath = "";
-            }
+            String idOrPath = processor.getIdOrPath();
+            String subElementType = processor.getSubElementType();
+            String subElement = processor.getSubElement();
 
             final Node node = nodeAccessor.getNode(URIUtils.unescape(idOrPath), session);
 
-            if (subElementType.startsWith("/")) {
-                subElementType = subElementType.substring(1);
-            }
-
-            if (subElement.startsWith("/")) {
-                subElement = subElement.substring(1);
-            }
-
             final ElementAccessor accessor = accessors.get(subElementType);
             if (accessor != null) {
-                final Response response = accessor.perform(node, URIUtils.unescape(subElement), operation, data,
-                        context);
+                final Response response = accessor.perform(node, URIUtils.unescape(subElement), operation, data, context);
 
                 session.save();
 
@@ -337,4 +330,41 @@ public class API {
         }
     }
 
+    private class ElementsProcessor {
+        private String idOrPath;
+        private String subElementType;
+        private String subElement;
+
+        public ElementsProcessor(String idOrPath, String subElementType, String subElement) {
+            // check if we're trying to access root's sub-elements
+            if (subElementType.isEmpty() && accessors.containsKey(idOrPath)) {
+                subElementType = idOrPath;
+                idOrPath = "";
+            }
+
+            if (subElementType.startsWith("/")) {
+                subElementType = subElementType.substring(1);
+            }
+
+            if (subElement.startsWith("/")) {
+                subElement = subElement.substring(1);
+            }
+
+            this.idOrPath = idOrPath;
+            this.subElementType = subElementType;
+            this.subElement = subElement;
+        }
+
+        public String getIdOrPath() {
+            return idOrPath;
+        }
+
+        public String getSubElementType() {
+            return subElementType;
+        }
+
+        public String getSubElement() {
+            return subElement;
+        }
+    }
 }
