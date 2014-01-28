@@ -41,7 +41,9 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.*;
-import org.jahia.modules.jcrestapi.model.*;
+import org.jahia.modules.jcrestapi.model.JSONLinkable;
+import org.jahia.modules.jcrestapi.model.JSONMixin;
+import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.services.content.JCRSessionFactory;
 import org.osgi.service.component.annotations.Component;
 
@@ -199,7 +201,45 @@ public class API {
     public Object createChildNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
                                   @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context)
             throws RepositoryException {
-        return perform(id, subElementType, subElement, context, "create", childData);
+        ElementsProcessor processor = new ElementsProcessor(id, subElementType, subElement);
+        subElementType = processor.getSubElementType();
+        id = processor.getIdOrPath();
+        subElement = processor.getSubElement();
+
+        if(childData != null && MIXINS.equals(subElementType)) {
+
+            final String unescapedSubElement = URIUtils.unescape(subElement);
+
+            // initialize mixin from childData: we only need to get its name to create it
+            final JSONMixin data = new JSONMixin();
+            data.setName(unescapedSubElement);
+
+            final Session session = getSession();
+            try {
+
+                final Node node = NodeAccessor.byId.getNode(URIUtils.unescape(id), session);
+
+                final ElementAccessor accessor = accessors.get(subElementType);
+                if (accessor != null) {
+                    // this creates the mixin object but more importantly adds the mixin to the parent node
+                    final Response response = accessor.perform(node, unescapedSubElement, "create", data, context);
+
+                    // we now need to use the rest of the given child data to add / update the parent node content
+//                    final NodeElementAccessor nodeAccessor = (NodeElementAccessor) accessors.get(CHILDREN);
+//                    nodeAccessor.perform(node, unescapedSubElement, "create", childData, context);
+
+                    session.save();
+
+                    return response;
+                } else {
+                    return null;
+                }
+            } finally {
+                session.logout();
+            }
+        }
+
+        return perform(context, "create", childData, NodeAccessor.byId, processor);
     }
 
     @DELETE
