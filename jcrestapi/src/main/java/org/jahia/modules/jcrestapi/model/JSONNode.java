@@ -74,13 +74,9 @@ import java.util.Map;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONNode extends JSONItem<Node> {
-    private JSONProperties properties;
+public class JSONNode extends JSONNodeContent {
     private JSONMixins mixins;
-    private JSONChildren children;
     private JSONVersions versions;
-    @XmlElement
-    private String id;
 
 
     public JSONNode() {
@@ -124,15 +120,6 @@ public class JSONNode extends JSONItem<Node> {
         return getProperties().get(property);
     }
 
-    public JSONChildren getJSONChildren() {
-        return children;
-    }
-
-    @XmlElement
-    public Map<String, JSONNode> getChildren() {
-        return children != null ? children.getChildren() : null;
-    }
-
     public JSONMixins getJSONMixins() {
         return mixins;
     }
@@ -152,12 +139,4 @@ public class JSONNode extends JSONItem<Node> {
         return null;
     }
 
-    public JSONProperties getJSONProperties() {
-        return properties;
-    }
-
-    @XmlElement
-    public Map<String, JSONProperty> getProperties() {
-        return properties != null ? properties.getProperties() : null;
-    }
 }

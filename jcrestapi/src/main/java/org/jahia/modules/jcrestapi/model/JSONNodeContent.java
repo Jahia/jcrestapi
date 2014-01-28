@@ -39,46 +39,39 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-
 import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.PropertyDefinition;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONMixin extends JSONNodeContent {
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class JSONNodeContent extends JSONItem<Node> {
+    protected JSONProperties properties;
+    protected JSONChildren children;
     @XmlElement
-    private String name;
-    @XmlElement
-    private Map<String, String> properties;
+    protected String id;
 
-    public JSONMixin() {}
-
-    public void initWith(JSONMixins jsonMixins, NodeType item) throws RepositoryException {
-        super.initWith(URIUtils.getChildURI(jsonMixins.getURI(), item.getName(), true));
-        this.name = item.getName();
-
-        final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
-        properties = new HashMap<String, String>(propertyDefinitions.length);
-        for (PropertyDefinition property : propertyDefinitions) {
-            properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
-        }
+    public JSONChildren getJSONChildren() {
+        return children;
     }
 
-    public JSONMixin(JSONMixins jsonMixins, NodeType item) throws RepositoryException {
-        initWith(jsonMixins, item);
+    @XmlElement
+    public Map<String, JSONNode> getChildren() {
+        return children != null ? children.getChildren() : null;
     }
 
-    @Override
-    protected String getUnescapedTypeName(Node item) throws RepositoryException {
-        return null;
+    public JSONProperties getJSONProperties() {
+        return properties;
+    }
+
+    @XmlElement
+    public Map<String, JSONProperty> getProperties() {
+        return properties != null ? properties.getProperties() : null;
     }
 }
