@@ -39,7 +39,6 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.ElementAccessor;
 import org.jahia.modules.jcrestapi.model.JSONVersion;
 import org.jahia.modules.jcrestapi.model.JSONVersions;
 
@@ -47,8 +46,8 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
-* @author Christophe Laprun
-*/
+ * @author Christophe Laprun
+ */
 public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVersion> {
     @Override
     protected JSONVersions getSubElementContainer(Node node) throws RepositoryException {

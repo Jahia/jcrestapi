@@ -37,7 +37,7 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi;
+package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.model.JSONLinkable;
 import org.jahia.modules.jcrestapi.model.JSONNode;

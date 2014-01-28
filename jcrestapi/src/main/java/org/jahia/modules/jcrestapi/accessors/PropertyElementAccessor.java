@@ -39,7 +39,6 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.ElementAccessor;
 import org.jahia.modules.jcrestapi.model.JSONProperties;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
 
@@ -49,8 +48,8 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
 /**
-* @author Christophe Laprun
-*/
+ * @author Christophe Laprun
+ */
 public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSONProperty> {
     @Override
     protected JSONProperties getSubElementContainer(Node node) throws RepositoryException {

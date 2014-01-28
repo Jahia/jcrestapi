@@ -39,7 +39,6 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.ElementAccessor;
 import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONMixins;
 
@@ -48,8 +47,8 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
 /**
-* @author Christophe Laprun
-*/
+ * @author Christophe Laprun
+ */
 public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin> {
     @Override
     protected JSONMixins getSubElementContainer(Node node) throws RepositoryException {

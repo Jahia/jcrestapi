@@ -39,7 +39,6 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.ElementAccessor;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 
@@ -47,8 +46,8 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
-* @author Christophe Laprun
-*/
+ * @author Christophe Laprun
+ */
 public class IdentityElementAccessor extends ElementAccessor<JSONSubElementContainer, JSONNode> {
     @Override
     protected Object getElement(Node node, String subElement) throws RepositoryException {
