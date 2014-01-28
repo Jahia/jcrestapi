@@ -37,51 +37,41 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi;
+package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.model.JSONLinkable;
+import org.jahia.modules.jcrestapi.ElementAccessor;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 
 /**
- * @author Christophe Laprun
- */
-public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable> {
+* @author Christophe Laprun
+*/
+public class IdentityElementAccessor extends ElementAccessor<JSONSubElementContainer, JSONNode> {
+    @Override
     protected Object getElement(Node node, String subElement) throws RepositoryException {
-        if (subElement.isEmpty()) {
-            return getSubElementContainer(node);
-        } else {
-            return getSubElement(node, subElement);
-        }
+        return new JSONNode(node, 1);
     }
 
-    protected JSONNode getParentFrom(Node node) throws RepositoryException {
-        return new JSONNode(node, 0);
+    @Override
+    protected JSONSubElementContainer getSubElementContainer(Node node) throws RepositoryException {
+        throw new IllegalStateException("Cannot call getSubElementContainer on identity ElementAccessor");
     }
 
-    protected abstract C getSubElementContainer(Node node) throws RepositoryException;
-    protected abstract T getSubElement(Node node, String subElement) throws RepositoryException;
-    protected abstract T delete(Node node, String subElement) throws RepositoryException;
-    protected abstract T create(Node node, String subElement, T childData) throws RepositoryException;
+    @Override
+    protected JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
+        throw new IllegalStateException("Cannot call getSubElement on identity ElementAccessor");
+    }
 
-    public Response perform(Node node, String subElement, String operation, T childData, UriInfo context) throws RepositoryException {
-        if("delete".equals(operation)) {
-            delete(node, subElement);
-            return Response.noContent().build();
-        } else if("create".equals(operation)) {
-            final T entity = create(node, subElement, childData);
-            return Response.created(context.getAbsolutePath()).entity(entity).build();
-        } else if ("read".equals(operation)) {
-            final Object element = getElement(node, subElement);
-            return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
-        }
+    @Override
+    protected JSONNode delete(Node node, String subElement) throws RepositoryException {
+        throw new IllegalStateException("Cannot call delete on identity ElementAccessor"); // todo?
+    }
 
-        return null;
+    @Override
+    protected JSONNode create(Node node, String subElement, JSONNode childData) throws RepositoryException {
+        throw new IllegalStateException("Cannot call create on identity ElementAccessor"); // todo?
     }
 }

@@ -40,12 +40,12 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.api.Constants;
+import org.jahia.modules.jcrestapi.accessors.*;
 import org.jahia.modules.jcrestapi.model.*;
 import org.jahia.services.content.JCRSessionFactory;
 import org.osgi.service.component.annotations.Component;
 
 import javax.jcr.*;
-import javax.jcr.nodetype.NodeType;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.qom.*;
 import javax.ws.rs.*;
@@ -82,136 +82,11 @@ public class API {
 
         VERSION = props.getProperty("jcrestapi.version");
 
-        accessors.put(PROPERTIES, new ElementAccessor<JSONProperties, JSONProperty>() {
-            @Override
-            JSONProperties getSubElementContainer(Node node) throws RepositoryException {
-                return new JSONProperties(getParentFrom(node), node);
-            }
-
-            @Override
-            JSONProperty getSubElement(Node node, String subElement) throws RepositoryException {
-                return new JSONProperty(node.getProperty(subElement));
-            }
-
-            @Override
-            JSONProperty delete(Node node, String subElement) throws RepositoryException {
-                node.setProperty(subElement, (Value) null);
-                return null;
-            }
-
-            @Override
-            JSONProperty create(Node node, String subElement, JSONProperty childData) throws RepositoryException {
-                final Object value = childData.getValue();
-                final String[] stringValue = childData.isMultiple() ? (String[]) value : new String[]{(String) value};
-                final Property property = node.setProperty(subElement, stringValue);
-                return new JSONProperty(property);
-            }
-        });
-        accessors.put(CHILDREN, new ElementAccessor<JSONChildren, JSONNode>() {
-            @Override
-            JSONChildren getSubElementContainer(Node node) throws RepositoryException {
-                return new JSONChildren(getParentFrom(node), node);
-            }
-
-            @Override
-            JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
-                return new JSONNode(node.getNode(subElement), 1);
-            }
-
-            @Override
-            JSONNode delete(Node node, String subElement) throws RepositoryException {
-                final Node child = node.getNode(subElement);
-                child.remove();
-                return null;
-            }
-
-            @Override
-            JSONNode create(Node node, String subElement, JSONNode childData) throws RepositoryException {
-                final Node child = node.addNode(subElement);
-                // todo: copy data from childData to child
-                return new JSONNode(child, 1);
-            }
-        });
-        accessors.put(MIXINS, new ElementAccessor<JSONMixins, JSONMixin>() {
-            @Override
-            JSONMixins getSubElementContainer(Node node) throws RepositoryException {
-                return new JSONMixins(getParentFrom(node), node);
-            }
-
-            @Override
-            JSONMixin getSubElement(Node node, String subElement) throws RepositoryException {
-                return getSubElementContainer(node).getMixins().get(subElement);
-            }
-
-            @Override
-            JSONMixin delete(Node node, String subElement) throws RepositoryException {
-                node.removeMixin(subElement);
-                return null;
-            }
-
-            @Override
-            JSONMixin create(Node node, String subElement, JSONMixin childData) throws RepositoryException {
-                node.addMixin(subElement);
-
-                final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
-                NodeType mixin = null;
-                for (NodeType mixinNodeType : mixinNodeTypes) {
-                    if (mixinNodeType.getName().equals(subElement)) {
-                        mixin = mixinNodeType;
-                        break;
-                    }
-                }
-
-                return new JSONMixin(getSubElementContainer(node), mixin);
-            }
-        });
-        accessors.put(VERSIONS, new ElementAccessor<JSONVersions, JSONVersion>() {
-            @Override
-            JSONVersions getSubElementContainer(Node node) throws RepositoryException {
-                return new JSONVersions(getParentFrom(node), node);
-            }
-
-            @Override
-            JSONVersion getSubElement(Node node, String subElement) throws RepositoryException {
-                return null; // todo
-            }
-
-            @Override
-            JSONVersion delete(Node node, String subElement) throws RepositoryException {
-                return null; // todo
-            }
-
-            @Override
-            JSONVersion create(Node node, String subElement, JSONVersion childData) throws RepositoryException {
-                return null; // todo
-            }
-        });
-        accessors.put("", new ElementAccessor<JSONSubElementContainer, JSONNode>() {
-            @Override
-            Object getElement(Node node, String subElement) throws RepositoryException {
-                return new JSONNode(node, 1);
-            }
-
-            @Override
-            JSONSubElementContainer getSubElementContainer(Node node) throws RepositoryException {
-                throw new IllegalStateException("Cannot call getSubElementContainer on identity ElementAccessor");
-            }
-
-            @Override
-            JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
-                throw new IllegalStateException("Cannot call getSubElement on identity ElementAccessor");
-            }
-
-            @Override
-            JSONNode delete(Node node, String subElement) throws RepositoryException {
-                throw new IllegalStateException("Cannot call delete on identity ElementAccessor"); // todo?
-            }
-
-            @Override
-            JSONNode create(Node node, String subElement, JSONNode childData) throws RepositoryException {
-                throw new IllegalStateException("Cannot call create on identity ElementAccessor"); // todo?
-            }
-        });
+        accessors.put(PROPERTIES, new PropertyElementAccessor());
+        accessors.put(CHILDREN, new NodeElementAccessor());
+        accessors.put(MIXINS, new MixinElementAccessor());
+        accessors.put(VERSIONS, new VersionElementAccessor());
+        accessors.put("", new IdentityElementAccessor());
     }
 
     private SpringBeansAccess beansAccess = SpringBeansAccess.getInstance();
@@ -461,4 +336,5 @@ public class API {
             return "";
         }
     }
+
 }

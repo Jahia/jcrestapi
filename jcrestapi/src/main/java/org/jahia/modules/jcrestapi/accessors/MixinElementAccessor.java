@@ -37,51 +37,49 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi;
+package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.model.JSONLinkable;
-import org.jahia.modules.jcrestapi.model.JSONNode;
-import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
+import org.jahia.modules.jcrestapi.ElementAccessor;
+import org.jahia.modules.jcrestapi.model.JSONMixin;
+import org.jahia.modules.jcrestapi.model.JSONMixins;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
+import javax.jcr.nodetype.NodeType;
 
 /**
- * @author Christophe Laprun
- */
-public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable> {
-    protected Object getElement(Node node, String subElement) throws RepositoryException {
-        if (subElement.isEmpty()) {
-            return getSubElementContainer(node);
-        } else {
-            return getSubElement(node, subElement);
-        }
+* @author Christophe Laprun
+*/
+public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin> {
+    @Override
+    protected JSONMixins getSubElementContainer(Node node) throws RepositoryException {
+        return new JSONMixins(getParentFrom(node), node);
     }
 
-    protected JSONNode getParentFrom(Node node) throws RepositoryException {
-        return new JSONNode(node, 0);
+    @Override
+    protected JSONMixin getSubElement(Node node, String subElement) throws RepositoryException {
+        return getSubElementContainer(node).getMixins().get(subElement);
     }
 
-    protected abstract C getSubElementContainer(Node node) throws RepositoryException;
-    protected abstract T getSubElement(Node node, String subElement) throws RepositoryException;
-    protected abstract T delete(Node node, String subElement) throws RepositoryException;
-    protected abstract T create(Node node, String subElement, T childData) throws RepositoryException;
-
-    public Response perform(Node node, String subElement, String operation, T childData, UriInfo context) throws RepositoryException {
-        if("delete".equals(operation)) {
-            delete(node, subElement);
-            return Response.noContent().build();
-        } else if("create".equals(operation)) {
-            final T entity = create(node, subElement, childData);
-            return Response.created(context.getAbsolutePath()).entity(entity).build();
-        } else if ("read".equals(operation)) {
-            final Object element = getElement(node, subElement);
-            return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
-        }
-
+    @Override
+    protected JSONMixin delete(Node node, String subElement) throws RepositoryException {
+        node.removeMixin(subElement);
         return null;
+    }
+
+    @Override
+    protected JSONMixin create(Node node, String subElement, JSONMixin childData) throws RepositoryException {
+        node.addMixin(subElement);
+
+        final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
+        NodeType mixin = null;
+        for (NodeType mixinNodeType : mixinNodeTypes) {
+            if (mixinNodeType.getName().equals(subElement)) {
+                mixin = mixinNodeType;
+                break;
+            }
+        }
+
+        return new JSONMixin(getSubElementContainer(node), mixin);
     }
 }
