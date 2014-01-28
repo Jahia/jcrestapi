@@ -76,7 +76,8 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
         if (API.DELETE.equals(operation)) {
             delete(node, subElement);
             return Response.noContent().build();
-        } else if (API.CREATE.equals(operation)) {
+        } else if (API.CREATE_OR_UPDATE.equals(operation)) {
+            // todo: deal with update scenario
             final T entity = create(node, subElement, childData);
             return Response.created(context.getAbsolutePath()).entity(entity).build();
         } else if (API.READ.equals(operation)) {

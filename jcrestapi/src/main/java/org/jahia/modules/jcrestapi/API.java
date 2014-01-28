@@ -63,7 +63,7 @@ import java.util.*;
 public class API {
     public static final String VERSION;
     public static final String DELETE = "delete";
-    public static final String CREATE = "create";
+    public static final String CREATE_OR_UPDATE = "createOrUpdate";
     public static final String READ = "read";
 
     static final String API_PATH = "/api";
@@ -197,8 +197,8 @@ public class API {
             "|" + API.VERSIONS +
             "))?}{subElement: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Object createChildNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
-                                  @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context)
+    public Object createOrUpdateChildNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
+                                          @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context)
             throws RepositoryException {
         ElementsProcessor processor = new ElementsProcessor(id, subElementType, subElement);
         subElementType = processor.getSubElementType();
@@ -218,7 +218,7 @@ public class API {
                 final ElementAccessor accessor = accessors.get(subElementType);
                 if (accessor != null) {
                     // this creates the mixin object but more importantly adds the mixin to the parent node
-                    final Response response = accessor.perform(node, subElement, CREATE, data, context);
+                    final Response response = accessor.perform(node, subElement, CREATE_OR_UPDATE, data, context);
 
                     // we now need to use the rest of the given child data to add / update the parent node content
 //                    final NodeElementAccessor nodeAccessor = (NodeElementAccessor) accessors.get(CHILDREN);
