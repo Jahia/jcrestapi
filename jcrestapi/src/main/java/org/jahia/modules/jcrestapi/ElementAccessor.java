@@ -79,7 +79,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
             return Response.created(context.getAbsolutePath()).entity(entity).build();
         } else if ("read".equals(operation)) {
             final Object element = getElement(node, subElement);
-            return Response.ok(element).build();
+            return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
         }
 
         return null;
