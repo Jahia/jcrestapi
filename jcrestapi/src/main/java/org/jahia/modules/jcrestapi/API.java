@@ -226,8 +226,7 @@ public class API {
                     final Response response = accessor.perform(node, subElement, CREATE_OR_UPDATE, data, context);
 
                     // we now need to use the rest of the given child data to add / update the parent node content
-//                    final NodeElementAccessor nodeAccessor = (NodeElementAccessor) accessors.get(CHILDREN);
-//                    nodeAccessor.perform(node, unescapedSubElement, "create", childData, context);
+                    NodeElementAccessor.initNodeFrom(node, childData);
 
                     session.save();
 
