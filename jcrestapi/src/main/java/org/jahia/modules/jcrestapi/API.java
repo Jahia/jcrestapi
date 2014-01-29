@@ -163,13 +163,18 @@ public class API {
 
     private Session getSession() throws RepositoryException {
         final Repository repository = beansAccess.getRepository();
+        final Session session;
         if (repository instanceof JCRSessionFactory) {
             JCRSessionFactory factory = (JCRSessionFactory) repository;
-            return factory.getCurrentUserSession("live", Locale.ENGLISH);
+            session = factory.getCurrentUserSession("live", Locale.ENGLISH);
         }
         else {
-            return repository.login(getRoot());
+            session = repository.login(getRoot());
         }
+
+        beansAccess.setValueFactory(session.getValueFactory());
+
+        return session;
     }
 
     private static interface NodeAccessor {

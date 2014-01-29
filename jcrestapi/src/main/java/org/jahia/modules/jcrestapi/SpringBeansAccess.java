@@ -40,6 +40,7 @@
 package org.jahia.modules.jcrestapi;
 
 import javax.jcr.Repository;
+import javax.jcr.ValueFactory;
 
 /**
  * @author Christophe Laprun
@@ -47,6 +48,7 @@ import javax.jcr.Repository;
 public class SpringBeansAccess {
     private final static SpringBeansAccess instance = new SpringBeansAccess();
     private Repository repository;
+    private ValueFactory valueFactory;
 
     private SpringBeansAccess() {
     }
@@ -61,5 +63,13 @@ public class SpringBeansAccess {
 
     public void setRepository(Repository repository) {
         this.repository = repository;
+    }
+
+    public ValueFactory getValueFactory() {
+        return valueFactory;
+    }
+
+    public void setValueFactory(ValueFactory valueFactory) {
+        this.valueFactory = valueFactory;
     }
 }
