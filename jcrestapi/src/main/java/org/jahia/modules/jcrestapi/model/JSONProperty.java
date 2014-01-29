@@ -58,7 +58,6 @@ public class JSONProperty extends JSONItem<Property> {
     @XmlElement
     private boolean multiple;
 
-    @XmlElement
     private Object value;
 
     public JSONProperty() {
@@ -69,13 +68,9 @@ public class JSONProperty extends JSONItem<Property> {
 
         this.multiple = property.isMultiple();
         if (multiple) {
-            final Value[] values = property.getValues();
-            value = new Object[values.length];
-            for (int i = 0; i < values.length; i++) {
-                ((Object[]) value)[i] = convertValue(values[i]);
-            }
+            this.value = property.getValues();
         } else {
-            this.value = convertValue(property.getValue());
+            this.value = property.getValue();
         }
     }
 
@@ -93,8 +88,8 @@ public class JSONProperty extends JSONItem<Property> {
     }
 
     /**
-     * Property types are a little bit more tricky: we need to get the declaring node type and figure out in its array
-     * of property definitions which one matches our property to be able to build the proper type link.
+     * Property types are a little bit more tricky: we need to get the declaring node type and figure out in its array of property definitions which one matches our property to be
+     * able to build the proper type link.
      *
      * @param item
      * @return
@@ -130,8 +125,26 @@ public class JSONProperty extends JSONItem<Property> {
         }
     }
 
-    public Object getValue() {
-        return value;
+    @XmlElement
+    public Object getValue() throws RepositoryException {
+        Object result;
+        if (multiple) {
+            // if we have an array of Values, we need to convert them
+            if(Value.class.isAssignableFrom(value.getClass().getComponentType())) {
+                final Value[] values = (Value[]) value;
+                result = new Object[values.length];
+                for (int i = 0; i < values.length; i++) {
+                    ((Object[]) result)[i] = convertValue(values[i]);
+                }
+            } else {
+                // otherwise we've got Objects, so just return that
+                result = value;
+            }
+        } else {
+            result = (value instanceof Value) ? convertValue((Value)value) : value;
+        }
+
+        return result;
     }
 
     public boolean isMultiple() {
@@ -179,4 +192,6 @@ public class JSONProperty extends JSONItem<Property> {
         }
         return theValue;
     }
+
+
 }
