@@ -39,11 +39,18 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONChildren;
+import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONNode;
+import org.jahia.modules.jcrestapi.model.JSONProperty;
+import org.jahia.services.content.JCRNodeWrapper;
+import org.jahia.services.content.nodetypes.ExtendedPropertyDefinition;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Christophe Laprun
@@ -69,7 +76,81 @@ public class NodeElementAccessor extends ElementAccessor<JSONChildren, JSONNode>
     @Override
     protected JSONNode create(Node node, String subElement, JSONNode childData) throws RepositoryException {
         final Node child = node.addNode(subElement);
-        // todo: copy data from childData to child
+
+        initNodeFrom(child, childData);
+
         return new JSONNode(child, 1);
+    }
+
+    public static void initNodeFrom(Node node, JSONNode jsonNode) throws RepositoryException {
+        // mixins
+        final Map<String,JSONMixin> mixins = jsonNode.getMixins();
+        if (mixins != null) {
+            for (String mixinName : mixins.keySet()) {
+                node.addMixin(mixinName);
+            }
+        }
+
+
+        // properties
+        final Map<String, JSONProperty> jsonProperties = jsonNode.getProperties();
+        if (jsonProperties != null) {
+            final Set<Map.Entry<String,JSONProperty>> properties = jsonProperties.entrySet();
+
+            /*// record the mapping of property name to property type
+            Map<String, Integer> nameToType = new HashMap<String, Integer>(properties.size());
+            // first init the map with the given property names so that we can see whether we have unknown properties
+            // if at the end of the process we still have -1 values for some property names, it's an error
+            for (String name : jsonProperties.keySet()) {
+                nameToType.put(URIUtils.unescape(name), -1); // need to unescape property name
+            }
+            // then look at the node property definitions
+            final PropertyDefinition[] propertyDefinitions = node.getPrimaryNodeType().getPropertyDefinitions();
+            int counter = 0; // to only look at the given
+            for (PropertyDefinition propertyDefinition : propertyDefinitions) {
+                final String name = propertyDefinition.getName();
+                // associate the type information to the property name
+                if(nameToType.containsKey(name)) {
+                    nameToType.put(name, propertyDefinition.getRequiredType());
+                }
+            }*/
+
+            // set the properties
+            for (Map.Entry<String, JSONProperty> entry : properties) {
+                final String propName = URIUtils.unescape(entry.getKey());
+
+                // get the associated type
+                /*final Integer type = nameToType.get(propName);
+                if(type == null || type < 0) {
+                    // we have a property name for which we don't have a type, so ignore the property
+                    // todo: error reporting?
+                    continue;
+                }*/
+
+                JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
+                final ExtendedPropertyDefinition propType = wrapper.getApplicablePropertyDefinition(propName);
+                if(propType == null) {
+                    continue;
+                }
+                final int type = propType.getRequiredType();
+
+                final JSONProperty jsonProperty = entry.getValue();
+                final Object value = jsonProperty.getValue();
+                // are we looking at a multi-valued property?
+                if(value instanceof Object[]) {
+                    node.setProperty(propName, jsonProperty.getValueAsStringArray(), type);
+                }
+                else {
+                    node.setProperty(propName, jsonProperty.getValueAsString(), type);
+                }
+            }
+        }
+
+
+        // children
+        final Map<String, JSONNode> children = jsonNode.getChildren();
+        if(children != null) {
+            // todo
+        }
     }
 }
