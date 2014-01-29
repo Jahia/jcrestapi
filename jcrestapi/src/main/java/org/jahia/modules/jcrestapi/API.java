@@ -240,7 +240,7 @@ public class API {
             }
         }
 
-        return perform(context, "create", childData, NodeAccessor.byId, processor);
+        return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
     }
 
     @DELETE
