@@ -70,12 +70,12 @@ public class JSONProperty extends JSONItem<Property> {
         this.multiple = property.isMultiple();
         if (multiple) {
             final Value[] values = property.getValues();
-            value = new String[values.length];
+            value = new Object[values.length];
             for (int i = 0; i < values.length; i++) {
-                ((String[]) value)[i] = values[i].getString();
+                ((Object[]) value)[i] = convertValue(values[i]);
             }
         } else {
-            this.value = property.getString();
+            this.value = convertValue(property.getValue());
         }
     }
 
@@ -136,5 +136,47 @@ public class JSONProperty extends JSONItem<Property> {
 
     public boolean isMultiple() {
         return multiple;
+    }
+
+    public static Object convertValue(Value val) throws RepositoryException {
+        Object theValue;
+        if (val == null) {
+            return null;
+        }
+        switch (val.getType()) {
+            case PropertyType.BINARY:
+                theValue = val.getString();
+                break;
+            case PropertyType.BOOLEAN:
+                theValue = val.getBoolean();
+                break;
+            case PropertyType.DATE:
+                theValue = val.getDate();
+                break;
+            case PropertyType.DOUBLE:
+                theValue = val.getDouble();
+                break;
+            case PropertyType.LONG:
+                theValue = val.getLong();
+                break;
+            case PropertyType.NAME:
+                theValue = val.getString();
+                break;
+            case PropertyType.PATH:
+                theValue = val.getString();
+                break;
+            case PropertyType.REFERENCE:
+                theValue = val.getString();
+                break;
+            case PropertyType.STRING:
+                theValue = val.getString();
+                break;
+            case PropertyType.UNDEFINED:
+                theValue = val.getString();
+                break;
+            default:
+                theValue = val.getString();
+        }
+        return theValue;
     }
 }
