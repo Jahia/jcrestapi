@@ -41,10 +41,7 @@ package org.jahia.modules.jcrestapi.model;
 
 import org.jahia.modules.jcrestapi.URIUtils;
 
-import javax.jcr.Property;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
+import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.bind.annotation.XmlElement;
@@ -58,6 +55,7 @@ public class JSONProperty extends JSONItem<Property> {
     @XmlElement
     private boolean multiple;
 
+    @XmlElement
     private Object value;
 
     public JSONProperty() {
@@ -68,9 +66,13 @@ public class JSONProperty extends JSONItem<Property> {
 
         this.multiple = property.isMultiple();
         if (multiple) {
-            this.value = property.getValues();
+            final Value[] values = property.getValues();
+            value = new Object[values.length];
+            for (int i = 0; i < values.length; i++) {
+                ((Object[]) value)[i] = convertValue(values[i]);
+            }
         } else {
-            this.value = property.getValue();
+            this.value = convertValue(property.getValue());
         }
     }
 
@@ -125,23 +127,26 @@ public class JSONProperty extends JSONItem<Property> {
         }
     }
 
-    @XmlElement
-    public Object getValue() throws RepositoryException {
-        Object result;
-        if (multiple) {
-            // if we have an array of Values, we need to convert them
-            if(Value.class.isAssignableFrom(value.getClass().getComponentType())) {
-                final Value[] values = (Value[]) value;
-                result = new Object[values.length];
-                for (int i = 0; i < values.length; i++) {
-                    ((Object[]) result)[i] = convertValue(values[i]);
-                }
-            } else {
-                // otherwise we've got Objects, so just return that
-                result = value;
-            }
-        } else {
-            result = (value instanceof Value) ? convertValue((Value)value) : value;
+    public Object getValue() {
+        return value;
+    }
+
+    public String getValueAsString() {
+        if(multiple) {
+            throw new IllegalStateException("Cannot call getValueAsString on property with multiple values.");
+        }
+        return value.toString();
+    }
+
+    public String[] getValueAsStringArray() {
+        if(!multiple) {
+            throw new IllegalStateException("Cannot call getValueAsStringArray on property with non-multiple values.");
+        }
+        Object[] values = (Object[]) value;
+        String[] result = new String[values.length];
+        int i = 0;
+        for (Object o : values) {
+            result[i++] = o.toString();
         }
 
         return result;
@@ -192,6 +197,4 @@ public class JSONProperty extends JSONItem<Property> {
         }
         return theValue;
     }
-
-
 }
