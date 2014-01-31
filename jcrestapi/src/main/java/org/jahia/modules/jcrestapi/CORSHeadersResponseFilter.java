@@ -42,6 +42,7 @@ package org.jahia.modules.jcrestapi;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 
@@ -58,5 +59,9 @@ public class CORSHeadersResponseFilter implements ContainerResponseFilter {
         headers.add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
         headers.add("Access-Control-Allow-Credentials", "true");
         headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+
+        // tell the client to not cache the responses
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-cache");
+        headers.add("Pragma", "no-cache"); // for HTTP 1.0
     }
 }
