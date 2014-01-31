@@ -167,12 +167,9 @@ public class API {
         if (repository instanceof JCRSessionFactory) {
             JCRSessionFactory factory = (JCRSessionFactory) repository;
             session = factory.getCurrentUserSession("live", Locale.ENGLISH);
-        }
-        else {
+        } else {
             session = repository.login(getRoot());
         }
-
-        beansAccess.setValueFactory(session.getValueFactory());
 
         return session;
     }
@@ -210,7 +207,7 @@ public class API {
         id = processor.getIdOrPath();
         subElement = processor.getSubElement();
 
-        if(childData != null && MIXINS.equals(subElementType)) {
+        if (childData != null && MIXINS.equals(subElementType)) {
             // initialize mixin from childData: we only need to get its name to create it
             final JSONMixin data = new JSONMixin();
             data.setName(subElement);
