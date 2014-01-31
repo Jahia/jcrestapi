@@ -101,15 +101,13 @@ public class NodeElementAccessor extends ElementAccessor<JSONChildren, JSONNode>
             for (Map.Entry<String, JSONProperty> entry : properties) {
                 final String propName = URIUtils.unescape(entry.getKey());
 
+                final Integer type = getTypeOfPropertyOnNode(propName, node);
+
+                if(type == null) {
                     // we have a property name for which we don't have a type, so ignore the property
                     // todo: error reporting?
                     continue;
-                JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
-                final ExtendedPropertyDefinition propType = wrapper.getApplicablePropertyDefinition(propName);
-                if(propType == null) {
-                    continue;
                 }
-                final int type = propType.getRequiredType();
 
                 final JSONProperty jsonProperty = entry.getValue();
                 final Object value = jsonProperty.getValue();
@@ -129,5 +127,12 @@ public class NodeElementAccessor extends ElementAccessor<JSONChildren, JSONNode>
         if(children != null) {
             // todo
         }
+    }
+
+    static Integer getTypeOfPropertyOnNode(String propName,  Node node) throws RepositoryException {
+        JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
+        final ExtendedPropertyDefinition propType = wrapper.getApplicablePropertyDefinition(propName);
+
+        return propType == null ? null : propType.getRequiredType();
     }
 }
