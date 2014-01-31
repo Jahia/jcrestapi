@@ -49,7 +49,7 @@ import java.io.IOException;
 /**
  * @author Christophe Laprun
  */
-public class CORSHeadersResponseFilter implements ContainerResponseFilter {
+public class HeadersResponseFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws

@@ -47,6 +47,6 @@ import org.glassfish.jersey.server.ResourceConfig;
  */
 public class APIApplication extends ResourceConfig {
     public APIApplication() {
-        super(API.class, APIExceptionMapper.class, JacksonJaxbJsonProvider.class, CORSHeadersResponseFilter.class);
+        super(API.class, APIExceptionMapper.class, JacksonJaxbJsonProvider.class, HeadersResponseFilter.class);
     }
 }
