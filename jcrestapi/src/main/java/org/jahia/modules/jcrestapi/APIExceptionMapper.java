@@ -50,12 +50,24 @@ import javax.ws.rs.ext.Provider;
  * @author Christophe Laprun
  */
 @Provider
-public class RepositoryExceptionMapper implements ExceptionMapper<RepositoryException> {
-    @Override
+public class APIExceptionMapper implements ExceptionMapper<Throwable> {
     public Response toResponse(RepositoryException exception) {
         if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+        return defaultResponse(exception);
+    }
+
+    private Response defaultResponse(Throwable exception) {
         return Response.serverError().entity(exception).build();
+    }
+
+    @Override
+    public Response toResponse(Throwable exception) {
+        if (exception instanceof RepositoryException) {
+            return toResponse((RepositoryException) exception);
+        }
+
+        return defaultResponse(exception);
     }
 }

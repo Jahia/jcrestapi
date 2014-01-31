@@ -77,7 +77,7 @@ public class APITest {
         contextBuilder.bind(httpServer);
 
         // to make sure our ExceptionMapper is properly registered
-        deployment.getProviderFactory().registerProvider(RepositoryExceptionMapper.class);
+        deployment.getProviderFactory().registerProvider(APIExceptionMapper.class);
 
         httpServer.start();
     }
