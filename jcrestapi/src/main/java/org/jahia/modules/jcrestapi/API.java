@@ -346,7 +346,7 @@ public class API {
         return new SimpleCredentials("root", new char[]{'r', 'o', 'o', 't', '1', '2', '3', '4'});
     }
 
-    private boolean exists(String name) {
+    public static boolean exists(String name) {
         return name != null && !name.isEmpty();
     }
 
