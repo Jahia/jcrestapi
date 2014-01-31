@@ -280,7 +280,7 @@ public class API {
     @Path("/byType/{type}")
     @Produces(MediaType.APPLICATION_JSON)
     public Object getByType(@PathParam("type") String type,
-                            @QueryParam("named") String name,
+                            @QueryParam("nameContains") String name,
                             @QueryParam("orderBy") String orderBy,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
@@ -300,9 +300,11 @@ public class API {
                     stringComparisonConstraint(qomFactory.propertyValue(SELECTOR_NAME, Constants.JCR_LANGUAGE), "en", qomFactory, valueFactory)
             );
 
-            // if we have passed a "named" query parameter, only return nodes with the specified name
+            // if we have passed a "named" query parameter, only return nodes which names contain the specified name
             if (exists(name)) {
-                constraint = qomFactory.or(constraint, stringComparisonConstraint(qomFactory.nodeLocalName(SELECTOR_NAME), name, qomFactory, valueFactory));
+                final Comparison likeConstraint = qomFactory.comparison(qomFactory.nodeLocalName(SELECTOR_NAME), QueryObjectModelFactory.JCR_OPERATOR_LIKE,
+                        qomFactory.literal(valueFactory.createValue("%" + name + "%", PropertyType.STRING)));
+                constraint = qomFactory.and(constraint, likeConstraint);
             }
 
             Ordering[] orderings = null;
