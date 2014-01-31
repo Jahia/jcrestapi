@@ -50,7 +50,7 @@ import javax.ws.rs.ext.Provider;
  * @author Christophe Laprun
  */
 @Provider
-public class APIExceptionMapper implements ExceptionMapper<RepositoryException> {
+public class RepositoryExceptionMapper implements ExceptionMapper<RepositoryException> {
     @Override
     public Response toResponse(RepositoryException exception) {
         if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {

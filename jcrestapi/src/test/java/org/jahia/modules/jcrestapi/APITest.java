@@ -77,7 +77,7 @@ public class APITest {
         contextBuilder.bind(httpServer);
 
         // to make sure our ExceptionMapper is properly registered
-        deployment.getProviderFactory().registerProvider(APIExceptionMapper.class);
+        deployment.getProviderFactory().registerProvider(RepositoryExceptionMapper.class);
 
         httpServer.start();
     }
@@ -220,9 +220,8 @@ public class APITest {
     }*/
 
     /**
-     * Instrumented API implementation so that we can get a simple way to set up the API with test fixtures since Spring
-     * injection won't work directly due to the fact that the API bean is loaded in the RESTeasy context in the HTTP
-     * server process.
+     * Instrumented API implementation so that we can get a simple way to set up the API with test fixtures since Spring injection won't work directly due to the fact that the API
+     * bean is loaded in the RESTeasy context in the HTTP server process.
      */
     public static class APIWithFixture extends API {
         public APIWithFixture() {
