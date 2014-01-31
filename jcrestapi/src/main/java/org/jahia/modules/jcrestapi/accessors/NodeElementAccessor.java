@@ -97,36 +97,13 @@ public class NodeElementAccessor extends ElementAccessor<JSONChildren, JSONNode>
         if (jsonProperties != null) {
             final Set<Map.Entry<String,JSONProperty>> properties = jsonProperties.entrySet();
 
-            /*// record the mapping of property name to property type
-            Map<String, Integer> nameToType = new HashMap<String, Integer>(properties.size());
-            // first init the map with the given property names so that we can see whether we have unknown properties
-            // if at the end of the process we still have -1 values for some property names, it's an error
-            for (String name : jsonProperties.keySet()) {
-                nameToType.put(URIUtils.unescape(name), -1); // need to unescape property name
-            }
-            // then look at the node property definitions
-            final PropertyDefinition[] propertyDefinitions = node.getPrimaryNodeType().getPropertyDefinitions();
-            int counter = 0; // to only look at the given
-            for (PropertyDefinition propertyDefinition : propertyDefinitions) {
-                final String name = propertyDefinition.getName();
-                // associate the type information to the property name
-                if(nameToType.containsKey(name)) {
-                    nameToType.put(name, propertyDefinition.getRequiredType());
-                }
-            }*/
-
             // set the properties
             for (Map.Entry<String, JSONProperty> entry : properties) {
                 final String propName = URIUtils.unescape(entry.getKey());
 
-                // get the associated type
-                /*final Integer type = nameToType.get(propName);
-                if(type == null || type < 0) {
                     // we have a property name for which we don't have a type, so ignore the property
                     // todo: error reporting?
                     continue;
-                }*/
-
                 JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
                 final ExtendedPropertyDefinition propType = wrapper.getApplicablePropertyDefinition(propName);
                 if(propType == null) {
