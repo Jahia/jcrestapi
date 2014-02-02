@@ -19,7 +19,7 @@ which is made rather easy since JCR data is stored mostly in tree form.
 
 - versions for a given node are found under the `versions` child resource
 - mixins for a given node are accessed using the `mixins` child resource
-- children for a given node are accessed directly via their path
+- children for a given node are accessed directly via their path or using the `children` child resource
 - `:` character is encoded by `__` in property names since `:` is a reserved character for URIs
 - indices of same name siblings are denoted using the `--` prefix
 - properties for a given node are found under the `properties` child resource to distinguish them from children
