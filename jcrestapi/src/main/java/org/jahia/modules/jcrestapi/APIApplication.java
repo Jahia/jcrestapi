@@ -48,5 +48,15 @@ import org.glassfish.jersey.server.ResourceConfig;
 public class APIApplication extends ResourceConfig {
     public APIApplication() {
         super(API.class, APIExceptionMapper.class, JacksonJaxbJsonProvider.class, HeadersResponseFilter.class);
+
+        // activates tracing of requests and responses and outputs log to /tmp/jersey.log
+        /*property(ServerProperties.TRACING, "ALL");
+        try {
+            Handler fh = new FileHandler("/tmp/jersey.log");
+            Logger.getLogger("").addHandler(fh);
+            Logger.getLogger("org.glassfish.jersey").setLevel(Level.FINEST);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 }
