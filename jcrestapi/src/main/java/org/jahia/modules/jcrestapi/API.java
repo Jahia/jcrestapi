@@ -87,7 +87,7 @@ public class API {
         VERSION = props.getProperty("jcrestapi.version");
 
         accessors.put(PROPERTIES, new PropertyElementAccessor());
-        accessors.put(CHILDREN, new NodeElementAccessor());
+        accessors.put(CHILDREN, new ChildrenElementAccessor());
         accessors.put(MIXINS, new MixinElementAccessor());
         accessors.put(VERSIONS, new VersionElementAccessor());
         accessors.put("", new NodeElementAccessor());
