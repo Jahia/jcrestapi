@@ -207,7 +207,7 @@ public class API {
         return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
     }
 
-    @PUT
+    /*@PUT
     @Path("/nodes/{id: [^/]*}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object updateNode(@PathParam("id") String id, JSONNode childData, @Context UriInfo context)
@@ -215,7 +215,7 @@ public class API {
         ElementsProcessor processor = new ElementsProcessor(id, "", "");
 
         return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
-    }
+    }*/
 
     @DELETE
     @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
@@ -258,7 +258,7 @@ public class API {
     @Path("/byType/{type}")
     @Produces(MediaType.APPLICATION_JSON)
     public Object getByType(@PathParam("type") String type,
-                            @QueryParam("nameContains") String name,
+                            @QueryParam("nameContains") List<String> nameConstraints,
                             @QueryParam("orderBy") String orderBy,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
@@ -279,10 +279,12 @@ public class API {
             );
 
             // if we have passed a "named" query parameter, only return nodes which names contain the specified name
-            if (exists(name)) {
-                final Comparison likeConstraint = qomFactory.comparison(qomFactory.nodeLocalName(SELECTOR_NAME), QueryObjectModelFactory.JCR_OPERATOR_LIKE,
-                        qomFactory.literal(valueFactory.createValue("%" + name + "%", PropertyType.STRING)));
-                constraint = qomFactory.and(constraint, likeConstraint);
+            if (nameConstraints != null && !nameConstraints.isEmpty()) {
+                for (String name : nameConstraints) {
+                    final Comparison likeConstraint = qomFactory.comparison(qomFactory.nodeLocalName(SELECTOR_NAME), QueryObjectModelFactory.JCR_OPERATOR_LIKE,
+                            qomFactory.literal(valueFactory.createValue("%" + name + "%", PropertyType.STRING)));
+                    constraint = qomFactory.and(constraint, likeConstraint);
+                }
             }
 
             Ordering[] orderings = null;
