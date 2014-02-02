@@ -39,36 +39,11 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-
 /**
  * @author Christophe Laprun
  */
-@Provider
-public class APIExceptionMapper implements ExceptionMapper<APIException> {
-    public Response toResponse(RepositoryException exception) {
-        if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return defaultResponse(exception);
-    }
-
-    private Response defaultResponse(Throwable exception) {
-        return Response.serverError().entity(exception).build();
-    }
-
-    @Override
-    public Response toResponse(APIException exception) {
-        final Throwable cause = exception.getCause();
-        if (cause instanceof RepositoryException) {
-            return toResponse((RepositoryException) cause);
-        }
-
-        return defaultResponse(cause);
+public class APIException extends RuntimeException {
+    public APIException(Throwable e) {
+        super(e);
     }
 }

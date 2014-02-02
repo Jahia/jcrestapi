@@ -112,7 +112,7 @@ public class API {
     /**
      * Needed to get URI without trailing / to work :(
      */
-    public Object getRootNode(@Context UriInfo context) throws RepositoryException {
+    public Object getRootNode(@Context UriInfo context) {
         return perform("", "", "", context, READ, null);
     }
 
@@ -124,25 +124,25 @@ public class API {
             "))?}{subElement: .*}")
     @Produces(MediaType.APPLICATION_JSON)
     public Object getNodeById(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
-                              @PathParam("subElement") String subElement, @Context UriInfo context)
-            throws RepositoryException {
+                              @PathParam("subElement") String subElement, @Context UriInfo context) {
         return perform(id, subElementType, subElement, context, READ, null);
     }
 
     private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
-                           String operation, JSONItem data) throws RepositoryException {
+                           String operation, JSONItem data) {
         return perform(idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.byId);
     }
 
     private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
-                           String operation, JSONItem data, NodeAccessor nodeAccessor) throws RepositoryException {
+                           String operation, JSONItem data, NodeAccessor nodeAccessor) {
         return perform(context, operation, data, nodeAccessor, new ElementsProcessor(idOrPath, subElementType, subElement));
     }
 
-    private Object perform(UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) throws RepositoryException {
-        final Session session = getSession();
+    private Object perform(UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
+        Session session = null;
 
         try {
+            session = getSession();
             final Node node = nodeAccessor.getNode(processor.getIdOrPath(), session);
 
             final ElementAccessor accessor = accessors.get(processor.getSubElementType());
@@ -155,8 +155,12 @@ public class API {
             } else {
                 return null;
             }
+        } catch (Exception e) {
+            throw new APIException(e);
         } finally {
-            session.logout();
+            if (session != null) {
+                session.logout();
+            }
         }
     }
 
@@ -200,8 +204,7 @@ public class API {
             "))?}{subElement: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object createOrUpdateChildNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
-                                          @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context)
-            throws RepositoryException {
+                                          @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context) {
         ElementsProcessor processor = new ElementsProcessor(id, subElementType, subElement);
 
         return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
@@ -224,14 +227,14 @@ public class API {
             "|" + API.VERSIONS +
             "))?}{subElement: .*}")
     public Object deleteNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
-                             @PathParam("subElement") String subElement, @Context UriInfo context) throws RepositoryException {
+                             @PathParam("subElement") String subElement, @Context UriInfo context) {
         return perform(id, subElementType, subElement, context, DELETE, null);
     }
 
     @GET
     @Path("/byPath{path: /.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getByPath(@PathParam("path") String path, @Context UriInfo context) throws RepositoryException {
+    public Object getByPath(@PathParam("path") String path, @Context UriInfo context) {
         int index = 0;
         final List<PathSegment> segments = context.getPathSegments();
         for (PathSegment segment : segments) {
@@ -263,11 +266,11 @@ public class API {
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
                             @QueryParam("depth") int depth,
-                            @Context UriInfo context)
-            throws RepositoryException {
-        final Session session = getSession();
+                            @Context UriInfo context) {
+        Session session = null;
 
         try {
+            session = getSession();
             final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();
             final ValueFactory valueFactory = session.getValueFactory();
             final Selector selector = qomFactory.selector(URIUtils.unescape(type), SELECTOR_NAME);
@@ -312,8 +315,12 @@ public class API {
             }
 
             return Response.ok(result).build();
+        } catch (Exception e) {
+            throw new APIException(e);
         } finally {
-            session.logout();
+            if (session != null) {
+                session.logout();
+            }
         }
     }
 
