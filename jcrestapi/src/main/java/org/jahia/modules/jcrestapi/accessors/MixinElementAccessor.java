@@ -68,7 +68,7 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
     }
 
     @Override
-    protected JSONMixin create(Node node, String subElement, JSONNode childData) throws RepositoryException {
+    protected JSONMixin createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
         node.addMixin(subElement);
 
         final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();

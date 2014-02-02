@@ -71,7 +71,8 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
     protected abstract C getSubElementContainer(Node node) throws RepositoryException;
     protected abstract T getSubElement(Node node, String subElement) throws RepositoryException;
     protected abstract T delete(Node node, String subElement) throws RepositoryException;
-    protected abstract T create(Node node, String subElement, U childData) throws RepositoryException;
+
+    protected abstract T createOrUpdate(Node node, String subElement, U childData) throws RepositoryException;
 
     public Response perform(Node node, String subElement, String operation, U childData, UriInfo context) throws RepositoryException {
         if (API.DELETE.equals(operation)) {
@@ -79,7 +80,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
             return Response.noContent().build();
         } else if (API.CREATE_OR_UPDATE.equals(operation)) {
             // todo: deal with update scenario
-            final T entity = create(node, subElement, childData);
+            final T entity = createOrUpdate(node, subElement, childData);
             return Response.created(context.getAbsolutePath()).entity(entity).build();
         } else if (API.READ.equals(operation)) {
             final Object element = getElement(node, subElement);

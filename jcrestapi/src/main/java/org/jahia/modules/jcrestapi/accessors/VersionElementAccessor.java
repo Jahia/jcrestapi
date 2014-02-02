@@ -66,7 +66,7 @@ public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVe
     }
 
     @Override
-    protected JSONVersion create(Node node, String subElement, JSONNode childData) throws RepositoryException {
+    protected JSONVersion createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
         return null; // todo
     }
 }

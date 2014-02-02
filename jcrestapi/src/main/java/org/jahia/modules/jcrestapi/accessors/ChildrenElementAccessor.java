@@ -67,7 +67,7 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONN
     }
 
     @Override
-    protected JSONNode create(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
+    protected JSONNode createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
         final Node newOrToUpdate;
 
         // is it already existing? // todo: deal with same name siblings
