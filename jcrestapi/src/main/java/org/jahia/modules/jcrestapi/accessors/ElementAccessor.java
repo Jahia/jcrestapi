@@ -40,6 +40,7 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.model.JSONItem;
 import org.jahia.modules.jcrestapi.model.JSONLinkable;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
@@ -53,7 +54,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * @author Christophe Laprun
  */
-public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable> {
+public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
 
     protected Object getElement(Node node, String subElement) throws RepositoryException {
         if (subElement.isEmpty()) {
@@ -70,9 +71,9 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
     protected abstract C getSubElementContainer(Node node) throws RepositoryException;
     protected abstract T getSubElement(Node node, String subElement) throws RepositoryException;
     protected abstract T delete(Node node, String subElement) throws RepositoryException;
-    protected abstract T create(Node node, String subElement, T childData) throws RepositoryException;
+    protected abstract T create(Node node, String subElement, U childData) throws RepositoryException;
 
-    public Response perform(Node node, String subElement, String operation, T childData, UriInfo context) throws RepositoryException {
+    public Response perform(Node node, String subElement, String operation, U childData, UriInfo context) throws RepositoryException {
         if (API.DELETE.equals(operation)) {
             delete(node, subElement);
             return Response.noContent().build();

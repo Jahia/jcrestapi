@@ -39,8 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.model.JSONChildren;
 import org.jahia.modules.jcrestapi.model.JSONNode;
-import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -48,29 +48,39 @@ import javax.jcr.RepositoryException;
 /**
  * @author Christophe Laprun
  */
-public class IdentityElementAccessor extends ElementAccessor<JSONSubElementContainer, JSONNode> {
+public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONNode, JSONNode> {
     @Override
-    protected Object getElement(Node node, String subElement) throws RepositoryException {
-        return new JSONNode(node, 1);
-    }
-
-    @Override
-    protected JSONSubElementContainer getSubElementContainer(Node node) throws RepositoryException {
-        throw new IllegalStateException("Cannot call getSubElementContainer on identity ElementAccessor");
+    protected JSONChildren getSubElementContainer(Node node) throws RepositoryException {
+        return new JSONChildren(getParentFrom(node), node);
     }
 
     @Override
     protected JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
-        throw new IllegalStateException("Cannot call getSubElement on identity ElementAccessor");
+        return new JSONNode(node.getNode(subElement), 1);
     }
 
     @Override
     protected JSONNode delete(Node node, String subElement) throws RepositoryException {
-        throw new IllegalStateException("Cannot call delete on identity ElementAccessor"); // todo?
+        final Node child = node.getNode(subElement);
+        child.remove();
+        return null;
     }
 
     @Override
-    protected JSONNode create(Node node, String subElement, JSONNode childData) throws RepositoryException {
-        throw new IllegalStateException("Cannot call create on identity ElementAccessor"); // todo?
+    protected JSONNode create(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
+        final Node newOrToUpdate;
+
+        // is it already existing? // todo: deal with same name siblings
+        if (node.hasNode(subElement)) {
+            // in which case, we just want to update it
+            newOrToUpdate = node.getNode(subElement);
+        } else {
+            // otherwise, we add the new node
+            newOrToUpdate = node.addNode(subElement);
+        }
+
+        NodeElementAccessor.initNodeFrom(newOrToUpdate, nodeData);
+
+        return new JSONNode(newOrToUpdate, 1);
     }
 }

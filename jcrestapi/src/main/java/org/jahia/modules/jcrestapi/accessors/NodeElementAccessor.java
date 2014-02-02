@@ -40,10 +40,10 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.model.JSONChildren;
 import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
+import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.nodetypes.ExtendedPropertyDefinition;
 
@@ -55,31 +55,33 @@ import java.util.Set;
 /**
  * @author Christophe Laprun
  */
-public class NodeElementAccessor extends ElementAccessor<JSONChildren, JSONNode> {
+public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer, JSONNode, JSONNode> {
     @Override
-    protected JSONChildren getSubElementContainer(Node node) throws RepositoryException {
-        return new JSONChildren(getParentFrom(node), node);
+    protected Object getElement(Node node, String subElement) throws RepositoryException {
+        return new JSONNode(node, 1);
+    }
+
+    @Override
+    protected JSONSubElementContainer getSubElementContainer(Node node) throws RepositoryException {
+        throw new UnsupportedOperationException("Cannot call getSubElementContainer on NodeElementAccessor");
     }
 
     @Override
     protected JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
-        return new JSONNode(node.getNode(subElement), 1);
+        throw new UnsupportedOperationException("Cannot call getSubElement on NodeElementAccessor");
     }
 
     @Override
     protected JSONNode delete(Node node, String subElement) throws RepositoryException {
-        final Node child = node.getNode(subElement);
-        child.remove();
+        node.remove();
         return null;
     }
 
     @Override
-    protected JSONNode create(Node node, String subElement, JSONNode childData) throws RepositoryException {
-        final Node child = node.addNode(subElement);
+    protected JSONNode create(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
+        initNodeFrom(node, nodeData);
 
-        initNodeFrom(child, childData);
-
-        return new JSONNode(child, 1);
+        return new JSONNode(node, 1);
     }
 
     public static void initNodeFrom(Node node, JSONNode jsonNode) throws RepositoryException {

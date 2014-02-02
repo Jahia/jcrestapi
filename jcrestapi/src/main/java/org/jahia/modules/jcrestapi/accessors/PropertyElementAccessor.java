@@ -50,7 +50,7 @@ import javax.jcr.Value;
 /**
  * @author Christophe Laprun
  */
-public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSONProperty> {
+public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSONProperty, JSONProperty> {
     @Override
     protected JSONProperties getSubElementContainer(Node node) throws RepositoryException {
         return new JSONProperties(getParentFrom(node), node);

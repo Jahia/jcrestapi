@@ -41,7 +41,6 @@ package org.jahia.modules.jcrestapi.model;
 
 import org.jahia.modules.jcrestapi.URIUtils;
 
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
@@ -54,7 +53,7 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONMixin extends JSONNodeContent {
+public class JSONMixin extends JSONLinkable {
     @XmlElement
     private String name;
     @XmlElement
@@ -79,10 +78,5 @@ public class JSONMixin extends JSONNodeContent {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    protected String getUnescapedTypeName(Node item) throws RepositoryException {
-        return null;
     }
 }

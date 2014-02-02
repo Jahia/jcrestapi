@@ -41,8 +41,7 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.*;
-import org.jahia.modules.jcrestapi.model.JSONLinkable;
-import org.jahia.modules.jcrestapi.model.JSONMixin;
+import org.jahia.modules.jcrestapi.model.JSONItem;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.services.content.JCRSessionFactory;
 import org.osgi.service.component.annotations.Component;
@@ -91,7 +90,7 @@ public class API {
         accessors.put(CHILDREN, new NodeElementAccessor());
         accessors.put(MIXINS, new MixinElementAccessor());
         accessors.put(VERSIONS, new VersionElementAccessor());
-        accessors.put("", new IdentityElementAccessor());
+        accessors.put("", new NodeElementAccessor());
     }
 
     private SpringBeansAccess beansAccess = SpringBeansAccess.getInstance();
@@ -131,16 +130,16 @@ public class API {
     }
 
     private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
-                           String operation, JSONLinkable data) throws RepositoryException {
+                           String operation, JSONItem data) throws RepositoryException {
         return perform(idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.byId);
     }
 
     private Object perform(String idOrPath, String subElementType, String subElement, UriInfo context,
-                           String operation, JSONLinkable data, NodeAccessor nodeAccessor) throws RepositoryException {
+                           String operation, JSONItem data, NodeAccessor nodeAccessor) throws RepositoryException {
         return perform(context, operation, data, nodeAccessor, new ElementsProcessor(idOrPath, subElementType, subElement));
     }
 
-    private Object perform(UriInfo context, String operation, JSONLinkable data, NodeAccessor nodeAccessor, ElementsProcessor processor) throws RepositoryException {
+    private Object perform(UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) throws RepositoryException {
         final Session session = getSession();
 
         try {
@@ -193,6 +192,7 @@ public class API {
     }
 
     @PUT
+//    @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN + "|" + API.MIXINS + "))?}{subElement: .*}")
     @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
             "|" + API.MIXINS +
             "|" + API.PROPERTIES +
@@ -203,38 +203,16 @@ public class API {
                                           @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context)
             throws RepositoryException {
         ElementsProcessor processor = new ElementsProcessor(id, subElementType, subElement);
-        subElementType = processor.getSubElementType();
-        id = processor.getIdOrPath();
-        subElement = processor.getSubElement();
 
-        if (childData != null && MIXINS.equals(subElementType)) {
-            // initialize mixin from childData: we only need to get its name to create it
-            final JSONMixin data = new JSONMixin();
-            data.setName(subElement);
+        return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
+    }
 
-            final Session session = getSession();
-            try {
-
-                final Node node = NodeAccessor.byId.getNode(id, session);
-
-                final ElementAccessor accessor = accessors.get(subElementType);
-                if (accessor != null) {
-                    // this creates the mixin object but more importantly adds the mixin to the parent node
-                    final Response response = accessor.perform(node, subElement, CREATE_OR_UPDATE, data, context);
-
-                    // we now need to use the rest of the given child data to add / update the parent node content
-                    NodeElementAccessor.initNodeFrom(node, childData);
-
-                    session.save();
-
-                    return response;
-                } else {
-                    return null;
-                }
-            } finally {
-                session.logout();
-            }
-        }
+    @PUT
+    @Path("/nodes/{id: [^/]*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object updateNode(@PathParam("id") String id, JSONNode childData, @Context UriInfo context)
+            throws RepositoryException {
+        ElementsProcessor processor = new ElementsProcessor(id, "", "");
 
         return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
     }
