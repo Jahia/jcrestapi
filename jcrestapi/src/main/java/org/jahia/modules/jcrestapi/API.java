@@ -196,7 +196,6 @@ public class API {
     }
 
     @PUT
-//    @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN + "|" + API.MIXINS + "))?}{subElement: .*}")
     @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
             "|" + API.MIXINS +
             "|" + API.PROPERTIES +
@@ -209,16 +208,6 @@ public class API {
 
         return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
     }
-
-    /*@PUT
-    @Path("/nodes/{id: [^/]*}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Object updateNode(@PathParam("id") String id, JSONNode childData, @Context UriInfo context)
-            throws RepositoryException {
-        ElementsProcessor processor = new ElementsProcessor(id, "", "");
-
-        return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
-    }*/
 
     @DELETE
     @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
