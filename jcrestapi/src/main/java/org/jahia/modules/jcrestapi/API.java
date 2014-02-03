@@ -73,6 +73,7 @@ public class API {
     public static final String VERSIONS = "versions";
     private static final String SELECTOR_NAME = "type";
     public static final String TYPE = "type";
+    public static final String TARGET = "target";
 
     private final static Map<String, ElementAccessor> accessors = new HashMap<String, ElementAccessor>(7);
 

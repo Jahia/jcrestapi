@@ -39,9 +39,13 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
-import javax.jcr.*;
+import javax.jcr.Property;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.bind.annotation.XmlElement;
@@ -64,15 +68,24 @@ public class JSONProperty extends JSONItem<Property> {
     public void initWith(Property property) throws RepositoryException {
         super.initWith(property);
 
+        final int type = property.getType();
+        final boolean needsTarget = type == PropertyType.PATH || type == PropertyType.REFERENCE || type == PropertyType.WEAKREFERENCE;
+
         this.multiple = property.isMultiple();
         if (multiple) {
             final Value[] values = property.getValues();
             value = new Object[values.length];
             for (int i = 0; i < values.length; i++) {
                 ((Object[]) value)[i] = convertValue(values[i]);
+                if (needsTarget) {
+                    addLink(new JSONLink(API.TARGET, URIUtils.getIdURI(values[i].getString())));
+                }
             }
         } else {
             this.value = convertValue(property.getValue());
+            if (needsTarget) {
+                addLink(new JSONLink(API.TARGET, URIUtils.getIdURI(property.getString())));
+            }
         }
     }
 
