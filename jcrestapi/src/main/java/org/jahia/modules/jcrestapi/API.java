@@ -206,6 +206,8 @@ public class API {
     public Object createOrUpdateChildNode(@PathParam("id") String id, @PathParam("subElementType") String subElementType,
                                           @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context) {
         ElementsProcessor processor = new ElementsProcessor(id, subElementType, subElement);
+        return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
+    }
 
     @PUT
     @Path("/nodes/{id: [^/]*}/properties/{subElement}")
