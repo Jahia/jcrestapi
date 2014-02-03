@@ -39,13 +39,10 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
 import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
-import org.jahia.services.content.JCRNodeWrapper;
-import org.jahia.services.content.nodetypes.ExtendedPropertyDefinition;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -101,25 +98,7 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
 
             // set the properties
             for (Map.Entry<String, JSONProperty> entry : properties) {
-                final String propName = URIUtils.unescape(entry.getKey());
-
-                final Integer type = getTypeOfPropertyOnNode(propName, node);
-
-                if(type == null) {
-                    // we have a property name for which we don't have a type, so ignore the property
-                    // todo: error reporting?
-                    continue;
-                }
-
-                final JSONProperty jsonProperty = entry.getValue();
-                final Object value = jsonProperty.getValue();
-                // are we looking at a multi-valued property?
-                if(value instanceof Object[]) {
-                    node.setProperty(propName, jsonProperty.getValueAsStringArray(), type);
-                }
-                else {
-                    node.setProperty(propName, jsonProperty.getValueAsString(), type);
-                }
+                PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
             }
         }
 
@@ -129,12 +108,5 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         if(children != null) {
             // todo
         }
-    }
-
-    static Integer getTypeOfPropertyOnNode(String propName,  Node node) throws RepositoryException {
-        JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
-        final ExtendedPropertyDefinition propType = wrapper.getApplicablePropertyDefinition(propName);
-
-        return propType == null ? null : propType.getRequiredType();
     }
 }

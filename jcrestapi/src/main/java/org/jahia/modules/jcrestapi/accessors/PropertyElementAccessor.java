@@ -39,8 +39,11 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONProperties;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
+import org.jahia.services.content.JCRNodeWrapper;
+import org.jahia.services.content.nodetypes.ExtendedPropertyDefinition;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -51,6 +54,34 @@ import javax.jcr.Value;
  * @author Christophe Laprun
  */
 public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSONProperty, JSONProperty> {
+    static Property setPropertyOnNode(String escapedName, JSONProperty jsonProperty, Node node) throws RepositoryException {
+        final String propName = URIUtils.unescape(escapedName);
+
+        final Integer type = getTypeOfPropertyOnNode(propName, node);
+
+        if(type == null) {
+            // we have a property name for which we don't have a type, so ignore the property
+            // todo: error reporting?
+            return null;
+        }
+
+        final Object value = jsonProperty.getValue();
+        // are we looking at a multi-valued property?
+        if(value instanceof Object[]) {
+            return node.setProperty(propName, jsonProperty.getValueAsStringArray(), type);
+        }
+        else {
+            return node.setProperty(propName, jsonProperty.getValueAsString(), type);
+        }
+    }
+
+    static Integer getTypeOfPropertyOnNode(String propName,  Node node) throws RepositoryException {
+        JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
+        final ExtendedPropertyDefinition propType = wrapper.getApplicablePropertyDefinition(propName);
+
+        return propType == null ? null : propType.getRequiredType();
+    }
+
     @Override
     protected JSONProperties getSubElementContainer(Node node) throws RepositoryException {
         return new JSONProperties(getParentFrom(node), node);
@@ -69,9 +100,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
 
     @Override
     protected JSONProperty createOrUpdate(Node node, String subElement, JSONProperty childData) throws RepositoryException {
-        final Object value = childData.getValue();
-        final String[] stringValue = childData.isMultiple() ? (String[]) value : new String[]{(String) value};
-        final Property property = node.setProperty(subElement, stringValue);
+        final Property property = setPropertyOnNode(subElement, childData, node);
         return new JSONProperty(property);
     }
 }
