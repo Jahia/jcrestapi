@@ -81,7 +81,7 @@ public class URIUtils {
         try {
             return getIdURI(node.getIdentifier());
         } catch (RepositoryException e) {
-            throw new RuntimeException(e);
+            throw new APIException(e);
         }
     }
 
@@ -91,7 +91,7 @@ public class URIUtils {
             properties = getURIForProperties(property.getParent());
             return getChildURI(properties, property.getName(), true);
         } catch (RepositoryException e) {
-            throw new RuntimeException(e);
+            throw new APIException(e);
         }
     }
 
@@ -143,7 +143,7 @@ public class URIUtils {
         try {
             return new URI(getChildURI(parent.toASCIIString(), childName, escapeChildName));
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new APIException(e);
         }
     }
 
