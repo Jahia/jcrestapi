@@ -43,6 +43,7 @@ import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.*;
 import org.jahia.modules.jcrestapi.model.JSONItem;
 import org.jahia.modules.jcrestapi.model.JSONNode;
+import org.jahia.modules.jcrestapi.model.JSONProperty;
 import org.jahia.services.content.JCRSessionFactory;
 import org.osgi.service.component.annotations.Component;
 
@@ -214,9 +215,17 @@ public class API {
     @Consumes(MediaType.APPLICATION_JSON)
     public Object createOrUpdateProperty(@PathParam("id") String id, @PathParam("subElement") String subElement, JSONProperty childData, @Context UriInfo context) {
         ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
-
         return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
     }
+
+    @DELETE
+    @Path("/nodes/{id: [^/]*}/properties/{subElement}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object deleteProperty(@PathParam("id") String id, @PathParam("subElement") String subElement, @Context UriInfo context) {
+        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
+        return perform(context, DELETE, null, NodeAccessor.byId, processor);
+    }
+
 
     @DELETE
     @Path("/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
