@@ -207,6 +207,12 @@ public class API {
                                           @PathParam("subElement") String subElement, JSONNode childData, @Context UriInfo context) {
         ElementsProcessor processor = new ElementsProcessor(id, subElementType, subElement);
 
+    @PUT
+    @Path("/nodes/{id: [^/]*}/properties/{subElement}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object createOrUpdateProperty(@PathParam("id") String id, @PathParam("subElement") String subElement, JSONProperty childData, @Context UriInfo context) {
+        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
+
         return perform(context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
     }
 
