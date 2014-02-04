@@ -288,7 +288,7 @@ public class API {
                     stringComparisonConstraint(qomFactory.propertyValue(SELECTOR_NAME, Constants.JCR_LANGUAGE), "en", qomFactory, valueFactory)
             );
 
-            // if we have passed a "named" query parameter, only return nodes which names contain the specified name
+            // if we have passed "nameContains" query parameters, only return nodes which name contains the specified terms
             if (nameConstraints != null && !nameConstraints.isEmpty()) {
                 for (String name : nameConstraints) {
                     final Comparison likeConstraint = qomFactory.comparison(qomFactory.nodeLocalName(SELECTOR_NAME), QueryObjectModelFactory.JCR_OPERATOR_LIKE,
