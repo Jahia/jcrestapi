@@ -13,6 +13,8 @@ since with great accessibility/power comes great responsibility!
 ## TODO:
 
 - Improve cache control using ETag (for simple node GETs) and using Response.cacheControl method instead of filter.
+- Clarify usage of children vs. access via path and its consequences on NodeElementAccessor.
+- Design and implement versions access.
 
 ## Resources identification
 
