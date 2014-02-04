@@ -10,6 +10,10 @@ browsers, directly from any REST-able technology
 - All JCR nodes should be accessible from the API: this mandates that authorization will need to be properly tackled
 since with great accessibility/power comes great responsibility!
 
+## TODO:
+
+- Improve cache control using ETag (for simple node GETs) and using Response.cacheControl method instead of filter.
+
 ## Resources identification
 
 The natural match to map JCR data unto REST concepts is to use JCR nodes as resources, identified by their path,
