@@ -75,10 +75,11 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
     }
 
     @Override
-    protected JSONNode createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
+    protected CreateOrUpdateResult<JSONNode> createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
         initNodeFrom(node, nodeData);
 
-        return new JSONNode(node, 1);
+        // update only scenario at the moment
+        return new CreateOrUpdateResult<JSONNode>(true, new JSONNode(node, 1));
     }
 
     public static void initNodeFrom(Node node, JSONNode jsonNode) throws RepositoryException {

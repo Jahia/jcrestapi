@@ -72,21 +72,35 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
     protected abstract T getSubElement(Node node, String subElement) throws RepositoryException;
     protected abstract T delete(Node node, String subElement) throws RepositoryException;
 
-    protected abstract T createOrUpdate(Node node, String subElement, U childData) throws RepositoryException;
+    protected abstract CreateOrUpdateResult<T> createOrUpdate(Node node, String subElement, U childData) throws RepositoryException;
 
     public Response perform(Node node, String subElement, String operation, U childData, UriInfo context) throws RepositoryException {
         if (API.DELETE.equals(operation)) {
             delete(node, subElement);
             return Response.noContent().build();
         } else if (API.CREATE_OR_UPDATE.equals(operation)) {
-            // todo: deal with update scenario
-            final T entity = createOrUpdate(node, subElement, childData);
-            return Response.created(context.getAbsolutePath()).entity(entity).build();
+            final CreateOrUpdateResult<T> result = createOrUpdate(node, subElement, childData);
+            final T entity = result.item;
+            if (result.isUpdate) {
+                return Response.ok(entity).build();
+            } else {
+                return Response.created(context.getAbsolutePath()).entity(entity).build();
+            }
         } else if (API.READ.equals(operation)) {
             final Object element = getElement(node, subElement);
             return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
         }
 
         throw new IllegalArgumentException("Unknown operation: '" + operation + "'");
+    }
+
+    protected static class CreateOrUpdateResult<T extends JSONLinkable> {
+        final boolean isUpdate;
+        final T item;
+
+        protected CreateOrUpdateResult(boolean isUpdate, T item) {
+            this.isUpdate = isUpdate;
+            this.item = item;
+        }
     }
 }

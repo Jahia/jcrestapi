@@ -46,6 +46,8 @@ import org.jahia.modules.jcrestapi.model.JSONNode;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
@@ -68,21 +70,37 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
     }
 
     @Override
-    protected JSONMixin createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
-        node.addMixin(subElement);
+    protected CreateOrUpdateResult<JSONMixin> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
 
-        final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
-        NodeType mixin = null;
+        // record existing mixins
+        NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
+        final Map<String, NodeType> mixinTypes = new HashMap<String, NodeType>(mixinNodeTypes.length);
         for (NodeType mixinNodeType : mixinNodeTypes) {
-            if (mixinNodeType.getName().equals(subElement)) {
-                mixin = mixinNodeType;
-                break;
+            mixinTypes.put(mixinNodeType.getName(), mixinNodeType);
+        }
+
+        // check whether the node already has the mixin
+        NodeType mixin = mixinTypes.get(subElement);
+        final boolean isUpdate = mixin != null;
+
+        // if the node doesn't already have the mixin, add it
+        if (!isUpdate) {
+            node.addMixin(subElement);
+
+            // unfortunately, we need to loop over mixin node types again now that we've added a new one to get the new node type
+            // todo: try to find a better way
+            mixinNodeTypes = node.getMixinNodeTypes();
+            for (NodeType mixinNodeType : mixinNodeTypes) {
+                if (mixinNodeType.getName().equals(subElement)) {
+                    mixin = mixinNodeType;
+                    break;
+                }
             }
         }
 
         // we now need to use the rest of the given child data to add / update the parent node content
         NodeElementAccessor.initNodeFrom(node, childData);
 
-        return new JSONMixin(getSubElementContainer(node), mixin);
+        return new CreateOrUpdateResult<JSONMixin>(isUpdate, new JSONMixin(getSubElementContainer(node), mixin));
     }
 }

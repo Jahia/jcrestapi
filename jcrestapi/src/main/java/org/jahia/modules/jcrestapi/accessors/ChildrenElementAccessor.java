@@ -67,11 +67,12 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONN
     }
 
     @Override
-    protected JSONNode createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
+    protected CreateOrUpdateResult<JSONNode> createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
         final Node newOrToUpdate;
 
-        // is it already existing? // todo: deal with same name siblings
-        if (node.hasNode(subElement)) {
+        // is the child already existing? // todo: deal with same name siblings
+        final boolean isUpdate = node.hasNode(subElement);
+        if (isUpdate) {
             // in which case, we just want to update it
             newOrToUpdate = node.getNode(subElement);
         } else {
@@ -81,6 +82,6 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONN
 
         NodeElementAccessor.initNodeFrom(newOrToUpdate, nodeData);
 
-        return new JSONNode(newOrToUpdate, 1);
+        return new CreateOrUpdateResult<JSONNode>(isUpdate, new JSONNode(newOrToUpdate, 1));
     }
 }

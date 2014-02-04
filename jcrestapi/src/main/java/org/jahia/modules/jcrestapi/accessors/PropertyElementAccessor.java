@@ -99,8 +99,9 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     }
 
     @Override
-    protected JSONProperty createOrUpdate(Node node, String subElement, JSONProperty childData) throws RepositoryException {
+    protected CreateOrUpdateResult<JSONProperty> createOrUpdate(Node node, String subElement, JSONProperty childData) throws RepositoryException {
+        final boolean isUpdate = node.hasProperty(subElement);
         final Property property = setPropertyOnNode(subElement, childData, node);
-        return new JSONProperty(property);
+        return new CreateOrUpdateResult<JSONProperty>(isUpdate, new JSONProperty(property));
     }
 }
