@@ -36,7 +36,7 @@ which is made rather easy since JCR data is stored mostly in tree form.
 | :-------------------------- | --------------------------- |
 | `/foo/ns:bar/ns:child[2]`   | `/foo/ns__bar/ns__child--2` |
 | `mix:title` mixin of `/foo` | `/foo/mixins/mix__title`    |
-| `jcr:uuid` property of `/a` | `/a/properties/jcr__uuid`        |
+| `jcr:uuid` property of `/a` | `/a/properties/jcr__uuid`   |
 
 
 ## Resources representation
