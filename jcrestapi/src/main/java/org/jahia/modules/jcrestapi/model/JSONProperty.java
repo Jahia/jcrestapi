@@ -75,11 +75,21 @@ public class JSONProperty extends JSONItem<Property> {
         if (multiple) {
             final Value[] values = property.getValues();
             value = new Object[values.length];
+            String[] links = null;
+            if (needsTarget) {
+                links = new String[values.length];
+            }
+
             for (int i = 0; i < values.length; i++) {
-                ((Object[]) value)[i] = convertValue(values[i]);
+                final Value val = values[i];
+                ((Object[]) value)[i] = convertValue(val);
                 if (needsTarget) {
-                    addLink(new JSONLink(API.TARGET, URIUtils.getIdURI(values[i].getString())));
+                    links[i] = URIUtils.getIdURI(val.getString());
                 }
+            }
+
+            if (needsTarget) {
+                addLink(new JSONLink(API.TARGET, links));
             }
         } else {
             this.value = convertValue(property.getValue());
