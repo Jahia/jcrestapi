@@ -53,10 +53,14 @@ public class JSONLink {
     @XmlElement
     private final String rel;
     @XmlElement(name = "href")
-    private final String uri;
+    private Object uri;
 
-    public JSONLink(String rel, String link) {
+    public JSONLink(String rel, Object link) {
         this.rel = rel;
+
+        if (!(link instanceof String) && !(link instanceof String[])) {
+            throw new IllegalArgumentException("Given link object needs to be a String or String[]. Was " + link.getClass().getSimpleName());
+        }
         this.uri = link;
     }
 
@@ -65,6 +69,10 @@ public class JSONLink {
     }
 
     public String getURI() {
-        return uri;
+        if (uri instanceof String[]) {
+            return ((String[]) uri)[0];
+        } else {
+            return (String) uri;
+        }
     }
 }
