@@ -22,6 +22,7 @@ using Response.cacheControl method instead of filter.
 - Improve authentication support, clarify which authentication options are supported
 - Define a versioning scheme
 - Should we use a vendor-specific content type?
+- JSONP support
 
 ## Resources identification
 
