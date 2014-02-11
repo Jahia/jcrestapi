@@ -96,7 +96,7 @@ public class APITest {
         expect().statusCode(SC_OK)
                 .contentType("text/plain")
                 .body(equalTo(props.getProperty("jcrestapi.version")))
-                .when().get(getURL("version"));
+                .when().get(generateURL("/api/version"));
     }
 
     @Test
