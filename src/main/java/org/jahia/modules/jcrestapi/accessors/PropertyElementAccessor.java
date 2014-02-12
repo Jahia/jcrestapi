@@ -59,7 +59,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
 
         final Integer type = getTypeOfPropertyOnNode(propName, node);
 
-        if(type == null) {
+        if (type == null) {
             // we have a property name for which we don't have a type, so ignore the property
             // todo: error reporting?
             return null;
@@ -67,15 +67,14 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
 
         final Object value = jsonProperty.getValue();
         // are we looking at a multi-valued property?
-        if(value instanceof Object[]) {
+        if (value instanceof Object[]) {
             return node.setProperty(propName, jsonProperty.getValueAsStringArray(), type);
-        }
-        else {
+        } else {
             return node.setProperty(propName, jsonProperty.getValueAsString(), type);
         }
     }
 
-    static Integer getTypeOfPropertyOnNode(String propName,  Node node) throws RepositoryException {
+    static Integer getTypeOfPropertyOnNode(String propName, Node node) throws RepositoryException {
         JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
         final ExtendedPropertyDefinition propType = wrapper.getApplicablePropertyDefinition(propName);
 

@@ -51,8 +51,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Map;
 
 /**
- * A JSON representation of a JCR node.
- * <p/>
+ * A JSON representation of a JCR node. <p/>
  * <pre>
  * "name" : <the node's unescaped name>,
  * "type" : <the node's node type name>,

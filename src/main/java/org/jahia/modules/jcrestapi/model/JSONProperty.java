@@ -155,14 +155,14 @@ public class JSONProperty extends JSONItem<Property> {
     }
 
     public String getValueAsString() {
-        if(multiple) {
+        if (multiple) {
             throw new IllegalStateException("Cannot call getValueAsString on property with multiple values.");
         }
         return value.toString();
     }
 
     public String[] getValueAsStringArray() {
-        if(!multiple) {
+        if (!multiple) {
             throw new IllegalStateException("Cannot call getValueAsStringArray on property with non-multiple values.");
         }
         Object[] values = (Object[]) value;

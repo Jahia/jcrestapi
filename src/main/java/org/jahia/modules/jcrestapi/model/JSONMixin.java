@@ -59,7 +59,8 @@ public class JSONMixin extends JSONLinkable {
     @XmlElement
     private Map<String, String> properties;
 
-    public JSONMixin() {}
+    public JSONMixin() {
+    }
 
     public void initWith(JSONMixins jsonMixins, NodeType item) throws RepositoryException {
         super.initWith(URIUtils.getChildURI(jsonMixins.getURI(), item.getName(), true));

@@ -85,7 +85,7 @@ public class URIUtils {
         }
     }
 
-    public static String getURIFor(Property property)  {
+    public static String getURIFor(Property property) {
         final String properties;
         try {
             properties = getURIForProperties(property.getParent());

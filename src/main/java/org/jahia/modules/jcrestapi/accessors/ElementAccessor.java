@@ -39,75 +39,70 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.model.JSONMixin;
+import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.model.JSONItem;
+import org.jahia.modules.jcrestapi.model.JSONLinkable;
 import org.jahia.modules.jcrestapi.model.JSONNode;
-import org.jahia.modules.jcrestapi.model.JSONProperty;
 import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import java.util.Map;
-import java.util.Set;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
 
 /**
  * @author Christophe Laprun
  */
-public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer, JSONNode, JSONNode> {
-    @Override
+public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
+
     protected Object getElement(Node node, String subElement) throws RepositoryException {
-        return new JSONNode(node, 1);
+        if (subElement.isEmpty()) {
+            return getSubElementContainer(node);
+        } else {
+            return getSubElement(node, subElement);
+        }
     }
 
-    @Override
-    protected JSONSubElementContainer getSubElementContainer(Node node) throws RepositoryException {
-        throw new UnsupportedOperationException("Cannot call getSubElementContainer on NodeElementAccessor");
+    protected JSONNode getParentFrom(Node node) throws RepositoryException {
+        return new JSONNode(node, 0);
     }
 
-    @Override
-    protected JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
-        throw new UnsupportedOperationException("Cannot call getSubElement on NodeElementAccessor");
-    }
+    protected abstract C getSubElementContainer(Node node) throws RepositoryException;
 
-    @Override
-    protected JSONNode delete(Node node, String subElement) throws RepositoryException {
-        node.remove();
-        return null;
-    }
+    protected abstract T getSubElement(Node node, String subElement) throws RepositoryException;
 
-    @Override
-    protected CreateOrUpdateResult<JSONNode> createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
-        initNodeFrom(node, nodeData);
+    protected abstract T delete(Node node, String subElement) throws RepositoryException;
 
-        // update only scenario at the moment
-        return new CreateOrUpdateResult<JSONNode>(true, new JSONNode(node, 1));
-    }
+    protected abstract CreateOrUpdateResult<T> createOrUpdate(Node node, String subElement, U childData) throws RepositoryException;
 
-    public static void initNodeFrom(Node node, JSONNode jsonNode) throws RepositoryException {
-        // mixins
-        final Map<String,JSONMixin> mixins = jsonNode.getMixins();
-        if (mixins != null) {
-            for (String mixinName : mixins.keySet()) {
-                node.addMixin(mixinName);
+    public Response perform(Node node, String subElement, String operation, U childData, UriInfo context) throws RepositoryException {
+        if (API.DELETE.equals(operation)) {
+            delete(node, subElement);
+            return Response.noContent().build();
+        } else if (API.CREATE_OR_UPDATE.equals(operation)) {
+            final CreateOrUpdateResult<T> result = createOrUpdate(node, subElement, childData);
+            final T entity = result.item;
+            if (result.isUpdate) {
+                return Response.ok(entity).build();
+            } else {
+                return Response.created(context.getAbsolutePath()).entity(entity).build();
             }
+        } else if (API.READ.equals(operation)) {
+            final Object element = getElement(node, subElement);
+            return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
         }
 
+        throw new IllegalArgumentException("Unknown operation: '" + operation + "'");
+    }
 
-        // properties
-        final Map<String, JSONProperty> jsonProperties = jsonNode.getProperties();
-        if (jsonProperties != null) {
-            final Set<Map.Entry<String,JSONProperty>> properties = jsonProperties.entrySet();
+    protected static class CreateOrUpdateResult<T extends JSONLinkable> {
+        final boolean isUpdate;
+        final T item;
 
-            // set the properties
-            for (Map.Entry<String, JSONProperty> entry : properties) {
-                PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
-            }
-        }
-
-
-        // children
-        final Map<String, JSONNode> children = jsonNode.getChildren();
-        if(children != null) {
-            // todo
+        protected CreateOrUpdateResult(boolean isUpdate, T item) {
+            this.isUpdate = isUpdate;
+            this.item = item;
         }
     }
 }
