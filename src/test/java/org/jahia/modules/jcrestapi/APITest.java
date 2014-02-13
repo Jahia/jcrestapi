@@ -39,53 +39,32 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import com.sun.net.httpserver.HttpServer;
-import org.jboss.resteasy.plugins.server.sun.http.HttpContextBuilder;
-import org.jboss.resteasy.spi.ResteasyDeployment;
-import org.jboss.resteasy.test.TestPortProvider;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.glassfish.hk2.api.Factory;
+import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Test;
 
-import java.net.InetSocketAddress;
+import javax.jcr.Node;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.ws.rs.core.Application;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.LogRecord;
 
 import static com.jayway.restassured.RestAssured.expect;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.*;
-import static org.jboss.resteasy.test.TestPortProvider.generateURL;
 
 /**
  * @author Christophe Laprun
  */
-public class APITest {
+public class APITest extends JerseyTest {
 
-    private static HttpServer httpServer;
-    private static HttpContextBuilder contextBuilder;
-
-    @BeforeClass
-    public static void init() throws Exception {
-        int port = TestPortProvider.getPort();
-
-        httpServer = HttpServer.create(new InetSocketAddress("localhost", port), 10);
-        contextBuilder = new HttpContextBuilder();
-        final ResteasyDeployment deployment = contextBuilder.getDeployment();
-        deployment.getActualResourceClasses().add(APIWithFixture.class);
-        contextBuilder.bind(httpServer);
-
-        // to make sure our ExceptionMapper is properly registered
-        deployment.getProviderFactory().registerProvider(APIExceptionMapper.class);
-
-        httpServer.start();
-    }
-
-    @AfterClass
-    public static void stop() throws Exception {
-        contextBuilder.cleanup();
-        httpServer.stop(0);
+    @Override
+    protected Application configure() {
+        return new APIApplication(TestRepositoryFactory.class);
     }
 
     @Test
@@ -93,10 +72,17 @@ public class APITest {
         Properties props = new Properties();
         props.load(API.class.getClassLoader().getResourceAsStream("jcrestapi.properties"));
 
-        expect().statusCode(SC_OK)
-                .contentType("text/plain")
-                .body(equalTo(props.getProperty("jcrestapi.version")))
-                .when().get(generateURL("/api/version"));
+        try {
+            expect().statusCode(SC_OK)
+                    .contentType("text/plain")
+                    .body(equalTo(props.getProperty("jcrestapi.version")))
+                    .when().get(generateURL("/api/version"));
+        } finally {
+            final List<LogRecord> loggedRecords = getLoggedRecords();
+            for (LogRecord record : loggedRecords) {
+                System.out.println("record = " + record.getMessage());
+            }
+        }
     }
 
     @Test
@@ -105,13 +91,16 @@ public class APITest {
                 .when().get(generateURL("/foo"));
 
         expect().statusCode(SC_NOT_FOUND)
-                .when().get(getURL("foo"));
+                .when().get(getURLByPath("foo"));
     }
 
     @Test
-    public void testGetRoot() {
-
-//        System.out.println(get(getURL("")).asString());
+    public void testGetRoot() throws RepositoryException {
+        final Session session = TestRepositoryFactory.repository.login();
+        final Node rootNode = session.getRootNode();
+        final String rootId = rootNode.getIdentifier();
+        final String rootTypeName = rootNode.getPrimaryNodeType().getName();
+        session.logout();
 
         expect().statusCode(SC_OK)
                 .body(
@@ -119,70 +108,87 @@ public class APITest {
                         "type", equalTo("rep:root"),
 
                         // check that links are present
-                        "_links.self.href", equalTo(getURL("")),
-                        "_links.type.href", equalTo(getURL("jcr__system/jcr__nodeTypes/rep__root")),
-                        "_links.children.href", equalTo(getURL("children")),
-                        "_links.properties.href", equalTo(getURL("properties")),
-                        "_links.mixins.href", equalTo(getURL("mixins")),
-                        "_links.versions.href", equalTo(getURL("versions")),
+                        "_links.self.href", equalTo(getURIById(rootId)),
+                        "_links.type.href", equalTo(getTypeURIByPath(rootTypeName)),
+                        "_links.children.href", equalTo(getChildURI(rootId, "children")),
+                        "_links.properties.href", equalTo(getChildURI(rootId, "properties")),
+                        "_links.mixins.href", equalTo(getChildURI(rootId, "mixins")),
+                        "_links.versions.href", equalTo(getChildURI(rootId, "versions")),
 
                         // check jcr:primaryType property
                         "properties.jcr__primaryType.name", equalTo("jcr:primaryType"),
                         "properties.jcr__primaryType.value", equalTo("rep:root"),
-                        "properties.jcr__primaryType._links.self.href", equalTo(getURL("properties/jcr__primaryType")),
+                        "properties.jcr__primaryType._links.self.href", equalTo(getChildURI(rootId, "properties/jcr__primaryType")),
                         "properties.jcr__primaryType._links.type.href",
-                        equalTo(getURL("jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2")),
+                        equalTo(getTypeURIByPath("nt__base/jcr__propertyDefinition--2")),
 
                         // check jcr:mixinTypes property
                         "properties.jcr__mixinTypes.name", equalTo("jcr:mixinTypes"),
                         "properties.jcr__mixinTypes.value", hasItem("rep:AccessControllable"),
-                        "properties.jcr__mixinTypes._links.self.href", equalTo(getURL("properties/jcr__mixinTypes")),
+                        "properties.jcr__mixinTypes._links.self.href", equalTo(getChildURI(rootId, "properties/jcr__mixinTypes")),
                         "properties.jcr__mixinTypes._links.type.href",
-                        equalTo(getURL("jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition")),
+                        equalTo(getTypeURIByPath("nt__base/jcr__propertyDefinition")),
 
                         // check that children don't have children (only 1 level deep hierarchy)
                         "children.jcr__system.children", is(nullValue())
                 )
-                .when().get(getURL(""));
+                .when().get(getURLByPath(""));
     }
 
-    @Test
+    /*@Test
     public void testThatWeCanAccessValuesAndTypesFromLinks() {
         // get root and its JSON representation
-        final Response response = expect().statusCode(SC_OK).when().get(getURL(""));
+        final Response response = expect().statusCode(SC_OK).when().get(getURLByPath(""));
         final JsonPath rootJSON = response.body().jsonPath();
 
         // get the root primary type property and check that its name matches the one we got from root object
         final String primaryTypeSelf = rootJSON.getString("properties.jcr__primaryType._links.self.href");
+
         expect().body(
                 "name", equalTo(rootJSON.get("properties.jcr__primaryType.name"))
-        ).when().get(primaryTypeSelf);
+        ).when().get(generateURL(primaryTypeSelf));
 
         // get the root primary type property definition and check that we're getting a property definition
         final String primaryTypeType = rootJSON.getString("properties.jcr__primaryType._links.type.href");
-//        System.out.println(get(primaryTypeType).asString());
         expect().body(
                 "type", equalTo("nt:propertyDefinition"),
                 "properties.jcr__name.value", equalTo("jcr:primaryType")
-        ).when().get(primaryTypeType);
-    }
+        ).when().get(getURIByPath(primaryTypeType));
+    }*/
 
     @Test
     public void testGetJCRSystem() {
-
-//        System.out.println(get(getURL("jcr__system")).asString());
-
         expect().statusCode(SC_OK)
                 .contentType("application/json")
                 .body(
                         "name", equalTo("jcr:system"),
                         "type", equalTo("rep:system")
                 )
-                .when().get(getURL("jcr__system"));
+                .when().get(getURLByPath("jcr__system"));
     }
 
-    private String getURL(String path) {
-        return generateURL("/api/" + path);
+    private String generateURL(String path) {
+        return target(path).getUri().toASCIIString();
+    }
+
+    private String getURLByPath(String path) {
+        return generateURL("/api/byPath/" + path);
+    }
+
+    private String getURIById(String id) {
+        return "/api/nodes/" + id;
+    }
+
+    private String getURIByPath(String path) {
+        return "/api/byPath/" + URIUtils.escape(path);
+    }
+
+    private String getTypeURIByPath(String typeName) {
+        return "/api/byPath/jcr__system/jcr__nodeTypes/" + URIUtils.escape(typeName);
+    }
+
+    private String getChildURI(String rootId, String childName) {
+        return getURIById(rootId) + "/" + childName;
     }
 
     /*@Test
@@ -219,15 +225,17 @@ public class APITest {
                 .when().put(propURI);
     }*/
 
-    /**
-     * Instrumented API implementation so that we can get a simple way to set up the API with test fixtures since Spring injection won't work directly due to the fact that the API
-     * bean is loaded in the RESTeasy context in the HTTP server process.
-     */
-    public static class APIWithFixture extends API {
-        public APIWithFixture() {
-            SpringBeansAccess access = SpringBeansAccess.getInstance();
-            access.setRepository(new NoLoggingTransientRepository());
-            setBeansAccess(access);
+    private static class TestRepositoryFactory implements Factory<Repository> {
+        static final Repository repository = new NoLoggingTransientRepository();
+        @Override
+        public Repository provide() {
+            return repository;
+        }
+
+        @Override
+        public void dispose(Repository instance) {
+            // nothing
         }
     }
+
 }
