@@ -47,6 +47,7 @@ import org.jahia.modules.jcrestapi.model.JSONProperty;
 import org.jahia.services.content.JCRSessionFactory;
 import org.osgi.service.component.annotations.Component;
 
+import javax.inject.Inject;
 import javax.jcr.*;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.qom.*;
@@ -95,11 +96,7 @@ public class API {
         accessors.put("", new NodeElementAccessor());
     }
 
-    private SpringBeansAccess beansAccess = SpringBeansAccess.getInstance();
-
-    void setBeansAccess(SpringBeansAccess beansAccess) {
-        this.beansAccess = beansAccess;
-    }
+    @Inject private Repository repository;
 
     @GET
     @Path("/version")
@@ -167,7 +164,6 @@ public class API {
     }
 
     private Session getSession() throws RepositoryException {
-        final Repository repository = beansAccess.getRepository();
         final Session session;
         if (repository instanceof JCRSessionFactory) {
             JCRSessionFactory factory = (JCRSessionFactory) repository;

@@ -39,38 +39,21 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.jcr.Repository;
 
 /**
  * @author Christophe Laprun
  */
-public class APIApplication extends ResourceConfig {
-    public APIApplication() {
-        this(RepositoryFactory.class);
+public class RepositoryFactory implements Factory<Repository> {
+    @Override
+    public Repository provide() {
+        return SpringBeansAccess.getInstance().getRepository();
     }
 
-    APIApplication(final Class<? extends Factory<Repository>> repositoryFactoryClass) {
-        super(API.class, APIExceptionMapper.class, JacksonJaxbJsonProvider.class, HeadersResponseFilter.class);
-        register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bindFactory(repositoryFactoryClass).to(Repository.class);
-            }
-        });
-
-        // activates tracing of requests and responses and outputs log to /tmp/jersey.log
-        /*property(ServerProperties.TRACING, "ALL");
-        try {
-            Handler fh = new FileHandler("/tmp/jersey.log");
-            Logger.getLogger("").addHandler(fh);
-            Logger.getLogger("org.glassfish.jersey").setLevel(Level.FINEST);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+    @Override
+    public void dispose(Repository instance) {
+        // nothing
     }
 }
