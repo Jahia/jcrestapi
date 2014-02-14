@@ -162,7 +162,7 @@ A node's properties are gathered within a `properties` object that has the follo
 Each property is represented by an object with the following structure:
 
     "name" : <unescaped name>,
-    "multiple" : <boolean indicating whether the property has multiple values or not>
+    "multiValued" : <boolean indicating whether the property is multi-valued or not>
     "value" : <value>,
     "type" : <type>,
     "_links" : {
@@ -173,9 +173,8 @@ Each property is represented by an object with the following structure:
 `type` is the case-insensitive name of the JCR property type, and is one of: `STRING`, `BINARY`, `LONG`, `DOUBLE`,
 `DATE`, `BOOLEAN`, `NAME`, `PATH`, `REFERENCE`, `WEAKREFERENCE`, `URI`, and `DECIMAL`.
 
-`multiple` is optional, if it's not present in the returned representation, it is assumed to be `false`,
-meaning that the property only has a single value. Having this field allows for easier processing of properties on
-the client side without having to examine the property's definition.
+`multiValued` specifies whether the property is multi-valued or not. Having this field allows for easier processing of
+properties on the client side without having to examine the property's definition.
 
 If a property is of type `PATH`, `REFERENCE` or `WEAKREFERENCE`, an additional `target` link is added to the `_links`
 subsection, providing the URI identifying the resource identified by the path or reference value of the property.
@@ -188,15 +187,16 @@ being defined by the `mix:referenceable` mixin:
     "name" : "jcr:uuid",
     "value" : "039cdef3-289a-4fee-b80e-54da0ad35195",
     "type" : "string",
+    "multiValued" : false,
     "_links" : {
         "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__uuid" },
         "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition" }
     }
 
-An example of the `jcr:mixinTypes` property on a `/sites/mySite` node. Note the `multiple` field:
+An example of the `jcr:mixinTypes` property on a `/sites/mySite` node.
 
     "name" : "jcr:mixinTypes",
-    "multiple" : true,
+    "multiValued" : true,
     "value" : ["jmix:accessControlled" , "jmix:robots"],
     "type" : "string",
     "_links" : {
@@ -209,6 +209,7 @@ property's definition is the second property defined on the `nt:base` node type:
 
     "name" : "jcr:primaryType",
     "value" : "jnt:virtualsite",
+    "multiValued" : true,
     "type" : "string",
     "_links" : {
         "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__primaryType" },
@@ -220,6 +221,7 @@ represented, demonstrating the `target` field in the `_links` section:
 
     "name" : "j:defaultSite",
     "value" :  "09100a94-0714-4fb6-98de-351ad63773b2",
+    "multiValued" : false,
     "type" : "weakreference",
     "_links" : {
         "self" : { "href" : "http://api.example.org/sites/properties/j__defaultSite" },

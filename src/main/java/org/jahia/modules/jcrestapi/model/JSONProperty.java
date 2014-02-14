@@ -57,7 +57,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class JSONProperty extends JSONItem<Property> {
     @XmlElement
-    private boolean multiple;
+    private boolean multiValued;
 
     @XmlElement
     private Object value;
@@ -76,8 +76,8 @@ public class JSONProperty extends JSONItem<Property> {
         reference = type == PropertyType.PATH || type == PropertyType.REFERENCE || type == PropertyType.WEAKREFERENCE;
 
         // retrieve value
-        this.multiple = property.isMultiple();
-        if (multiple) {
+        this.multiValued = property.isMultiple();
+        if (multiValued) {
             final Value[] values = property.getValues();
             value = new Object[values.length];
             String[] links = null;
@@ -164,15 +164,15 @@ public class JSONProperty extends JSONItem<Property> {
     }
 
     public String getValueAsString() {
-        if (multiple) {
-            throw new IllegalStateException("Cannot call getValueAsString on property with multiple values.");
+        if (multiValued) {
+            throw new IllegalStateException("Cannot call getValueAsString on a multi-valued property.");
         }
         return value.toString();
     }
 
     public String[] getValueAsStringArray() {
-        if (!multiple) {
-            throw new IllegalStateException("Cannot call getValueAsStringArray on property with non-multiple values.");
+        if (!multiValued) {
+            throw new IllegalStateException("Cannot call getValueAsStringArray on a simple-valued property.");
         }
         Object[] values = (Object[]) value;
         String[] result = new String[values.length];
@@ -184,8 +184,8 @@ public class JSONProperty extends JSONItem<Property> {
         return result;
     }
 
-    public boolean isMultiple() {
-        return multiple;
+    public boolean isMultiValued() {
+        return multiValued;
     }
 
     public static Object convertValue(Value val) throws RepositoryException {
