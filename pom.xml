@@ -210,8 +210,7 @@
                         <Private-Package>
                             org.jahia.modules.jcrestapi,
                             org.jahia.modules.jcrestapi.model,
-                            org.jahia.modules.jcrestapi.accessors,
-                            org.jahia.modules.jcrestapi.path
+                            org.jahia.modules.jcrestapi.accessors
                         </Private-Package>
                         <Import-Package>
                             javax.jcr.*,
