@@ -75,6 +75,14 @@ public abstract class JSONItem<T extends Item> extends JSONLinkable {
         initWith(item);
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getTypeName() {
+        return type;
+    }
+
     protected String getTypeChildPath(T item) throws RepositoryException {
         return URIUtils.escape(type);
     }

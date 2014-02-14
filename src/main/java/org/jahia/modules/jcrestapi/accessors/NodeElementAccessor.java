@@ -107,7 +107,10 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         // children
         final Map<String, JSONNode> children = jsonNode.getChildren();
         if (children != null) {
-            // todo
+            for (JSONNode jsonChild : children.values()) {
+                final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
+                initNodeFrom(child, jsonChild);
+            }
         }
     }
 }
