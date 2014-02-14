@@ -64,6 +64,8 @@ public class JSONMixin extends JSONLinkable {
     }
 
     public void initWith(Node parentNode, NodeType item) throws RepositoryException {
+        // todo: should we try to point to the actual mixin definition instead of pointing to the relative path to the mixin in the context of the parent node
+        // todo: should we add parent link?
         super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true));
         this.name = item.getName();
 
