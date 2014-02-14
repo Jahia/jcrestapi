@@ -217,7 +217,6 @@
                             javax.xml.bind.annotation,
                             javax.xml.bind.annotation.adapters,
                             javax.ws.rs.*,
-                            com.fasterxml.jackson.*,
                             org.glassfish.hk2.*;
                             org.glassfish.jersey.server,
                             org.jahia.services.content.*,
