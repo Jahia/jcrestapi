@@ -16,7 +16,7 @@ since with great accessibility/power comes great responsibility!
 using Response.cacheControl method instead of filter.
 - Clarify usage of children vs. access via path and its consequences on NodeElementAccessor.
 - Design and implement versions access.
-- Re-design URIs to provide easier access to workspace and language.
+- <s>Re-design URIs to provide easier access to workspace and language.</s> (Done)
 - JS Client library?
 - Improve cross-site support
 - Improve authentication support, clarify which authentication options are supported
