@@ -62,38 +62,43 @@ public class JSONProperty extends JSONItem<Property> {
     @XmlElement
     private Object value;
 
+    @XmlElement
+    private boolean reference;
+
     public JSONProperty() {
     }
 
     public void initWith(Property property) throws RepositoryException {
         super.initWith(property);
 
+        // check whether we need to add a target link
         final int type = property.getType();
-        final boolean needsTarget = type == PropertyType.PATH || type == PropertyType.REFERENCE || type == PropertyType.WEAKREFERENCE;
+        reference = type == PropertyType.PATH || type == PropertyType.REFERENCE || type == PropertyType.WEAKREFERENCE;
 
+        // retrieve value
         this.multiple = property.isMultiple();
         if (multiple) {
             final Value[] values = property.getValues();
             value = new Object[values.length];
             String[] links = null;
-            if (needsTarget) {
+            if (reference) {
                 links = new String[values.length];
             }
 
             for (int i = 0; i < values.length; i++) {
                 final Value val = values[i];
                 ((Object[]) value)[i] = convertValue(val);
-                if (needsTarget) {
+                if (reference) {
                     links[i] = URIUtils.getIdURI(val.getString());
                 }
             }
 
-            if (needsTarget) {
+            if (reference) {
                 addLink(new JSONLink(API.TARGET, links));
             }
         } else {
             this.value = convertValue(property.getValue());
-            if (needsTarget) {
+            if (reference) {
                 addLink(new JSONLink(API.TARGET, URIUtils.getIdURI(property.getString())));
             }
         }
