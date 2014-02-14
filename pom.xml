@@ -220,6 +220,7 @@
                             org.glassfish.hk2.*;
                             org.glassfish.jersey.server,
                             org.jahia.services.content.*,
+                            org.jahia.utils;
                             ${jahia.plugin.projectPackageImport}
                         </Import-Package>
                         <!-- would be nice if the macro didn't also include WADL-related class found on classpath -->
