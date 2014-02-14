@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -64,7 +65,7 @@ public class JSONSubElementContainer extends JSONLinkable {
         super.initWith(URIUtils.getChildURI(parent.getURI(), name, false));
         this.parent = parent;
 
-        addLink(new JSONLink("parent", parent.getURI()));
+        addLink(new JSONLink(API.PARENT, parent.getURI()));
     }
 
 

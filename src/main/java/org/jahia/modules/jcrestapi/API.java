@@ -77,6 +77,7 @@ public class API {
     private static final String SELECTOR_NAME = "type";
     public static final String TYPE = "type";
     public static final String TARGET = "target";
+    public static final String PARENT = "parent";
 
     private final static Map<String, ElementAccessor> accessors = new HashMap<String, ElementAccessor>(7);
 

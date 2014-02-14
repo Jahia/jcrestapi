@@ -43,6 +43,8 @@ import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Item;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -69,6 +71,14 @@ public abstract class JSONItem<T extends Item> extends JSONLinkable {
         this.type = getUnescapedTypeName(item);
 
         addLink(new JSONLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
+        Node parent;
+        try {
+            parent = item.getParent();
+        } catch (ItemNotFoundException e) {
+            // item is root node, specify that parent is itself
+            parent = (Node) item;
+        }
+        addLink(new JSONLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
     }
 
     public JSONItem(T item) throws RepositoryException {
