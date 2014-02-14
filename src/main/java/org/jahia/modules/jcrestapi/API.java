@@ -99,6 +99,12 @@ public class API {
 
     @Inject private Repository repository;
 
+    private static final ThreadLocal<Session> sessionHolder = new ThreadLocal<Session>();
+
+    public static Session getCurrentSession() {
+        return sessionHolder.get();
+    }
+
     @GET
     @Path("/version")
     @Produces(MediaType.TEXT_PLAIN)
@@ -167,6 +173,9 @@ public class API {
             if (session != null) {
                 session.logout();
             }
+
+            // reset session holder
+            sessionHolder.remove();
         }
     }
 
@@ -186,6 +195,9 @@ public class API {
         } else {
             session = repository.login(getRoot());
         }
+
+        // put the session in the session holder so that other objects can access it if needed
+        sessionHolder.set(session);
 
         return session;
     }
@@ -362,6 +374,9 @@ public class API {
             if (session != null) {
                 session.logout();
             }
+
+            // reset session holder
+            sessionHolder.remove();
         }
     }
 
