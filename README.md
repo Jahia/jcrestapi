@@ -163,6 +163,7 @@ Each property is represented by an object with the following structure:
 
     "name" : <unescaped name>,
     "multiValued" : <boolean indicating whether the property is multi-valued or not>
+    "reference": <boolean indicating whether the property value(s) point(s) to a node or not>
     "value" : <value>,
     "type" : <type>,
     "_links" : {
@@ -176,7 +177,11 @@ Each property is represented by an object with the following structure:
 `multiValued` specifies whether the property is multi-valued or not. Having this field allows for easier processing of
 properties on the client side without having to examine the property's definition.
 
-If a property is of type `PATH`, `REFERENCE` or `WEAKREFERENCE`, an additional `target` link is added to the `_links`
+The `reference` field specifies whether or not the property is of type `PATH`, `REFERENCE` or `WEAKREFERENCE`; in
+essence whether or not the property's value is actually a pointer to a node. While this is merely a convenience since
+that information can be inferred from the `type` field, this makes client processing easier.
+
+If a property is a reference (its `reference` field is set to `true`), an additional `target` link is added to the `_links`
 subsection, providing the URI identifying the resource identified by the path or reference value of the property.
 
 #### Examples
@@ -188,6 +193,7 @@ being defined by the `mix:referenceable` mixin:
     "value" : "039cdef3-289a-4fee-b80e-54da0ad35195",
     "type" : "string",
     "multiValued" : false,
+    "reference" : false,
     "_links" : {
         "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__uuid" },
         "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition" }
@@ -199,6 +205,7 @@ An example of the `jcr:mixinTypes` property on a `/sites/mySite` node.
     "multiValued" : true,
     "value" : ["jmix:accessControlled" , "jmix:robots"],
     "type" : "string",
+    "reference" : false,
     "_links" : {
         "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__mixinTypes" },
         "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition" }
@@ -211,6 +218,7 @@ property's definition is the second property defined on the `nt:base` node type:
     "value" : "jnt:virtualsite",
     "multiValued" : true,
     "type" : "string",
+    "reference" : false,
     "_links" : {
         "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__primaryType" },
         "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2" }
@@ -223,6 +231,7 @@ represented, demonstrating the `target` field in the `_links` section:
     "value" :  "09100a94-0714-4fb6-98de-351ad63773b2",
     "multiValued" : false,
     "type" : "weakreference",
+    "reference" : true,
     "_links" : {
         "self" : { "href" : "http://api.example.org/sites/properties/j__defaultSite" },
         "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__virtualsitesFolder/jcr__propertyDefinition--3" },
