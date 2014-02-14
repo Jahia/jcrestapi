@@ -89,7 +89,7 @@ public class JSONProperty extends JSONItem<Property> {
                 final Value val = values[i];
                 ((Object[]) value)[i] = convertValue(val);
                 if (reference) {
-                    links[i] = URIUtils.getIdURI(val.getString());
+                    links[i] = getTargetLink(val.getString(), type);
                 }
             }
 
@@ -99,9 +99,13 @@ public class JSONProperty extends JSONItem<Property> {
         } else {
             this.value = convertValue(property.getValue());
             if (reference) {
-                addLink(new JSONLink(API.TARGET, URIUtils.getIdURI(property.getString())));
+                addLink(new JSONLink(API.TARGET, getTargetLink(property.getString(), type)));
             }
         }
+    }
+
+    private String getTargetLink(String valueAsString, int type) throws RepositoryException {
+        return PropertyType.PATH == type ? URIUtils.getByPathURI(valueAsString) : URIUtils.getIdURI(valueAsString);
     }
 
     public JSONProperty(Property property) throws RepositoryException {
