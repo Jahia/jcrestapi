@@ -47,8 +47,6 @@ import org.jahia.modules.jcrestapi.model.JSONNode;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Christophe Laprun
@@ -72,30 +70,19 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
 
     @Override
     protected CreateOrUpdateResult<JSONMixin> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
-
-        // record existing mixins
-        NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
-        final Map<String, NodeType> mixinTypes = new HashMap<String, NodeType>(mixinNodeTypes.length);
-        for (NodeType mixinNodeType : mixinNodeTypes) {
-            mixinTypes.put(mixinNodeType.getName(), mixinNodeType);
+        // if the node doesn't already have the mixin, add it
+        final boolean isUpdate = !node.isNodeType(subElement);
+        if (isUpdate) {
+            node.addMixin(subElement);
         }
 
-        // check whether the node already has the mixin
-        NodeType mixin = mixinTypes.get(subElement);
-        final boolean isUpdate = mixin != null;
-
-        // if the node doesn't already have the mixin, add it
-        if (!isUpdate) {
-            node.addMixin(subElement);
-
-            // unfortunately, we need to loop over mixin node types again now that we've added a new one to get the new node type
-            // todo: try to find a better way
-            mixinNodeTypes = node.getMixinNodeTypes();
-            for (NodeType mixinNodeType : mixinNodeTypes) {
-                if (mixinNodeType.getName().equals(subElement)) {
-                    mixin = mixinNodeType;
-                    break;
-                }
+        // retrieve node type associated with mixin
+        NodeType mixin = null;
+        final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
+        for (NodeType mixinNodeType : mixinNodeTypes) {
+            if (mixinNodeType.getName().equals(subElement)) {
+                mixin = mixinNodeType;
+                break;
             }
         }
 
