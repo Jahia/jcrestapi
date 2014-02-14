@@ -287,26 +287,23 @@ public class API {
                             @PathParam("language") String language,
                             @PathParam("path") String path,
                             @Context UriInfo context) {
-        int index = 0;
-        final List<PathSegment> segments = context.getPathSegments();
-        for (PathSegment segment : segments) {
-            // first path segment corresponds to the resource mapping so we ignore it
-            // and second path corresponds to byPath so we ignore it as well
-            String subElementType = segment.getPath();
-            if (index > 1) {
 
-                // check if segment is a sub-element marker
-                ElementAccessor accessor = accessors.get(subElementType);
-                if (accessor != null) {
-                    String nodePath = computePathUpTo(segments, index);
-                    String subElement = getSubElement(segments, index);
-                    return perform(workspace, language, nodePath, subElementType, subElement, context, READ, null, NodeAccessor.byPath);
-                }
+        // only consider useful segments, starting after /api/{workspace}/{language}/byPath
+        final List<PathSegment> pathSegments = context.getPathSegments();
+        final List<PathSegment> usefulSegments = pathSegments.subList(4, pathSegments.size());
+        int index = 0;
+        for (PathSegment segment : usefulSegments) {
+            // check if segment is a sub-element marker
+            String subElementType = segment.getPath();
+            ElementAccessor accessor = accessors.get(subElementType);
+            if (accessor != null) {
+                String nodePath = computePathUpTo(usefulSegments, index);
+                String subElement = getSubElement(usefulSegments, index);
+                return perform(workspace, language, nodePath, subElementType, subElement, context, READ, null, NodeAccessor.byPath);
             }
-            index++;
         }
 
-        return perform(workspace, language, computePathUpTo(segments, segments.size()), "", "", context, READ, null, NodeAccessor.byPath);
+        return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, READ, null, NodeAccessor.byPath);
     }
 
     @GET
@@ -396,9 +393,7 @@ public class API {
 
     private static String computePathUpTo(List<PathSegment> segments, int index) {
         StringBuilder path = new StringBuilder(30 * index);
-        // first path segment corresponds to the resource mapping so we ignore it
-        // and second path corresponds to byPath so we ignore it as well
-        for (int i = 2; i < index; i++) {
+        for (int i = 0; i < index; i++) {
             path.append("/").append(segments.get(i).getPath());
         }
         return path.toString();
