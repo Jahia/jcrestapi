@@ -39,7 +39,6 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONMixins;
 import org.jahia.modules.jcrestapi.model.JSONNode;
@@ -59,7 +58,12 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
 
     @Override
     protected JSONMixin getSubElement(Node node, String subElement) throws RepositoryException {
-        return getSubElementContainer(node).getMixins().get(URIUtils.escape(subElement));
+        final NodeType mixin = getMixin(node, subElement);
+        if (mixin == null) {
+            return null;
+        }
+
+        return new JSONMixin(node, mixin);
     }
 
     @Override
@@ -77,6 +81,15 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
         }
 
         // retrieve node type associated with mixin
+        NodeType mixin = getMixin(node, subElement);
+
+        // we now need to use the rest of the given child data to add / update the parent node content
+        NodeElementAccessor.initNodeFrom(node, childData);
+
+        return new CreateOrUpdateResult<JSONMixin>(isUpdate, new JSONMixin(node, mixin));
+    }
+
+    private NodeType getMixin(Node node, String subElement) throws RepositoryException {
         NodeType mixin = null;
         final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
         for (NodeType mixinNodeType : mixinNodeTypes) {
@@ -85,10 +98,6 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
                 break;
             }
         }
-
-        // we now need to use the rest of the given child data to add / update the parent node content
-        NodeElementAccessor.initNodeFrom(node, childData);
-
-        return new CreateOrUpdateResult<JSONMixin>(isUpdate, new JSONMixin(getSubElementContainer(node), mixin));
+        return mixin;
     }
 }

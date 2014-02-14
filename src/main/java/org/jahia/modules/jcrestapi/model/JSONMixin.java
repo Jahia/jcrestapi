@@ -41,6 +41,7 @@ package org.jahia.modules.jcrestapi.model;
 
 import org.jahia.modules.jcrestapi.URIUtils;
 
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
@@ -62,8 +63,8 @@ public class JSONMixin extends JSONLinkable {
     public JSONMixin() {
     }
 
-    public void initWith(JSONMixins jsonMixins, NodeType item) throws RepositoryException {
-        super.initWith(URIUtils.getChildURI(jsonMixins.getURI(), item.getName(), true));
+    public void initWith(Node parentNode, NodeType item) throws RepositoryException {
+        super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true));
         this.name = item.getName();
 
         final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
@@ -73,8 +74,8 @@ public class JSONMixin extends JSONLinkable {
         }
     }
 
-    public JSONMixin(JSONMixins jsonMixins, NodeType item) throws RepositoryException {
-        initWith(jsonMixins, item);
+    public JSONMixin(Node nodeWithMixin, NodeType item) throws RepositoryException {
+        initWith(nodeWithMixin, item);
     }
 
     public void setName(String name) {
