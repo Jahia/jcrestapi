@@ -192,7 +192,7 @@ public class API {
         final Session session;
         if (repository instanceof JCRSessionFactory) {
             JCRSessionFactory factory = (JCRSessionFactory) repository;
-            session = factory.getCurrentUserSession(workspace, LanguageCodeConverters.languageCodeToLocale(language));
+            session = factory.getCurrentUserSession(workspace, LanguageCodeConverters.languageCodeToLocale(language), Locale.ENGLISH);
         } else {
             session = repository.login(getRoot());
         }
