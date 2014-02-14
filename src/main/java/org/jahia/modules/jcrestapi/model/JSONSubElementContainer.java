@@ -63,6 +63,8 @@ public class JSONSubElementContainer extends JSONLinkable {
     public void initWith(JSONNode parent, String name) {
         super.initWith(URIUtils.getChildURI(parent.getURI(), name, false));
         this.parent = parent;
+
+        addLink(new JSONLink("parent", parent.getURI()));
     }
 
 
