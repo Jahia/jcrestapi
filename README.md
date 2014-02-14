@@ -68,7 +68,9 @@ This means that links are represented as objects containing at least an `href` p
 associated with the link.
 
 Per the HAL recommendations, we define a `self` reference identifying the URI to use to interact with this
-specific element. When appropriate, another `type` link will also be available so that clients can find out more about the node's metadata. Specific objects might add more link types when appropriate.
+specific element. When appropriate, another `type` link will also be available so that clients can find out more
+about the node's metadata. When appropriate, another `parent` link will also be available, pointing to the parent
+node of the resource. Specific objects might add more link types when appropriate.
 
 To sum up, the `_links` section will look similarly to the following example:
 
@@ -151,7 +153,8 @@ A node's properties are gathered within a `properties` object that has the follo
             <escaped property name> : <property representation>,
         </for each property>
         "_links" : {
-            "self" : { "href" : "<URI identifying the resource associated with the parent's node properties resource>" }
+            "self" : { "href" : "<URI identifying the resource associated with the parent's node properties resource>" },
+            "parent" : { "href" : "<URI identifying the resource associated with the parent node>" }
         }
     },
     // other node elements...
@@ -235,7 +238,8 @@ A node's attached mixins information is gathered within a `mixins` object on the
             <escaped mixin name> : <mixin representation>,
         </for each mixin>
         "_links" : {
-            "self" : { "href" : "<URI identifying the resource associated with the parent's node mixins resource>" }
+            "self" : { "href" : "<URI identifying the resource associated with the parent's node mixins resource>" },
+            "parent" : { "href" : "<URI identifying the resource associated with the parent node>" }
         }
     },
     // other node elements...
@@ -297,19 +301,21 @@ Children of a given node are gathered within a `children` object, as follows:
             <escaped child name> : <child representation>,
         </for each child>
         "_links" : {
-            "self" : { "href" : "<URI identifying the resource associated with the parent's node children resource>" }
+            "self" : { "href" : "<URI identifying the resource associated with the parent's node children resource>" },
+            "parent" : { "href" : "<URI identifying the resource associated with the parent node>" }
         }
     },
     // other node elements...
 
 Each child is represented by an object providing only minimal information about the child: its name,
-its primary node type and its associated URIs (for both associated node resource and node type resource):
+its primary node type and its associated URIs (for both associated node, node type and parent node resources):
 
     "name" : <unescaped child name>,
     "type" : <nodetype name>,
     "_links" : {
         "self" : { "href" : "<URI identifying the resource associated with the child's node>" },
-        "type" : { "href" : "<URI identifying the resource associated with the child's node type>" }
+        "type" : { "href" : "<URI identifying the resource associated with the child's node type>" },
+        "parent" : { "href" : "<URI identifying the resource associated with the parent node>" }
     }
 
 #### Example
