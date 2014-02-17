@@ -39,16 +39,56 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.API;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.version.Version;
+import javax.jcr.version.VersionHistory;
+import javax.jcr.version.VersionIterator;
+import javax.jcr.version.VersionManager;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
+@XmlRootElement
 public class JSONVersions extends JSONSubElementContainer {
 
-    public JSONVersions(JSONNode parent, Node node) {
+    private Map<String, JSONVersion> versions;
+
+    public JSONVersions(JSONNode parent, Node node) throws RepositoryException {
         super(parent, API.VERSIONS);
+
+        if (isNodeVersionable(node)) {
+            final Session session = API.getCurrentSession();
+            if (session != null) {
+                final VersionManager versionManager = session.getWorkspace().getVersionManager();
+                final String path = node.getPath();
+
+                final VersionHistory versionHistory = versionManager.getVersionHistory(path);
+                final VersionIterator allVersions = versionHistory.getAllVersions();
+                versions = new LinkedHashMap<String, JSONVersion>((int) allVersions.getSize());
+                while (allVersions.hasNext()) {
+                    final Version version = allVersions.nextVersion();
+                    versions.put(version.getName(), new JSONVersion(node, version));
+                }
+            }
+        } else {
+            versions = Collections.emptyMap();
+        }
+    }
+
+    private boolean isNodeVersionable(Node node) throws RepositoryException {
+        return node.isNodeType(Constants.MIX_VERSIONABLE) || node.isNodeType("mix:simpleVersionable"); // todo: use proper constant when it's available
+    }
+
+    public Map<String, JSONVersion> getVersions() {
+        return versions;
     }
 }

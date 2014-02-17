@@ -39,11 +39,42 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Calendar;
+
 /**
  * @author Christophe Laprun
  */
-public class JSONVersion extends JSONLinkable {
-    public JSONVersion(String uri) {
-        super(uri);
+@XmlRootElement
+public class JSONVersion extends JSONNamed {
+    @XmlElement
+    private Calendar created;
+
+    public JSONVersion() {
+    }
+
+    public JSONVersion(Node parent, Version version) throws RepositoryException {
+        initWith(parent, version);
+    }
+
+    protected void initWith(Node parent, Version version) throws RepositoryException {
+        super.initWith(URIUtils.getChildURI(URIUtils.getURIForVersions(parent), version.getName(), true), version.getName());
+
+        this.created = version.getCreated();
+        final Version linearPredecessor = version.getLinearPredecessor();
+        if (linearPredecessor != null) {
+            addLink(new JSONLink("previous", URIUtils.getURIFor(linearPredecessor)));
+        }
+        final Version linearSuccessor = version.getLinearSuccessor();
+        if (linearSuccessor != null) {
+            addLink(new JSONLink("next", URIUtils.getURIFor(linearSuccessor)));
+        }
+        addLink(new JSONLink("nodeAtVersion", URIUtils.getURIFor(version.getFrozenNode())));
     }
 }

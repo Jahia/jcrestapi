@@ -157,8 +157,7 @@ public class JSONNode extends JSONItem<Node> {
 
     @XmlElement
     public Map<String, JSONVersion> getVersions() {
-        // todo: implement
-        return null;
+        return versions != null ? versions.getVersions() : null;
     }
 
 }
