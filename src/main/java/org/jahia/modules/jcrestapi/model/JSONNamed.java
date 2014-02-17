@@ -39,15 +39,6 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
-import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.URIUtils;
-
-import javax.jcr.Item;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -55,40 +46,16 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Christophe Laprun
  */
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.NONE)
-public abstract class JSONItem<T extends Item> extends JSONNamed {
+public class JSONNamed extends JSONLinkable {
     @XmlElement
-    private String type;
+    private String name;
 
-    public JSONItem() {
+    protected void initWith(String uri, String name) {
+        super.initWith(uri);
+        this.name = name;
     }
 
-    public void initWith(T item) throws RepositoryException {
-        initWith(URIUtils.getURIFor(item), item.getName());
-        this.type = getUnescapedTypeName(item);
-
-        addLink(new JSONLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
-        Node parent;
-        try {
-            parent = item.getParent();
-        } catch (ItemNotFoundException e) {
-            // item is root node, specify that parent is itself
-            parent = (Node) item;
-        }
-        addLink(new JSONLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
+    public String getName() {
+        return name;
     }
-
-    public JSONItem(T item) throws RepositoryException {
-        initWith(item);
-    }
-
-    public String getTypeName() {
-        return type;
-    }
-
-    protected String getTypeChildPath(T item) throws RepositoryException {
-        return URIUtils.escape(type);
-    }
-
-    protected abstract String getUnescapedTypeName(T item) throws RepositoryException;
 }

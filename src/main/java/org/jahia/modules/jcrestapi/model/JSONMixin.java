@@ -54,9 +54,7 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONMixin extends JSONLinkable {
-    @XmlElement
-    private String name;
+public class JSONMixin extends JSONNamed {
     @XmlElement
     private Map<String, String> properties;
 
@@ -66,8 +64,7 @@ public class JSONMixin extends JSONLinkable {
     public void initWith(Node parentNode, NodeType item) throws RepositoryException {
         // todo: should we try to point to the actual mixin definition instead of pointing to the relative path to the mixin in the context of the parent node
         // todo: should we add parent link?
-        super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true));
-        this.name = item.getName();
+        super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true), item.getName());
 
         final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
         properties = new HashMap<String, String>(propertyDefinitions.length);
@@ -78,9 +75,5 @@ public class JSONMixin extends JSONLinkable {
 
     public JSONMixin(Node nodeWithMixin, NodeType item) throws RepositoryException {
         initWith(nodeWithMixin, item);
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 }
