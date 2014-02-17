@@ -194,7 +194,7 @@ public class API {
             JCRSessionFactory factory = (JCRSessionFactory) repository;
             session = factory.getCurrentUserSession(workspace, LanguageCodeConverters.languageCodeToLocale(language), Locale.ENGLISH);
         } else {
-            session = repository.login(getRoot());
+            session = repository.login(getRoot(), workspace);
         }
 
         // put the session in the session holder so that other objects can access it if needed
