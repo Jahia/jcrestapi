@@ -115,6 +115,10 @@ public class URIUtils {
         return getChildURI(getURIFor(node), API.MIXINS, false);
     }
 
+    public static String getURIForVersions(Node node) {
+        return getChildURI(getURIFor(node), API.VERSIONS, false);
+    }
+
     public static String escape(String value) {
         return escape(value, 1);
     }
