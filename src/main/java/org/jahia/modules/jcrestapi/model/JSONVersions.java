@@ -84,8 +84,8 @@ public class JSONVersions extends JSONSubElementContainer {
         }
     }
 
-    private boolean isNodeVersionable(Node node) throws RepositoryException {
-        return node.isNodeType(Constants.MIX_VERSIONABLE) || node.isNodeType("mix:simpleVersionable"); // todo: use proper constant when it's available
+    public static boolean isNodeVersionable(Node node) throws RepositoryException {
+        return node.isNodeType(Constants.MIX_VERSIONABLE) || node.isNodeType(Constants.MIX_SIMPLEVERSIONABLE);
     }
 
     public Map<String, JSONVersion> getVersions() {
