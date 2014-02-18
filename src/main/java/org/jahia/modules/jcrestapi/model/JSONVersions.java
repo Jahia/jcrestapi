@@ -65,23 +65,30 @@ public class JSONVersions extends JSONSubElementContainer {
     public JSONVersions(JSONNode parent, Node node) throws RepositoryException {
         super(parent, API.VERSIONS);
 
+        final VersionHistory versionHistory = getVersionHistoryFor(node);
+        if (versionHistory != null) {
+            final VersionIterator allVersions = versionHistory.getAllVersions();
+            versions = new LinkedHashMap<String, JSONVersion>((int) allVersions.getSize());
+            while (allVersions.hasNext()) {
+                final Version version = allVersions.nextVersion();
+                versions.put(version.getName(), new JSONVersion(node, version));
+            }
+        } else {
+            versions = Collections.emptyMap();
+        }
+    }
+
+    public static VersionHistory getVersionHistoryFor(Node node) throws RepositoryException {
         if (isNodeVersionable(node)) {
             final Session session = API.getCurrentSession();
             if (session != null) {
                 final VersionManager versionManager = session.getWorkspace().getVersionManager();
                 final String path = node.getPath();
 
-                final VersionHistory versionHistory = versionManager.getVersionHistory(path);
-                final VersionIterator allVersions = versionHistory.getAllVersions();
-                versions = new LinkedHashMap<String, JSONVersion>((int) allVersions.getSize());
-                while (allVersions.hasNext()) {
-                    final Version version = allVersions.nextVersion();
-                    versions.put(version.getName(), new JSONVersion(node, version));
-                }
+                return versionManager.getVersionHistory(path);
             }
-        } else {
-            versions = Collections.emptyMap();
         }
+        return null;
     }
 
     public static boolean isNodeVersionable(Node node) throws RepositoryException {

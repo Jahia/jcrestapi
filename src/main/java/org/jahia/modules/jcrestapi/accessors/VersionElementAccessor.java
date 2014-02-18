@@ -45,6 +45,8 @@ import org.jahia.modules.jcrestapi.model.JSONVersions;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
+import javax.jcr.version.VersionHistory;
 
 /**
  * @author Christophe Laprun
@@ -57,16 +59,25 @@ public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVe
 
     @Override
     protected JSONVersion getSubElement(Node node, String subElement) throws RepositoryException {
-        return null; // todo
+        final VersionHistory versionHistory = JSONVersions.getVersionHistoryFor(node);
+        if (versionHistory != null) {
+            final Version version = versionHistory.getVersion(subElement);
+            return version != null ? new JSONVersion(node, version) : null;
+        } else {
+            return null;
+        }
     }
 
     @Override
     protected void delete(Node node, String subElement) throws RepositoryException {
-        return;
+        final VersionHistory versionHistory = JSONVersions.getVersionHistoryFor(node);
+        if (versionHistory != null) {
+            versionHistory.removeVersion(subElement);
+        }
     }
 
     @Override
     protected CreateOrUpdateResult<JSONVersion> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
-        return null; // todo
+        throw new UnsupportedOperationException("Cannot create or update versions");
     }
 }
