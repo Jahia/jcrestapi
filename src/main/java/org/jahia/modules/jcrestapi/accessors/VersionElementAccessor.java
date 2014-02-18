@@ -61,8 +61,8 @@ public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVe
     }
 
     @Override
-    protected JSONVersion delete(Node node, String subElement) throws RepositoryException {
-        return null; // todo
+    protected void delete(Node node, String subElement) throws RepositoryException {
+        return;
     }
 
     @Override

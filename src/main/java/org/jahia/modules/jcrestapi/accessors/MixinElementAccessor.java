@@ -67,9 +67,8 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
     }
 
     @Override
-    protected JSONMixin delete(Node node, String subElement) throws RepositoryException {
+    protected void delete(Node node, String subElement) throws RepositoryException {
         node.removeMixin(subElement);
-        return null;
     }
 
     @Override

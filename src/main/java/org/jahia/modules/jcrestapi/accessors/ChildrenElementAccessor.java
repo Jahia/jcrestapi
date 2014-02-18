@@ -60,10 +60,9 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONN
     }
 
     @Override
-    protected JSONNode delete(Node node, String subElement) throws RepositoryException {
+    protected void delete(Node node, String subElement) throws RepositoryException {
         final Node child = node.getNode(subElement);
         child.remove();
-        return null;
     }
 
     @Override

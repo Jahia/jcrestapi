@@ -72,7 +72,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
 
     protected abstract T getSubElement(Node node, String subElement) throws RepositoryException;
 
-    protected abstract T delete(Node node, String subElement) throws RepositoryException;
+    protected abstract void delete(Node node, String subElement) throws RepositoryException;
 
     protected abstract CreateOrUpdateResult<T> createOrUpdate(Node node, String subElement, U childData) throws RepositoryException;
 

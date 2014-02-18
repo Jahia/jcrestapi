@@ -92,9 +92,8 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     }
 
     @Override
-    protected JSONProperty delete(Node node, String subElement) throws RepositoryException {
+    protected void delete(Node node, String subElement) throws RepositoryException {
         node.setProperty(subElement, (Value) null);
-        return null;
     }
 
     @Override

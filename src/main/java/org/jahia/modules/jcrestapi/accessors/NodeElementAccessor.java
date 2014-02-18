@@ -69,9 +69,8 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
     }
 
     @Override
-    protected JSONNode delete(Node node, String subElement) throws RepositoryException {
+    protected void delete(Node node, String subElement) throws RepositoryException {
         node.remove();
-        return null;
     }
 
     @Override
