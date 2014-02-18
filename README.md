@@ -15,7 +15,7 @@ since with great accessibility/power comes great responsibility!
 - Improve cache control using ETag (for simple node GETs), in particular, can we use jcr:lastModified as an ETag and
 using Response.cacheControl method instead of filter.
 - Clarify usage of children vs. access via path and its consequences on NodeElementAccessor.
-- Design and implement versions access.
+- <s>Design and implement versions access.</s> (Done)
 - <s>Re-design URIs to provide easier access to workspace and language.</s> (Done)
 - JS Client library?
 - Improve cross-site support
