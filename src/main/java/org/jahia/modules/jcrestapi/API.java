@@ -98,7 +98,8 @@ public class API {
         accessors.put("", new NodeElementAccessor());
     }
 
-    @Inject private Repository repository;
+    @Inject
+    private Repository repository;
 
     private static final ThreadLocal<Session> sessionHolder = new ThreadLocal<Session>();
 
@@ -225,7 +226,6 @@ public class API {
     @Path("/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
             "|" + API.MIXINS +
             "|" + API.PROPERTIES +
-            "|" + API.VERSIONS +
             "))?}{subElement: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object createOrUpdateChildNode(@PathParam("workspace") String workspace,
@@ -269,7 +269,6 @@ public class API {
     @Path("/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
             "|" + API.MIXINS +
             "|" + API.PROPERTIES +
-            "|" + API.VERSIONS +
             "))?}{subElement: .*}")
     public Object deleteNode(@PathParam("workspace") String workspace,
                              @PathParam("language") String language,
