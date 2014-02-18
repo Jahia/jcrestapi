@@ -70,10 +70,7 @@ public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVe
 
     @Override
     protected void delete(Node node, String subElement) throws RepositoryException {
-        final VersionHistory versionHistory = JSONVersions.getVersionHistoryFor(node);
-        if (versionHistory != null) {
-            versionHistory.removeVersion(subElement);
-        }
+        throw new UnsupportedOperationException("Cannot delete versions");
     }
 
     @Override
