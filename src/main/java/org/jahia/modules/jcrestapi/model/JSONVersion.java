@@ -64,7 +64,7 @@ public class JSONVersion extends JSONNamed {
     }
 
     protected void initWith(Node parent, Version version) throws RepositoryException {
-        super.initWith(URIUtils.getChildURI(URIUtils.getURIForVersions(parent), version.getName(), true), version.getName());
+        super.initWith(URIUtils.getURIFor(version), version.getName());
 
         this.created = version.getCreated();
         final Version linearPredecessor = version.getLinearPredecessor();
