@@ -41,10 +41,7 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.model.JSONLinkable;
 
-import javax.jcr.Item;
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
+import javax.jcr.*;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,22 +51,23 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Christophe Laprun
  */
 public class URIUtils {
-    private static final AtomicReference<String> baseURI = new AtomicReference<String>(UriBuilder.fromResource(API
-            .class).build().toASCIIString());
-    private static final AtomicReference<String> idURI = new AtomicReference<String>(baseURI + "/nodes/");
-    private static final AtomicReference<String> byPathURI = new AtomicReference<String>(baseURI + "/byPath/");
-    private static final AtomicReference<String> nodetypesURI = new AtomicReference<String>(byPathURI + "jcr__system/jcr__nodeTypes/");
+    private static final AtomicReference<String> baseURI = new AtomicReference<String>(UriBuilder.fromResource(API.class).build().toASCIIString());
+
+    private static String getURIWithWorkspaceAndLanguage() {
+        final API.SessionInfo currentSession = API.getCurrentSession();
+        return baseURI.get() + "/" + currentSession.workspace + "/" + currentSession.language;
+    }
 
     public static String getByPathURI(String path) {
-        return byPathURI.get() + path;
+        return getURIWithWorkspaceAndLanguage() + "/byPath/" + path;
     }
 
     public static String getTypeURI(String typeName) {
-        return nodetypesURI.get() + typeName;
+        return getByPathURI("jcr__system/jcr__nodeTypes/") + typeName;
     }
 
     public static String getIdURI(String identifier) {
-        return idURI.get() + identifier;
+        return getURIWithWorkspaceAndLanguage() + "/nodes/" + identifier;
     }
 
     public static String getURIFor(Item item) {
