@@ -80,7 +80,7 @@ public class JSONVersions extends JSONSubElementContainer {
 
     public static VersionHistory getVersionHistoryFor(Node node) throws RepositoryException {
         if (isNodeVersionable(node)) {
-            final Session session = API.getCurrentSession();
+            final Session session = API.getCurrentSession().session;
             if (session != null) {
                 final VersionManager versionManager = session.getWorkspace().getVersionManager();
                 final String path = node.getPath();

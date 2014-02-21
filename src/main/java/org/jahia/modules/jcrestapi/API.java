@@ -101,10 +101,22 @@ public class API {
     @Inject
     private Repository repository;
 
-    private static final ThreadLocal<Session> sessionHolder = new ThreadLocal<Session>();
+    private static final ThreadLocal<SessionInfo> sessionHolder = new ThreadLocal<SessionInfo>();
 
-    public static Session getCurrentSession() {
+    public static SessionInfo getCurrentSession() {
         return sessionHolder.get();
+    }
+
+    public static class SessionInfo {
+        public final Session session;
+        public final String workspace;
+        public final String language;
+
+        public SessionInfo(Session session, String workspace, String language) {
+            this.session = session;
+            this.workspace = workspace;
+            this.language = language;
+        }
     }
 
     @GET
@@ -199,7 +211,7 @@ public class API {
         }
 
         // put the session in the session holder so that other objects can access it if needed
-        sessionHolder.set(session);
+        sessionHolder.set(new SessionInfo(session, workspace, language));
 
         return session;
     }
