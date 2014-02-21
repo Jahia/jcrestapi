@@ -22,7 +22,9 @@ using Response.cacheControl method instead of filter.
 - Improve authentication support, clarify which authentication options are supported
 - Define a versioning scheme
 - Should we use a vendor-specific content type?
-- JSONP support
+- <s>JSON-P support</s> (No JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)
+- Packaging
+- Documentation using apiary.io?
 
 ## Resources identification
 
