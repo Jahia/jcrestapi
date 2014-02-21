@@ -25,6 +25,7 @@ using Response.cacheControl method instead of filter.
 - <s>JSON-P support</s> (No JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)
 - Packaging
 - Documentation using apiary.io?
+- Support file uploads
 
 ## Resources identification
 
