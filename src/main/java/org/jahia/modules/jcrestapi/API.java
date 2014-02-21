@@ -184,12 +184,7 @@ public class API {
         } catch (Exception e) {
             throw new APIException(e);
         } finally {
-            if (session != null) {
-                session.logout();
-            }
-
-            // reset session holder
-            sessionHolder.remove();
+            closeSession(session);
         }
     }
 
@@ -214,6 +209,15 @@ public class API {
         sessionHolder.set(new SessionInfo(session, workspace, language));
 
         return session;
+    }
+
+    private void closeSession(Session session) {
+        if (session != null && session.isLive()) {
+            session.logout();
+        }
+
+        // reset session holder
+        sessionHolder.remove();
     }
 
     private static interface NodeAccessor {
@@ -379,12 +383,7 @@ public class API {
         } catch (Exception e) {
             throw new APIException(e);
         } finally {
-            if (session != null) {
-                session.logout();
-            }
-
-            // reset session holder
-            sessionHolder.remove();
+            closeSession(session);
         }
     }
 
