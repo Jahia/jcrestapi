@@ -154,90 +154,6 @@ public class API {
         return perform(workspace, language, id, subElementType, subElement, context, READ, null);
     }
 
-    private Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
-                           String operation, JSONItem data) {
-        return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.byId);
-    }
-
-    private Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
-                           String operation, JSONItem data, NodeAccessor nodeAccessor) {
-        return perform(workspace, language, context, operation, data, nodeAccessor, new ElementsProcessor(idOrPath, subElementType, subElement));
-    }
-
-    private Object perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
-        Session session = null;
-
-        try {
-            session = getSession(workspace, language);
-            final Node node = nodeAccessor.getNode(processor.getIdOrPath(), session);
-
-            final ElementAccessor accessor = accessors.get(processor.getSubElementType());
-            if (accessor != null) {
-                final Response response = accessor.perform(node, processor.getSubElement(), operation, data, context);
-
-                session.save();
-
-                return response;
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            throw new APIException(e);
-        } finally {
-            closeSession(session);
-        }
-    }
-
-    private Session getSession(String workspace, String language) throws RepositoryException {
-        if (!exists(workspace)) {
-            workspace = "default";
-        }
-
-        if (!exists(language)) {
-            language = "en"; // todo: retrieve configured default language if possible
-        }
-
-        final Session session;
-        if (repository instanceof JCRSessionFactory) {
-            JCRSessionFactory factory = (JCRSessionFactory) repository;
-            session = factory.getCurrentUserSession(workspace, LanguageCodeConverters.languageCodeToLocale(language), Locale.ENGLISH);
-        } else {
-            session = repository.login(getRoot(), workspace);
-        }
-
-        // put the session in the session holder so that other objects can access it if needed
-        sessionHolder.set(new SessionInfo(session, workspace, language));
-
-        return session;
-    }
-
-    private void closeSession(Session session) {
-        if (session != null && session.isLive()) {
-            session.logout();
-        }
-
-        // reset session holder
-        sessionHolder.remove();
-    }
-
-    private static interface NodeAccessor {
-        Node getNode(String idOrPath, Session session) throws RepositoryException;
-
-        NodeAccessor byId = new NodeAccessor() {
-            @Override
-            public Node getNode(String idOrPath, Session session) throws RepositoryException {
-                return idOrPath.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(idOrPath);
-            }
-        };
-
-        NodeAccessor byPath = new NodeAccessor() {
-            @Override
-            public Node getNode(String idOrPath, Session session) throws RepositoryException {
-                return idOrPath.isEmpty() ? session.getRootNode() : session.getNode(idOrPath);
-            }
-        };
-    }
-
     @PUT
     @Path("/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
             "|" + API.MIXINS +
@@ -392,10 +308,6 @@ public class API {
                 PropertyType.STRING)));
     }
 
-    private SimpleCredentials getRoot() {
-        return new SimpleCredentials("root", new char[]{'r', 'o', 'o', 't', '1', '2', '3', '4'});
-    }
-
     public static boolean exists(String name) {
         return name != null && !name.isEmpty();
     }
@@ -415,6 +327,90 @@ public class API {
         } else {
             return "";
         }
+    }
+
+    private Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
+                           String operation, JSONItem data) {
+        return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.byId);
+    }
+
+    private Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
+                           String operation, JSONItem data, NodeAccessor nodeAccessor) {
+        return perform(workspace, language, context, operation, data, nodeAccessor, new ElementsProcessor(idOrPath, subElementType, subElement));
+    }
+
+    private Object perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
+        Session session = null;
+
+        try {
+            session = getSession(workspace, language);
+            final Node node = nodeAccessor.getNode(processor.getIdOrPath(), session);
+
+            final ElementAccessor accessor = accessors.get(processor.getSubElementType());
+            if (accessor != null) {
+                final Response response = accessor.perform(node, processor.getSubElement(), operation, data, context);
+
+                session.save();
+
+                return response;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            throw new APIException(e);
+        } finally {
+            closeSession(session);
+        }
+    }
+
+    private Session getSession(String workspace, String language) throws RepositoryException {
+        if (!exists(workspace)) {
+            workspace = "default";
+        }
+
+        if (!exists(language)) {
+            language = "en"; // todo: retrieve configured default language if possible
+        }
+
+        final Session session;
+        if (repository instanceof JCRSessionFactory) {
+            JCRSessionFactory factory = (JCRSessionFactory) repository;
+            session = factory.getCurrentUserSession(workspace, LanguageCodeConverters.languageCodeToLocale(language), Locale.ENGLISH);
+        } else {
+            session = repository.login(new SimpleCredentials("root", new char[]{'r', 'o', 'o', 't', '1', '2', '3', '4'}), workspace);
+        }
+
+        // put the session in the session holder so that other objects can access it if needed
+        sessionHolder.set(new SessionInfo(session, workspace, language));
+
+        return session;
+    }
+
+    private void closeSession(Session session) {
+        if (session != null && session.isLive()) {
+            session.logout();
+        }
+
+        // reset session holder
+        sessionHolder.remove();
+    }
+
+    private static interface NodeAccessor {
+        Node getNode(String idOrPath, Session session) throws RepositoryException;
+
+        NodeAccessor byId = new NodeAccessor() {
+            @Override
+            public Node getNode(String idOrPath, Session session) throws RepositoryException {
+                return idOrPath.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(idOrPath);
+            }
+        };
+
+        NodeAccessor byPath = new NodeAccessor() {
+            @Override
+            public Node getNode(String idOrPath, Session session) throws RepositoryException {
+                return idOrPath.isEmpty() ? session.getRootNode() : session.getNode(idOrPath);
+            }
+        };
     }
 
     private class ElementsProcessor {
