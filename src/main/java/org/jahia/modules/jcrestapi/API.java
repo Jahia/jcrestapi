@@ -39,6 +39,8 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.*;
 import org.jahia.modules.jcrestapi.model.JSONItem;
@@ -54,6 +56,7 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.qom.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -234,6 +237,18 @@ public class API {
         }
 
         return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, READ, null, NodeAccessor.byPath);
+    }
+
+    @POST
+    @Path("/{workspace}/{language}/byPath{path: /.*}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Object upload(@PathParam("workspace") String workspace,
+                         @PathParam("language") String language,
+                         @PathParam("path") String path,
+                         @FormDataParam("file") InputStream file,
+                         @FormDataParam("file") FormDataContentDisposition fileDisposition,
+                         @Context UriInfo context) {
+        return null;
     }
 
     @GET

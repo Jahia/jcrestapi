@@ -42,6 +42,7 @@ package org.jahia.modules.jcrestapi;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.jcr.Repository;
@@ -55,7 +56,7 @@ public class APIApplication extends ResourceConfig {
     }
 
     APIApplication(final Class<? extends Factory<Repository>> repositoryFactoryClass) {
-        super(API.class, APIExceptionMapper.class, JacksonJaxbJsonProvider.class, HeadersResponseFilter.class);
+        super(API.class, APIExceptionMapper.class, JacksonJaxbJsonProvider.class, HeadersResponseFilter.class, MultiPartFeature.class);
         register(new AbstractBinder() {
             @Override
             protected void configure() {
