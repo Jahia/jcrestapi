@@ -114,6 +114,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>${jersey.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Jackson -->
+        <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${jackson.version}</version>
@@ -218,6 +226,7 @@
                             javax.ws.rs.*,
                             org.glassfish.hk2.*;
                             org.glassfish.jersey.server,
+                            org.glassfish.jersey.media.multipart.*,
                             org.jahia.services.content.*,
                             org.jahia.utils;
                             ${jahia.plugin.projectPackageImport}
