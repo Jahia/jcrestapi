@@ -182,6 +182,12 @@
             <artifactId>rest-assured</artifactId>
             <version>1.6.1</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Needed to run the TransientRepository -->
         <dependency>
