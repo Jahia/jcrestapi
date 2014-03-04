@@ -62,6 +62,10 @@ import static org.hamcrest.Matchers.*;
  */
 public class APITest extends JerseyTest {
 
+    private static final String API_DEFAULT_EN = "/api/default/en/";
+    private static final String API_DEFAULT_EN_BY_PATH = API_DEFAULT_EN + "byPath/";
+    private static final String API_DEFAULT_EN_NODES = API_DEFAULT_EN + "nodes/";
+
     @Override
     protected Application configure() {
         return new APIApplication(TestRepositoryFactory.class);
@@ -172,19 +176,19 @@ public class APITest extends JerseyTest {
     }
 
     private String getURLByPath(String path) {
-        return generateURL("/api/byPath/" + path);
+        return generateURL(API_DEFAULT_EN_BY_PATH + path);
     }
 
     private String getURIById(String id) {
-        return "/api/nodes/" + id;
+        return API_DEFAULT_EN_NODES + id;
     }
 
     private String getURIByPath(String path) {
-        return "/api/byPath/" + URIUtils.escape(path);
+        return API_DEFAULT_EN_BY_PATH + URIUtils.escape(path);
     }
 
     private String getTypeURIByPath(String typeName) {
-        return "/api/byPath/jcr__system/jcr__nodeTypes/" + URIUtils.escape(typeName);
+        return API_DEFAULT_EN_BY_PATH + "jcr__system/jcr__nodeTypes/" + URIUtils.escape(typeName);
     }
 
     private String getChildURI(String rootId, String childName) {
