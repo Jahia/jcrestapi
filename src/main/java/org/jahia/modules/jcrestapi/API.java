@@ -222,8 +222,7 @@ public class API {
                             @Context UriInfo context) {
 
         // only consider useful segments, starting after /api/{workspace}/{language}/byPath
-        final List<PathSegment> pathSegments = context.getPathSegments();
-        final List<PathSegment> usefulSegments = pathSegments.subList(4, pathSegments.size());
+        final List<PathSegment> usefulSegments = getUsefulSegments(context);
         int index = 0;
         for (PathSegment segment : usefulSegments) {
             // check if segment is a sub-element marker
@@ -234,9 +233,15 @@ public class API {
                 String subElement = getSubElement(usefulSegments, index);
                 return perform(workspace, language, nodePath, subElementType, subElement, context, READ, null, NodeAccessor.byPath);
             }
+            index++;
         }
 
         return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, READ, null, NodeAccessor.byPath);
+    }
+
+    private List<PathSegment> getUsefulSegments(UriInfo context) {
+        final List<PathSegment> pathSegments = context.getPathSegments();
+        return pathSegments.subList(4, pathSegments.size());
     }
 
     @POST
@@ -330,9 +335,14 @@ public class API {
     private static String computePathUpTo(List<PathSegment> segments, int index) {
         StringBuilder path = new StringBuilder(30 * index);
         for (int i = 0; i < index; i++) {
-            path.append("/").append(segments.get(i).getPath());
+            final String segment = segments.get(i).getPath();
+            if (!segment.isEmpty()) {
+                path.append("/").append(segment);
+            }
         }
-        return path.toString();
+
+        final String result = path.toString();
+        return !result.isEmpty() ? result : "/";
     }
 
     private static String getSubElement(List<PathSegment> segments, int index) {
