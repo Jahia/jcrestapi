@@ -56,6 +56,7 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.qom.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.*;
 
@@ -253,7 +254,43 @@ public class API {
                          @FormDataParam("file") InputStream file,
                          @FormDataParam("file") FormDataContentDisposition fileDisposition,
                          @Context UriInfo context) {
-        return null;
+        final List<PathSegment> usefulSegments = getUsefulSegments(context);
+        final ElementsProcessor processor = new ElementsProcessor(computePathUpTo(usefulSegments, usefulSegments.size()), "", "");
+        Session session = null;
+
+        try {
+            session = getSession(workspace, language);
+            final Node node = NodeAccessor.byPath.getNode(processor.getIdOrPath(), session);
+
+            // check that the node is a folder
+            if (node.isNodeType(Constants.NT_FOLDER)) {
+                InputStream stream = new BufferedInputStream(file);
+
+                // todo: figure out how to get the file name properly
+                String fileName = fileDisposition.getFileName();
+                if(fileName == null) {
+                    fileName = node.getName() + System.currentTimeMillis();
+                }
+
+                // create a jnt:file child node
+                Node fileNode = node.addNode(fileName, Constants.JAHIANT_FILE);
+
+                // actual content is in a jcr:content child node
+                Node contentNode = fileNode.addNode(Constants.JCR_CONTENT, Constants.JAHIANT_RESOURCE);
+                Binary binary = session.getValueFactory().createBinary(stream);
+                contentNode.setProperty(Constants.JCR_DATA, binary);
+
+                session.save();
+
+                return Response.created(context.getAbsolutePath()).entity(new JSONNode(fileNode, 0)).build();
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            throw new APIException(e);
+        } finally {
+            closeSession(session);
+        }
     }
 
     @GET
