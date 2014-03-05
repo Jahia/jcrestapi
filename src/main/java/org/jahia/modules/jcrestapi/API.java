@@ -199,11 +199,11 @@ public class API {
         return perform(workspace, language, context, DELETE, null, NodeAccessor.byId, processor);
     }
 
-
     @DELETE
     @Path("/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
             "|" + API.MIXINS +
             "|" + API.PROPERTIES +
+            "|" + API.VERSIONS +
             "))?}{subElement: .*}")
     public Object deleteNode(@PathParam("workspace") String workspace,
                              @PathParam("language") String language,
