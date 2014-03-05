@@ -39,7 +39,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.*;
@@ -251,8 +251,7 @@ public class API {
     public Object upload(@PathParam("workspace") String workspace,
                          @PathParam("language") String language,
                          @PathParam("path") String path,
-                         @FormDataParam("file") InputStream file,
-                         @FormDataParam("file") FormDataContentDisposition contentDisposition,
+                         @FormDataParam("file") FormDataBodyPart part,
                          @Context UriInfo context) {
         final List<PathSegment> usefulSegments = getUsefulSegments(context);
         final ElementsProcessor processor = new ElementsProcessor(computePathUpTo(usefulSegments, usefulSegments.size()), "", "");
@@ -266,7 +265,7 @@ public class API {
             if (node.isNodeType(Constants.NT_FOLDER)) {
 
                 // get the file name
-                String fileName = contentDisposition.getFileName();
+                String fileName = part.getContentDisposition().getFileName();
                 boolean isUpdate = false;
                 if (fileName == null) {
                     // if we didn't get a file name for some reason, create one
@@ -297,9 +296,10 @@ public class API {
                     contentNode = childNode.addNode(Constants.JCR_CONTENT, Constants.JAHIANT_RESOURCE);
                 }
 
-                InputStream stream = new BufferedInputStream(file);
+                InputStream stream = new BufferedInputStream(part.getEntityAs(InputStream.class));
                 Binary binary = session.getValueFactory().createBinary(stream);
                 contentNode.setProperty(Constants.JCR_DATA, binary);
+                contentNode.setProperty(Constants.JCR_MIMETYPE, part.getMediaType().toString());
 
                 session.save();
 
