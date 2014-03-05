@@ -252,7 +252,7 @@ public class API {
                          @PathParam("language") String language,
                          @PathParam("path") String path,
                          @FormDataParam("file") InputStream file,
-                         @FormDataParam("file") FormDataContentDisposition fileDisposition,
+                         @FormDataParam("file") FormDataContentDisposition contentDisposition,
                          @Context UriInfo context) {
         final List<PathSegment> usefulSegments = getUsefulSegments(context);
         final ElementsProcessor processor = new ElementsProcessor(computePathUpTo(usefulSegments, usefulSegments.size()), "", "");
@@ -264,25 +264,48 @@ public class API {
 
             // check that the node is a folder
             if (node.isNodeType(Constants.NT_FOLDER)) {
-                InputStream stream = new BufferedInputStream(file);
 
-                // todo: figure out how to get the file name properly
-                String fileName = fileDisposition.getFileName();
-                if(fileName == null) {
+                // get the file name
+                String fileName = contentDisposition.getFileName();
+                boolean isUpdate = false;
+                if (fileName == null) {
+                    // if we didn't get a file name for some reason, create one
                     fileName = node.getName() + System.currentTimeMillis();
+                } else {
+                    // check if we've already have a child with the same name, in which case we want to update
+                    // todo: support same name siblings?
+                    isUpdate = node.hasNode(fileName);
                 }
 
-                // create a jnt:file child node
-                Node fileNode = node.addNode(fileName, Constants.JAHIANT_FILE);
+                Node childNode;
+                Node contentNode;
+                if (isUpdate) {
+                    // retrieve the existing node
+                    childNode = node.getNode(fileName);
 
-                // actual content is in a jcr:content child node
-                Node contentNode = fileNode.addNode(Constants.JCR_CONTENT, Constants.JAHIANT_RESOURCE);
+                    // check that we're dealing with a jnt:file node
+                    if (!childNode.isNodeType(Constants.NT_FILE)) {
+                        throw new IllegalArgumentException(fileName + " already exists and is not a " + Constants.NT_FILE + " node!");
+                    } else {
+                        contentNode = childNode.getNode(Constants.JCR_CONTENT);
+                    }
+                } else {
+                    // create the node
+                    childNode = node.addNode(fileName, Constants.JAHIANT_FILE);
+
+                    // actual content is in a jcr:content child node
+                    contentNode = childNode.addNode(Constants.JCR_CONTENT, Constants.JAHIANT_RESOURCE);
+                }
+
+                InputStream stream = new BufferedInputStream(file);
                 Binary binary = session.getValueFactory().createBinary(stream);
                 contentNode.setProperty(Constants.JCR_DATA, binary);
 
                 session.save();
 
-                return Response.created(context.getAbsolutePath()).entity(new JSONNode(fileNode, 0)).build();
+                final JSONNode jsonNode = new JSONNode(childNode, 0);
+                final Response.ResponseBuilder builder = isUpdate ? Response.ok(jsonNode) : Response.created(context.getAbsolutePath()).entity(jsonNode);
+                return builder.build();
             } else {
                 return null;
             }
