@@ -15,17 +15,17 @@ since with great accessibility/power comes great responsibility!
 - Improve cache control using ETag (for simple node GETs), in particular, can we use jcr:lastModified as an ETag and
 using Response.cacheControl method instead of filter.
 - Clarify usage of children vs. access via path and its consequences on NodeElementAccessor.
-- <s>Design and implement versions access.</s> (Done)
-- <s>Re-design URIs to provide easier access to workspace and language.</s> (Done)
+- <strike>Design and implement versions access.</strike> (Done)
+- <strike>Re-design URIs to provide easier access to workspace and language.</strike> (Done)
 - JS Client library?
 - Improve cross-site support
 - Improve authentication support, clarify which authentication options are supported
 - Define a versioning scheme
 - Should we use a vendor-specific content type?
-- <s>JSON-P support</s> (No JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)
-- Packaging
+- <strike>JSON-P support</strike> (No JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)
+- <strike>Packaging</strike>
 - Documentation using apiary.io?
-- Support file uploads
+- <strike>Support file uploads</strike> (Done)
 
 ## Resources identification
 
@@ -34,12 +34,12 @@ which is made rather easy since JCR data is stored mostly in tree form.
 
 ## <a name="uri"/>URI design
 
-- versions for a given node are found under the `versions` child resource
+- children for a given node are accessed using the `children` child resource
+- properties for a given node are found under the `properties` child resource
 - mixins for a given node are accessed using the `mixins` child resource
-- children for a given node are accessed directly via their path or using the `children` child resource
+- versions for a given node are found under the `versions` child resource
 - `:` character is encoded by `__` in property names since `:` is a reserved character for URIs
 - indices of same name siblings are denoted using the `--` prefix
-- properties for a given node are found under the `properties` child resource to distinguish them from children
 
 ### Examples
 
@@ -49,6 +49,137 @@ which is made rather easy since JCR data is stored mostly in tree form.
 | `mix:title` mixin of `/foo` | `/foo/mixins/mix__title`    |
 | `jcr:uuid` property of `/a` | `/a/properties/jcr__uuid`   |
 
+
+## API URIs
+
+The goal of this API is that you should be able to operate on its data using links provided within the returned representations.
+However, you still need to be able to retrieve that first representation to work with in the first place.
+
+### Base context
+
+Since the API implementation is deployed as a module, it is available on your Jahia Digital Factory instance under the `/modules`
+context with the `/api` specific context. Therefore, all URIs targeting the API will start with `/modules/api`. Keep this in mind
+while looking at the examples below since we might not repeat the base context all the time.
+
+### API version
+
+You can access the version of the API implementation using the `/modules/api/version` URI. This returns a plain text version String
+for the currently running API implementation. This can also serve as a quick check to see if the API is currently running or not.
+
+### Workspace and language
+
+You can access all the different workspaces and languages available in the Jahia Digital Factory JCR repository. However, you must
+choose a combination of workspace _and_ language at any one time to work with JCR data. Which workspace and language to use are
+specified in the URI path, using first, the escaped workspace name followed by the language code associated with the language you
+wish to retrieve data in.
+
+Therefore, all URIs targeting JCR data will be prefixed as follows: `/modules/api/<workspace name>/<language code>/<rest of the URI>`
+
+In the following sections, we detail the different types of URIs the API responds to. We will use `<placeholder>` or `{placeholder}`
+indifferently to represent place holders in the different URIs. Each section will first present the URI template using the JAX-RS
+`@Path` syntax for URIs which is quite self-explanatory for anyone with regular expression knowledge. We will then detail each part
+of the URI template, specify the expected result, define which options if any are available and, finally, which HTTP operations can
+be used on these URIs. Since we already about the workspace and language path elements, we won't address them in the following.
+
+### Operating on nodes using their identifier
+
+#### URI template
+`/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/children|mixins|properties|versions)?}{subElement: .*}`
+
+#### URI elements
+
+- `nodes`: path element marking access to JCR nodes from their identifier
+- `{id: [^/]*}`: the identifier of the node we want to operate on, which is defined as all characters up to the next `/` character
+- `{subElementType: (/children|mixins|properties|versions)?}`: an optional sub-element type to operate on the identified node's sub-resources
+ as defined in the [URI Design](#uri) section
+- `{subElement: .*}`: an optional sub-element escaped name to operate on a specific sub-resource of the identified node
+
+If no `subElementType` path element is provided then no `subElement` path element can be provided either and the resource on which the API
+will operate is the node identified by the specified `id` path element.
+
+If a `subElementType` path element is provided but no `subElement` path element is provided, then the API will operate on the collection of
+specified type of child resources for the node identified by the specified `id` path element.
+
+If a `subElementType` path element is provided and a `subElement` path element is provided, then the API will operate on the child resource
+identified by the `subElement` path element for the node identified by the specified `id` path element.
+
+#### Examples
+
+todo
+
+#### Options
+
+todo
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified resource
+- `PUT`: to create (if it doesn't already exist) or update the identified resource
+- `DELETE`: to delete the identified resource
+
+### Operating on nodes using their path
+
+#### URI template
+`/{workspace}/{language}/byPath{path: /.*}`
+
+#### URI elements
+
+- `byPath`: path element marking access to JCR nodes from their path
+- `{path: /.*}`: the path of the resource to operate one
+
+The `path` path element should contain the absolute path to a given JCR node with optional sub-element resolution if one of the child resource
+names defined in the [URI Design](#uri) section is found. Note that once a sub-element is found, the node resolution will occur up to that
+sub-element and the resolution of the sub-element will happen using the next path element, all others being discarded.
+
+#### Examples
+
+`/modules/api/default/en/byPath/users/root/profile` resolves to the `/users/root/profile` node in the `default` workspace using the `en` language.
+
+`/modules/api/live/fr/byPath/sites/foo/properties/bar` resolves to the French (`fr` language) version of the `bar` property of the `/sites/foo` node
+in the `live` workspace.
+
+`/modules/api/live/fr/ByPath/sites/foo/properties/bar/baz/foo` also resolves to the French version of the `bar` property of the `/sites/foo` node since
+ only the next path element is considered when a sub-element type if found in one of the path elements of the considered URI.
+
+#### Options
+
+todo
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified resource
+- `POST`: to upload a file as a child node of the identified resource
+
+### Retrieving nodes using their type
+
+#### URI template
+`{workspace}/{language}/byType/{type}`
+
+#### URI elements
+
+- `byType`: path element marking access to JCR nodes from their type
+- `{type}`: the escaped name of the type of JCR nodes to retrieve
+
+#### Examples
+
+todo
+
+#### Options
+
+Options are specified using query parameters in the URI, further refining the request. Here is the list of available query parameters:
+
+- `nameContains`: a possibly multi-valued String (by passing the query parameter several time in the URI) specifying which String(s) the retrieved
+nodes must contain in their name. This is an `AND` constraint so further value of this parameter further limit the possible names.
+- `orderBy`: a String specifying whether returned nodes should be ordered by ascending order (the default) or by descending order if the `desc`
+value is passed.
+- `limit`: an integer specifying how many nodes should be returned at most
+- `offset`: an integer specifying how many nodes are skipped so that paging can be implemented
+- `depth`: an integer specifying whether the returned nodes hierarchy is expanded to include sub-elements or not (default is `0` so no sub-elements
+included)
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified nodes
 
 ## Resources representation
 
