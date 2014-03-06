@@ -23,7 +23,7 @@ using Response.cacheControl method instead of filter.
 - Define a versioning scheme
 - Should we use a vendor-specific content type?
 - <strike>JSON-P support</strike> (No JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)
-- <strike>Packaging</strike>
+- <strike>Packaging</strike> __(Done)__
 - Documentation using apiary.io?
 - <strike>Support file uploads</strike> (Done)
 
