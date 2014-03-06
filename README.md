@@ -10,27 +10,33 @@ browsers, directly from any REST-able technology
 - All JCR nodes should be accessible from the API: this mandates that authorization will need to be properly tackled
 since with great accessibility/power comes great responsibility!
 
+---
+
 ## TODO:
 
 - Improve cache control using ETag (for simple node GETs), in particular, can we use jcr:lastModified as an ETag and
 using Response.cacheControl method instead of filter.
 - Clarify usage of children vs. access via path and its consequences on NodeElementAccessor.
-- <strike>Design and implement versions access.</strike> (Done)
-- <strike>Re-design URIs to provide easier access to workspace and language.</strike> (Done)
+- <strike>Design and implement versions access.</strike> __(Done)__
+- <strike>Re-design URIs to provide easier access to workspace and language.</strike> __(Done)__
 - JS Client library?
 - Improve cross-site support
 - Improve authentication support, clarify which authentication options are supported
 - Define a versioning scheme
 - Should we use a vendor-specific content type?
-- <strike>JSON-P support</strike> (No JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)
+- <strike>JSON-P support</strike> __(Done: no JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)__
 - <strike>Packaging</strike> __(Done)__
 - Documentation using apiary.io?
-- <strike>Support file uploads</strike> (Done)
+- <strike>Support file uploads</strike> __(Done)__
+
+---
 
 ## Resources identification
 
 The natural match to map JCR data unto REST concepts is to use JCR nodes as resources, identified by their path,
 which is made rather easy since JCR data is stored mostly in tree form.
+
+---
 
 ## <a name="uri"/>URI design
 
@@ -49,6 +55,7 @@ which is made rather easy since JCR data is stored mostly in tree form.
 | `mix:title` mixin of `/foo` | `/foo/mixins/mix__title`    |
 | `jcr:uuid` property of `/a` | `/a/properties/jcr__uuid`   |
 
+---
 
 ## API URIs
 
@@ -180,6 +187,8 @@ included)
 #### Allowed HTTP operations
 
 - `GET`: to retrieve the identified nodes
+
+---
 
 ## Resources representation
 
@@ -574,6 +583,8 @@ A node's versions are gathered within a `versions` object as follows:
     // other node elements...
 
 // todo
+
+---
 
 ## Operations
 
