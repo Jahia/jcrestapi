@@ -161,6 +161,8 @@ public class API {
     @PUT
     @Path("/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
             "|" + API.MIXINS +
+            "|" + API.PROPERTIES +
+            "|" + API.VERSIONS +
             "))?}{subElement: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object createOrUpdateChildNode(@PathParam("workspace") String workspace,
