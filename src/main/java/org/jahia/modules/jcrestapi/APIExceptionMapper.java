@@ -39,6 +39,8 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.slf4j.Logger;
+
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -51,6 +53,8 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 public class APIExceptionMapper implements ExceptionMapper<APIException> {
+    private static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(API.class);
+
     public Response toResponse(RepositoryException exception) {
         if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -65,6 +69,9 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
     @Override
     public Response toResponse(APIException exception) {
         final Throwable cause = exception.getCause();
+
+        logger.info("An error occurred in the RESTful API", cause);
+
         if (cause instanceof RepositoryException) {
             return toResponse((RepositoryException) cause);
         }
