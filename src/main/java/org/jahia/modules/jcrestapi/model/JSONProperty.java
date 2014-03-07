@@ -50,6 +50,7 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 /**
  * @author Christophe Laprun
@@ -174,14 +175,39 @@ public class JSONProperty extends JSONItem<Property> {
         if (!multiValued) {
             throw new IllegalStateException("Cannot call getValueAsStringArray on a simple-valued property.");
         }
-        Object[] values = (Object[]) value;
-        String[] result = new String[values.length];
-        int i = 0;
-        for (Object o : values) {
-            result[i++] = o.toString();
-        }
+        if (value instanceof Object[]) {
+            // first check if we already have a String[]
+            if (value.getClass().getComponentType().equals(String.class)) {
+                return (String[]) value;
+            } else {
+                Object[] values = (Object[]) value;
+                String[] result = new String[values.length];
+                int i = 0;
+                for (Object o : values) {
+                    result[i++] = o.toString();
+                }
 
-        return result;
+                return result;
+            }
+        } else if (value instanceof List) {
+            List values = (List) value;
+
+            // first check if we don't already have a List of Strings
+            if (!values.isEmpty() && values.get(0) instanceof String) {
+                return (String[]) values.toArray(new String[values.size()]);
+            } else {
+                String[] result = new String[values.size()];
+                int i = 0;
+                for (Object o : values) {
+                    result[i++] = o.toString();
+                }
+
+                return result;
+            }
+
+        } else {
+            throw new IllegalArgumentException("Unknown value type: " + value.getClass().getSimpleName());
+        }
     }
 
     public boolean isMultiValued() {

@@ -49,6 +49,7 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
+import java.util.List;
 
 /**
  * @author Christophe Laprun
@@ -67,7 +68,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
 
         final Object value = jsonProperty.getValue();
         // are we looking at a multi-valued property?
-        if (value instanceof Object[]) {
+        if (value instanceof Object[] || value instanceof List) {
             return node.setProperty(propName, jsonProperty.getValueAsStringArray(), type);
         } else {
             return node.setProperty(propName, jsonProperty.getValueAsString(), type);
