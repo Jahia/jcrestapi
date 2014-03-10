@@ -76,7 +76,12 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONN
             newOrToUpdate = node.getNode(subElement);
         } else {
             // otherwise, we add the new node
-            newOrToUpdate = node.addNode(subElement);
+            final String type = nodeData.getTypeName();
+            if (type == null) {
+                newOrToUpdate = node.addNode(subElement);
+            } else {
+                newOrToUpdate = node.addNode(subElement, type);
+            }
         }
 
         NodeElementAccessor.initNodeFrom(newOrToUpdate, nodeData);
