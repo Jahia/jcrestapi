@@ -173,6 +173,9 @@ public class API {
                                           JSONNode childData,
                                           @Context UriInfo context) {
         ElementsProcessor processor = new ElementsProcessor(id, subElementType, subElement);
+        if (childData == null) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Missing body").build();
+        }
         return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
     }
 
