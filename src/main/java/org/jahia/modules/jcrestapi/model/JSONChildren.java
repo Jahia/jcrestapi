@@ -39,6 +39,14 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
@@ -48,18 +56,28 @@ import javax.jcr.RepositoryException;
 import javax.ws.rs.Path;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
+@JsonDeserialize(using = JSONChildren.ChildrenDeserializer.class)
 public class JSONChildren extends JSONSubElementContainer {
-    private final HashMap<String, JSONNode> children;
+    private HashMap<String, JSONNode> children;
+
+    public JSONChildren() {
+    }
 
     public JSONChildren(JSONNode parent, Node node) throws RepositoryException {
-        super(parent, API.CHILDREN);
+        initWith(parent, node);
+    }
+
+    private void initWith(JSONNode parent, Node node) throws RepositoryException {
+        super.initWith(parent, API.CHILDREN);
 
         final NodeIterator nodes = node.getNodes();
         children = new HashMap<String, JSONNode>((int) nodes.getSize());
@@ -76,5 +94,35 @@ public class JSONChildren extends JSONSubElementContainer {
     @Path(API.CHILDREN)
     Map<String, JSONNode> getChildren() {
         return children;
+    }
+
+    public static class ChildrenDeserializer extends JsonDeserializer<JSONChildren> {
+        @Override
+        public JSONChildren deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
+            ObjectCodec codec = parser.getCodec();
+            ObjectNode root = codec.readTree(parser);
+
+            final int size = root.size();
+            if (size > 0) {
+                final JSONChildren children = new JSONChildren();
+                final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
+                while (fields.hasNext()) {
+                    final Map.Entry<String, JsonNode> field = fields.next();
+                    children.addChild(field.getKey(), codec.treeToValue(field.getValue(), JSONNode.class));
+                }
+
+                return children;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private void addChild(String name, JSONNode child) {
+        if (children == null) {
+            children = new HashMap<String, JSONNode>(7);
+        }
+
+        children.put(name, child);
     }
 }
