@@ -53,7 +53,7 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 public class APIExceptionMapper implements ExceptionMapper<APIException> {
-    private static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(API.class);
+    public static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(API.class);
 
     public Response toResponse(RepositoryException exception) {
         if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {
