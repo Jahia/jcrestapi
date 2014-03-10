@@ -41,6 +41,7 @@ package org.jahia.modules.jcrestapi.model;
 
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.APIExceptionMapper;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -85,7 +86,13 @@ public class JSONVersions extends JSONSubElementContainer {
                 final VersionManager versionManager = session.getWorkspace().getVersionManager();
                 final String path = node.getPath();
 
-                return versionManager.getVersionHistory(path);
+                try {
+                    return versionManager.getVersionHistory(path);
+                } catch (RepositoryException e) {
+                    // can happen if the node is just created
+                    APIExceptionMapper.logger.debug("Couldn't retrieve the version history for node " + path, e);
+                    return null;
+                }
             }
         }
         return null;
