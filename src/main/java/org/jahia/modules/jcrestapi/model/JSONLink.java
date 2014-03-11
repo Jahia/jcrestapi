@@ -51,9 +51,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 public class JSONLink {
     @XmlElement
-    private final String rel;
+    private String rel;
     @XmlElement(name = "href")
     private Object uri;
+
+    public JSONLink() {
+    }
 
     public JSONLink(String rel, Object link) {
         this.rel = rel;

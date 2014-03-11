@@ -39,6 +39,14 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
@@ -48,16 +56,22 @@ import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.Path;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
+@JsonDeserialize(using = JSONMixins.MixinsDeserializer.class)
 public class JSONMixins extends JSONSubElementContainer {
     @XmlElement
-    private final Map<String, JSONMixin> mixins;
+    private Map<String, JSONMixin> mixins;
+
+    public JSONMixins() {
+    }
 
     public JSONMixins(JSONNode parent, Node node) throws RepositoryException {
         super(parent, API.MIXINS);
@@ -73,5 +87,35 @@ public class JSONMixins extends JSONSubElementContainer {
     @Path(API.MIXINS)
     public Map<String, JSONMixin> getMixins() {
         return mixins;
+    }
+
+    public static class MixinsDeserializer extends JsonDeserializer<JSONMixins> {
+        @Override
+        public JSONMixins deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
+            ObjectCodec codec = parser.getCodec();
+            ObjectNode root = codec.readTree(parser);
+
+            final int size = root.size();
+            if (size > 0) {
+                final JSONMixins mixins = new JSONMixins();
+                final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
+                while (fields.hasNext()) {
+                    final Map.Entry<String, JsonNode> field = fields.next();
+                    mixins.addChild(field.getKey(), codec.treeToValue(field.getValue(), JSONMixin.class));
+                }
+
+                return mixins;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private void addChild(String name, JSONMixin mixin) {
+        if (mixins == null) {
+            mixins = new HashMap<String, JSONMixin>(7);
+        }
+
+        mixins.put(name, mixin);
     }
 }
