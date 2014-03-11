@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
@@ -86,6 +87,7 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         final Map<String, JSONMixin> mixins = jsonNode.getMixins();
         if (mixins != null) {
             for (String mixinName : mixins.keySet()) {
+                mixinName = URIUtils.unescape(mixinName);
                 node.addMixin(mixinName);
             }
         }
