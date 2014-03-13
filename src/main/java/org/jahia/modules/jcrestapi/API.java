@@ -262,15 +262,17 @@ public class API {
         final ElementsProcessor processor = new ElementsProcessor(computePathUpTo(usefulSegments, usefulSegments.size()), "", "");
         Session session = null;
 
+        final String idOrPath = processor.getIdOrPath();
+        String fileName = null;
         try {
             session = getSession(workspace, language);
-            final Node node = NodeAccessor.byPath.getNode(processor.getIdOrPath(), session);
+            final Node node = NodeAccessor.byPath.getNode(idOrPath, session);
 
             // check that the node is a folder
             if (node.isNodeType(Constants.NT_FOLDER)) {
 
                 // get the file name
-                String fileName = part.getContentDisposition().getFileName();
+                fileName = part.getContentDisposition().getFileName();
                 boolean isUpdate = false;
                 if (fileName == null) {
                     // if we didn't get a file name for some reason, create one
@@ -315,7 +317,7 @@ public class API {
                 return null;
             }
         } catch (Exception e) {
-            throw new APIException(e);
+            throw new APIException(e, "upload", NodeAccessor.BY_PATH, idOrPath, null, Collections.singletonList(fileName), null);
         } finally {
             closeSession(session);
         }
