@@ -218,7 +218,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Jahia-Depends>default</Jahia-Depends>
+                        <Jahia-Depends>default,jaxrs-osgi-extender</Jahia-Depends>
                         <Private-Package>
                             org.jahia.modules.jcrestapi,
                             org.jahia.modules.jcrestapi.model,
