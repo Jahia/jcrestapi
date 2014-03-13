@@ -63,7 +63,8 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
     }
 
     private Response.ResponseBuilder defaultResponse(Throwable exception) {
-        return Response.serverError().entity(exception);
+        final String localizedMessage = exception.getLocalizedMessage();
+        return localizedMessage != null ? Response.serverError().entity(new APIException.JSONError(localizedMessage)) : Response.serverError();
     }
 
     @Override
@@ -79,6 +80,7 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
             builder = defaultResponse(cause);
         }
 
-        return builder.entity(exception.getError()).build();
+        final APIException.JSONError error = exception.getError();
+        return error != null ? builder.entity(error).build() : builder.build();
     }
 }

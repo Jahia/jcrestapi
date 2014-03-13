@@ -94,5 +94,9 @@ public class APIException extends WebApplicationException {
             this.subElements = subElements;
             this.data = data;
         }
+
+        public JSONError(String message) {
+            this(message, null, null, null, null, null, null);
+        }
     }
 }
