@@ -82,6 +82,7 @@ public class API {
     public static final String TYPE = "type";
     public static final String TARGET = "target";
     public static final String PARENT = "parent";
+    public static final String PATH = "path";
 
     private final static Map<String, ElementAccessor> accessors = new HashMap<String, ElementAccessor>(7);
 
