@@ -105,6 +105,9 @@ public class URIUtils {
         return getChildURI(parentURI, API.CHILDREN, false);
     }
 
+    public static String getURIForChildren(Node node) {
+        return getChildURI(getURIFor(node), API.CHILDREN, false);
+    }
     public static String getURIForProperties(Node node) {
         return getChildURI(getURIFor(node), API.PROPERTIES, false);
     }
