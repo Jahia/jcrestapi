@@ -211,9 +211,11 @@ This means that links are represented as objects containing at least an `href` p
 associated with the link.
 
 Per the HAL recommendations, we define a `self` reference identifying the URI to use to interact with this
-specific element. When appropriate, another `type` link will also be available so that clients can find out more
-about the node's metadata. When appropriate, another `parent` link will also be available, pointing to the parent
-node of the resource. Specific objects might add more link types when appropriate.
+specific element. If a resource has a type that we can identify then another `type` link will also be
+available so that clients can find out more about the resource's metadata. If a resource can be accessed
+via its path (in JCR parlance), then a `path` link pointing to the URI allowing access to the resource by
+its path. When appropriate, another `parent` link will also be available, pointing to the parent node of
+the resource. Specific objects might add more link types when appropriate.
 
 To sum up, the `_links` section will look similarly to the following example:
 

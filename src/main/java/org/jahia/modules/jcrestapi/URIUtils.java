@@ -41,7 +41,10 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.model.JSONLinkable;
 
-import javax.jcr.*;
+import javax.jcr.Item;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,7 +62,11 @@ public class URIUtils {
     }
 
     public static String getByPathURI(String path) {
-        return getURIWithWorkspaceAndLanguage() + "/byPath/" + path;
+        return getByPathURI(path, false);
+    }
+
+    public static String getByPathURI(String path, boolean removeFirstSlash) {
+        return getURIWithWorkspaceAndLanguage() + (removeFirstSlash ? "/byPath" : "/byPath/") + path;
     }
 
     public static String getTypeURI(String typeName) {
