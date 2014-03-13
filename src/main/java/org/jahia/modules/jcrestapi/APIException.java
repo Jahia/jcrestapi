@@ -44,6 +44,7 @@ import org.jahia.modules.jcrestapi.model.JSONItem;
 import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 /**
  * @author Christophe Laprun
@@ -54,8 +55,8 @@ public class APIException extends WebApplicationException {
         this(e, null);
     }
 
-    public APIException(Throwable e, String operation, String nodeAccess, String idOrPath, String subElementType, String subElement, JSONItem data) {
-        this(e, new JSONError(e.getLocalizedMessage(), operation, nodeAccess, idOrPath, subElementType, subElement, data));
+    public APIException(Throwable e, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, JSONItem data) {
+        this(e, new JSONError(e.getLocalizedMessage(), operation, nodeAccess, idOrPath, subElementType, subElements, data));
     }
 
     public APIException(Throwable cause, JSONError error) {
@@ -80,17 +81,17 @@ public class APIException extends WebApplicationException {
         @XmlElement
         private final String subElementType;
         @XmlElement
-        private final String subElement;
+        private final List<String> subElements;
         @XmlElement
         private final JSONItem data;
 
-        public JSONError(String message, String operation, String nodeAccess, String idOrPath, String subElementType, String subElement, JSONItem data) {
+        public JSONError(String message, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, JSONItem data) {
             this.message = message;
             this.operation = operation;
             this.nodeAccess = nodeAccess;
             this.idOrPath = idOrPath;
             this.subElementType = subElementType;
-            this.subElement = subElement;
+            this.subElements = subElements;
             this.data = data;
         }
     }

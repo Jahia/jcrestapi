@@ -452,7 +452,7 @@ public class API {
                 return null;
             }
         } catch (Exception e) {
-            throw new APIException(e, operation, nodeAccessor.getType(), idOrPath, subElementType, subElement, data);
+            throw new APIException(e, operation, nodeAccessor.getType(), idOrPath, subElementType, Collections.singletonList(subElement), data);
         } finally {
             closeSession(session);
         }
