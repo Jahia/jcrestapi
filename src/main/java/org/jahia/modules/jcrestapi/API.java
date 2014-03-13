@@ -432,13 +432,18 @@ public class API {
     private Object perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
         Session session = null;
 
+        final String idOrPath = processor.getIdOrPath();
+        final String subElementType = processor.getSubElementType();
+        final String subElement = processor.getSubElement();
+
         try {
             session = getSession(workspace, language);
-            final Node node = nodeAccessor.getNode(processor.getIdOrPath(), session);
 
-            final ElementAccessor accessor = accessors.get(processor.getSubElementType());
+            final Node node = nodeAccessor.getNode(idOrPath, session);
+
+            final ElementAccessor accessor = accessors.get(subElementType);
             if (accessor != null) {
-                final Response response = accessor.perform(node, processor.getSubElement(), operation, data, context);
+                final Response response = accessor.perform(node, subElement, operation, data, context);
 
                 session.save();
 
@@ -447,7 +452,7 @@ public class API {
                 return null;
             }
         } catch (Exception e) {
-            throw new APIException(e);
+            throw new APIException(e, operation, nodeAccessor.getType(), idOrPath, subElementType, subElement, data);
         } finally {
             closeSession(session);
         }
@@ -486,12 +491,22 @@ public class API {
     }
 
     private static interface NodeAccessor {
+        public static final String BY_ID = "byId";
+        public static final String BY_PATH = "byPath";
+
         Node getNode(String idOrPath, Session session) throws RepositoryException;
+
+        String getType();
 
         NodeAccessor byId = new NodeAccessor() {
             @Override
             public Node getNode(String idOrPath, Session session) throws RepositoryException {
                 return idOrPath.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(idOrPath);
+            }
+
+            @Override
+            public String getType() {
+                return BY_ID;
             }
         };
 
@@ -499,6 +514,11 @@ public class API {
             @Override
             public Node getNode(String idOrPath, Session session) throws RepositoryException {
                 return idOrPath.isEmpty() ? session.getRootNode() : session.getNode(idOrPath);
+            }
+
+            @Override
+            public String getType() {
+                return BY_PATH;
             }
         };
     }

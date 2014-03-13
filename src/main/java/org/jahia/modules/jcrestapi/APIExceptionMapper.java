@@ -55,15 +55,15 @@ import javax.ws.rs.ext.Provider;
 public class APIExceptionMapper implements ExceptionMapper<APIException> {
     public static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(API.class);
 
-    public Response toResponse(RepositoryException exception) {
+    private Response.ResponseBuilder toResponse(RepositoryException exception) {
         if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(Response.Status.NOT_FOUND);
         }
         return defaultResponse(exception);
     }
 
-    private Response defaultResponse(Throwable exception) {
-        return Response.serverError().entity(exception).build();
+    private Response.ResponseBuilder defaultResponse(Throwable exception) {
+        return Response.serverError().entity(exception);
     }
 
     @Override
@@ -72,10 +72,13 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
 
         logger.info("An error occurred in the RESTful API", cause);
 
+        Response.ResponseBuilder builder;
         if (cause instanceof RepositoryException) {
-            return toResponse((RepositoryException) cause);
+            builder = toResponse((RepositoryException) cause);
+        } else {
+            builder = defaultResponse(cause);
         }
 
-        return defaultResponse(cause);
+        return builder.entity(exception.getError()).build();
     }
 }

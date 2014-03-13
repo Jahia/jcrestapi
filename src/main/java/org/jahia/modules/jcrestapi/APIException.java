@@ -39,11 +39,59 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.jahia.modules.jcrestapi.model.JSONItem;
+
+import javax.ws.rs.WebApplicationException;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * @author Christophe Laprun
  */
-public class APIException extends RuntimeException {
+public class APIException extends WebApplicationException {
+    private final JSONError error;
     public APIException(Throwable e) {
-        super(e);
+        this(e, null);
+    }
+
+    public APIException(Throwable e, String operation, String nodeAccess, String idOrPath, String subElementType, String subElement, JSONItem data) {
+        this(e, new JSONError(e.getLocalizedMessage(), operation, nodeAccess, idOrPath, subElementType, subElement, data));
+    }
+
+    public APIException(Throwable cause, JSONError error) {
+        super(cause);
+        this.error = error;
+    }
+
+    public JSONError getError() {
+        return error;
+    }
+
+    @XmlRootElement
+    public static class JSONError {
+        @XmlElement
+        private final String message;
+        @XmlElement
+        private final String operation;
+        @XmlElement
+        private final String nodeAccess;
+        @XmlElement
+        private final String idOrPath;
+        @XmlElement
+        private final String subElementType;
+        @XmlElement
+        private final String subElement;
+        @XmlElement
+        private final JSONItem data;
+
+        public JSONError(String message, String operation, String nodeAccess, String idOrPath, String subElementType, String subElement, JSONItem data) {
+            this.message = message;
+            this.operation = operation;
+            this.nodeAccess = nodeAccess;
+            this.idOrPath = idOrPath;
+            this.subElementType = subElementType;
+            this.subElement = subElement;
+            this.data = data;
+        }
     }
 }
