@@ -193,6 +193,18 @@ public class API {
         return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
     }
 
+    @GET
+    @Path("/{workspace}/{language}/nodes/{id: [^/]*}/properties/{subElement}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getProperty(@PathParam("workspace") String workspace,
+                              @PathParam("language") String language,
+                              @PathParam("id") String id,
+                              @PathParam("subElement") String subElement,
+                              @Context UriInfo context) {
+        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
+        return perform(workspace, language, context, READ, null, NodeAccessor.byId, processor);
+    }
+
     @DELETE
     @Path("/{workspace}/{language}/nodes/{id: [^/]*}/properties/{subElement}")
     @Consumes(MediaType.APPLICATION_JSON)
