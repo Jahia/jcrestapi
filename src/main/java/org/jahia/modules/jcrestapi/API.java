@@ -407,6 +407,32 @@ public class API {
         }
     }
 
+    @POST
+    @Path("/{workspace}/{language}/rename/{id}/to/{newName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object renameNode(@PathParam("workspace") String workspace,
+                             @PathParam("language") String language,
+                             @PathParam("id") String id,
+                             @PathParam("newName") String newName,
+                             @Context UriInfo context) {
+        Session session = null;
+
+        try {
+            session = getSession(workspace, language);
+
+            final Node node = session.getNodeByIdentifier(id);
+            session.move(node.getPath(), node.getParent().getPath() + "/" + newName);
+
+            session.save();
+
+            return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id));
+        } catch (Exception e) {
+            throw new APIException(e);
+        } finally {
+            closeSession(session);
+        }
+    }
+
     private Comparison stringComparisonConstraint(DynamicOperand operand, String valueOperandShouldBe, QueryObjectModelFactory qomFactory, ValueFactory valueFactory) throws RepositoryException {
         return qomFactory.comparison(operand, QueryObjectModelFactory.JCR_OPERATOR_EQUAL_TO, qomFactory.literal(valueFactory.createValue(valueOperandShouldBe,
                 PropertyType.STRING)));

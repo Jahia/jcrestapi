@@ -45,20 +45,19 @@ import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Christophe Laprun
  */
 public class URIUtils {
-    private static final AtomicReference<String> baseURI = new AtomicReference<String>(UriBuilder.fromResource(API.class).build().toASCIIString());
+    private static final String MODULES_CONTEXT = "/modules";
+    private static final String API_CONTEXT = "/api/";
 
     private static String getURIWithWorkspaceAndLanguage() {
         final API.SessionInfo currentSession = API.getCurrentSession();
-        return baseURI.get() + "/" + currentSession.workspace + "/" + currentSession.language;
+        return API_CONTEXT + currentSession.workspace + "/" + currentSession.language;
     }
 
     public static String getByPathURI(String path) {
@@ -177,5 +176,9 @@ public class URIUtils {
         } else {
             return parent + "/" + childName;
         }
+    }
+
+    public static String addModulesContextTo(String uriAsString) {
+        return MODULES_CONTEXT + uriAsString;
     }
 }

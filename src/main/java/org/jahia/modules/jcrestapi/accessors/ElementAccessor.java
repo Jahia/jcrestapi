@@ -40,6 +40,7 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONItem;
 import org.jahia.modules.jcrestapi.model.JSONLinkable;
 import org.jahia.modules.jcrestapi.model.JSONNode;
@@ -126,12 +127,15 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
     }
 
     private Response getSeeOtherResponse(Node node) throws RepositoryException {
-        final String seeOtherURIAsString = getSeeOtherURIAsString(node);
+        return getSeeOtherResponse(getSeeOtherURIAsString(node));
+    }
+
+    public static Response getSeeOtherResponse(String seeOtherURIAsString) throws RepositoryException {
         try {
-            final URI seeOtherURI = new URI(seeOtherURIAsString);
+            final URI seeOtherURI = new URI(URIUtils.addModulesContextTo(seeOtherURIAsString));
             return Response.seeOther(seeOtherURI).build();
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Couldn't get a proper See Other URI from node " + node.getPath() + ". Got " + seeOtherURIAsString);
+            throw new IllegalArgumentException("Couldn't get a proper See Other URI from " + seeOtherURIAsString);
         }
     }
 
