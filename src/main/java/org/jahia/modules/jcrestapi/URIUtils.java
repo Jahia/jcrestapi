@@ -45,6 +45,7 @@ import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -52,7 +53,6 @@ import java.net.URISyntaxException;
  * @author Christophe Laprun
  */
 public class URIUtils {
-    private static final String MODULES_CONTEXT = "/modules";
     private static final String API_CONTEXT = "/api/";
 
     private static String getURIWithWorkspaceAndLanguage() {
@@ -178,7 +178,7 @@ public class URIUtils {
         }
     }
 
-    public static String addModulesContextTo(String uriAsString) {
-        return MODULES_CONTEXT + uriAsString;
+    public static String addModulesContextTo(String uriAsString, UriInfo context) {
+            return context.getBaseUri().toASCIIString() + uriAsString;
     }
 }

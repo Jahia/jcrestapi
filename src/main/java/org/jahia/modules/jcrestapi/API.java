@@ -425,7 +425,7 @@ public class API {
 
             session.save();
 
-            return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id));
+            return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id), context);
         } catch (Exception e) {
             throw new APIException(e);
         } finally {

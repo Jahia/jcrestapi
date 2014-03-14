@@ -106,12 +106,12 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
             for (String subElement : subElements) {
                 delete(node, subElement);
             }
-            return getSeeOtherResponse(node);
+            return getSeeOtherResponse(node, context);
         } else if (API.CREATE_OR_UPDATE.equals(operation)) {
             for (U child : childData) {
                 createOrUpdate(node, null, child);
             }
-            return getSeeOtherResponse(node);
+            return getSeeOtherResponse(node, context);
         } else if (API.READ.equals(operation)) {
             List<T> result = new ArrayList<T>(subElements.size());
             for (String subElement : subElements) {
@@ -126,13 +126,13 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
         throw new IllegalArgumentException("Unknown operation: '" + operation + "'");
     }
 
-    private Response getSeeOtherResponse(Node node) throws RepositoryException {
-        return getSeeOtherResponse(getSeeOtherURIAsString(node));
+    private Response getSeeOtherResponse(Node node, UriInfo context) throws RepositoryException {
+        return Response.seeOther(context.getAbsolutePath()).build(); // request should be made on path we need to redirect to
     }
 
-    public static Response getSeeOtherResponse(String seeOtherURIAsString) throws RepositoryException {
+    public static Response getSeeOtherResponse(String seeOtherURIAsString, UriInfo context) throws RepositoryException {
         try {
-            final URI seeOtherURI = new URI(URIUtils.addModulesContextTo(seeOtherURIAsString));
+            final URI seeOtherURI = new URI(URIUtils.addModulesContextTo(seeOtherURIAsString, context));
             return Response.seeOther(seeOtherURI).build();
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Couldn't get a proper See Other URI from " + seeOtherURIAsString);
