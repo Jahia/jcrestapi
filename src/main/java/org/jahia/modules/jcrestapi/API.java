@@ -216,7 +216,11 @@ public class API {
                              @PathParam("id") String id,
                              @PathParam("subElementType") String subElementType,
                              @PathParam("subElement") String subElement,
+                             List<String> subElementsToDelete,
                              @Context UriInfo context) {
+        if (subElementsToDelete != null) {
+            return performBatchDelete(workspace, language, id, subElementType, subElementsToDelete, context);
+        }
         return perform(workspace, language, id, subElementType, subElement, context, DELETE, null);
     }
 
@@ -425,6 +429,36 @@ public class API {
     private Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
                            String operation, JSONItem data) {
         return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.byId);
+    }
+
+    private Object performBatchDelete(String workspace, String language, String idOrPath, String subElementType, List<String> subElements, UriInfo context) {
+        Session session = null;
+
+        try {
+            session = getSession(workspace, language);
+
+            // process given elements
+            final ElementsProcessor processor = new ElementsProcessor(idOrPath, subElementType, "");
+            idOrPath = processor.getIdOrPath();
+            subElementType = processor.getSubElementType();
+
+            final Node node = NodeAccessor.byId.getNode(idOrPath, session);
+
+            final ElementAccessor accessor = accessors.get(subElementType);
+            if (accessor != null) {
+                final Response response = accessor.perform(node, subElements, DELETE, null, context);
+
+                session.save();
+
+                return response;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            throw new APIException(e, DELETE, NodeAccessor.BY_ID, idOrPath, subElementType, subElements, null);
+        } finally {
+            closeSession(session);
+        }
     }
 
     private Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
