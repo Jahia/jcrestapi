@@ -82,6 +82,11 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         return new CreateOrUpdateResult<JSONNode>(true, new JSONNode(node, 1));
     }
 
+    @Override
+    protected String getSeeOtherURIAsString(Node node) {
+        throw new UnsupportedOperationException("Cannot call getSeeOtherURIAsString on NodeElementAccessor");
+    }
+
     public static void initNodeFrom(Node node, JSONNode jsonNode) throws RepositoryException {
         // mixins
         final Map<String, JSONMixin> mixins = jsonNode.getMixins();

@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONChildren;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 
@@ -87,5 +88,10 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONN
         NodeElementAccessor.initNodeFrom(newOrToUpdate, nodeData);
 
         return new CreateOrUpdateResult<JSONNode>(isUpdate, new JSONNode(newOrToUpdate, 1));
+    }
+
+    @Override
+    protected String getSeeOtherURIAsString(Node node) {
+        return URIUtils.getURIForChildren(node);
     }
 }

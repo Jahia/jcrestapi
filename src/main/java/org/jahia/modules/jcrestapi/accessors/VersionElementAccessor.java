@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONVersion;
 import org.jahia.modules.jcrestapi.model.JSONVersions;
@@ -76,5 +77,10 @@ public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVe
     @Override
     protected CreateOrUpdateResult<JSONVersion> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
         throw new UnsupportedOperationException("Cannot create or update versions");
+    }
+
+    @Override
+    protected String getSeeOtherURIAsString(Node node) {
+        return URIUtils.getURIForVersions(node);
     }
 }

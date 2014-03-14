@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONMixins;
 import org.jahia.modules.jcrestapi.model.JSONNode;
@@ -86,6 +87,11 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
         NodeElementAccessor.initNodeFrom(node, childData);
 
         return new CreateOrUpdateResult<JSONMixin>(isUpdate, new JSONMixin(node, mixin));
+    }
+
+    @Override
+    protected String getSeeOtherURIAsString(Node node) {
+        return URIUtils.getURIForMixins(node);
     }
 
     private NodeType getMixin(Node node, String subElement) throws RepositoryException {

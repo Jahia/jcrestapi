@@ -49,6 +49,10 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -95,6 +99,43 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
 
         throw new IllegalArgumentException("Unknown operation: '" + operation + "'");
     }
+
+    public Response perform(Node node, List<String> subElements, String operation, List<U> childData, UriInfo context) throws RepositoryException {
+        if (API.DELETE.equals(operation)) {
+            for (String subElement : subElements) {
+                delete(node, subElement);
+            }
+            return getSeeOtherResponse(node);
+        } else if (API.CREATE_OR_UPDATE.equals(operation)) {
+            for (U child : childData) {
+                createOrUpdate(node, null, child);
+            }
+            return getSeeOtherResponse(node);
+        } else if (API.READ.equals(operation)) {
+            List<T> result = new ArrayList<T>(subElements.size());
+            for (String subElement : subElements) {
+                final T element = getSubElement(node, subElement);
+                if(element != null) {
+                    result.add(element);
+                }
+            }
+            return Response.ok(result).build();
+        }
+
+        throw new IllegalArgumentException("Unknown operation: '" + operation + "'");
+    }
+
+    private Response getSeeOtherResponse(Node node) throws RepositoryException {
+        final String seeOtherURIAsString = getSeeOtherURIAsString(node);
+        try {
+            final URI seeOtherURI = new URI(seeOtherURIAsString);
+            return Response.seeOther(seeOtherURI).build();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Couldn't get a proper See Other URI from node " + node.getPath() + ". Got " + seeOtherURIAsString);
+        }
+    }
+
+    protected abstract String getSeeOtherURIAsString(Node node);
 
     protected static class CreateOrUpdateResult<T extends JSONLinkable> {
         final boolean isUpdate;

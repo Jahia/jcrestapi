@@ -103,4 +103,9 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
         final Property property = setPropertyOnNode(subElement, childData, node);
         return new CreateOrUpdateResult<JSONProperty>(isUpdate, new JSONProperty(property));
     }
+
+    @Override
+    protected String getSeeOtherURIAsString(Node node) {
+        return URIUtils.getURIForProperties(node);
+    }
 }
