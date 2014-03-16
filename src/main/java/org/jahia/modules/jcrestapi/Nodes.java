@@ -53,6 +53,7 @@ import java.util.List;
  * @author Christophe Laprun
  */
 public class Nodes extends API {
+    static final String MAPPING = "nodes";
 
     public Nodes(String workspace, String language) {
         super(workspace, language);

@@ -134,21 +134,21 @@ public class API {
         return VERSION;
     }
 
-    @Path("/{workspace}/{language}/nodes")
+    @Path("/{workspace}/{language}/" + Nodes.MAPPING)
     public Nodes getNodes(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Nodes nodes = new Nodes(workspace, language);
         nodes.initRepositoryWith(repository);
         return nodes;
     }
 
-    @Path("/{workspace}/{language}/byType")
+    @Path("/{workspace}/{language}/" + Types.MAPPING)
     public Types getByType(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Types byType = new Types(workspace, language);
         byType.initRepositoryWith(repository);
         return byType;
     }
 
-    @Path("/{workspace}/{language}/byPath")
+    @Path("/{workspace}/{language}/" + Paths.MAPPING)
     public Paths getByPath(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Paths byPath = new Paths(workspace, language);
         byPath.initRepositoryWith(repository);

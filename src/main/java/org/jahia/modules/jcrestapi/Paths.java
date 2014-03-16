@@ -60,6 +60,8 @@ import java.util.List;
  */
 public class Paths extends API {
 
+    static final String MAPPING = "byPath";
+
     public Paths(String workspace, String language) {
         super(workspace, language);
     }

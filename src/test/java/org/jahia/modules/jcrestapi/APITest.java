@@ -63,8 +63,8 @@ import static org.hamcrest.Matchers.*;
 public class APITest extends JerseyTest {
 
     private static final String API_DEFAULT_EN = "/api/default/en/";
-    private static final String API_DEFAULT_EN_BY_PATH = API_DEFAULT_EN + "byPath/";
-    private static final String API_DEFAULT_EN_NODES = API_DEFAULT_EN + "nodes/";
+    private static final String API_DEFAULT_EN_BY_PATH = API_DEFAULT_EN + Paths.MAPPING + "/";
+    private static final String API_DEFAULT_EN_NODES = API_DEFAULT_EN + Nodes.MAPPING + "/";
 
     @Override
     protected Application configure() {

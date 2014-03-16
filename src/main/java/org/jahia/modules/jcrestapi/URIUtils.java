@@ -65,7 +65,7 @@ public class URIUtils {
     }
 
     public static String getByPathURI(String path, boolean removeFirstSlash) {
-        return getURIWithWorkspaceAndLanguage() + (removeFirstSlash ? "/byPath" : "/byPath/") + path;
+        return getURIWithWorkspaceAndLanguage() + (removeFirstSlash ? "/" + Paths.MAPPING : "/" + Paths.MAPPING + "/") + path;
     }
 
     public static String getTypeURI(String typeName) {
@@ -73,7 +73,7 @@ public class URIUtils {
     }
 
     public static String getIdURI(String identifier) {
-        return getURIWithWorkspaceAndLanguage() + "/nodes/" + identifier;
+        return getURIWithWorkspaceAndLanguage() + "/" + Nodes.MAPPING + "/" + identifier;
     }
 
     public static String getURIFor(Item item) {
