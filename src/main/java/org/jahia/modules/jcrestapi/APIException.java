@@ -56,7 +56,7 @@ public class APIException extends WebApplicationException {
     }
 
     public APIException(Throwable e, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, JSONItem data) {
-        this(e, new JSONError(e.getLocalizedMessage(), operation, nodeAccess, idOrPath, subElementType, subElements, data));
+        this(e, new JSONError(e, operation, nodeAccess, idOrPath, subElementType, subElements, data));
     }
 
     public APIException(Throwable cause, JSONError error) {
@@ -70,6 +70,8 @@ public class APIException extends WebApplicationException {
 
     @XmlRootElement
     public static class JSONError {
+        @XmlElement
+        private final String exception;
         @XmlElement
         private final String message;
         @XmlElement
@@ -85,8 +87,9 @@ public class APIException extends WebApplicationException {
         @XmlElement
         private final JSONItem data;
 
-        public JSONError(String message, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, JSONItem data) {
-            this.message = message;
+        public JSONError(Throwable throwable, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, JSONItem data) {
+            this.exception = throwable.getClass().getName();
+            this.message = throwable.getLocalizedMessage();
             this.operation = operation;
             this.nodeAccess = nodeAccess;
             this.idOrPath = idOrPath;
@@ -96,7 +99,14 @@ public class APIException extends WebApplicationException {
         }
 
         public JSONError(String message) {
-            this(message, null, null, null, null, null, null);
+            this.exception = null;
+            this.message = message;
+            this.operation = null;
+            this.nodeAccess = null;
+            this.idOrPath = null;
+            this.subElementType = null;
+            this.subElements = null;
+            this.data = null;
         }
     }
 }
