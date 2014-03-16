@@ -39,25 +39,19 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.*;
 import org.jahia.modules.jcrestapi.model.JSONItem;
-import org.jahia.modules.jcrestapi.model.JSONNode;
-import org.jahia.modules.jcrestapi.model.JSONProperty;
 import org.jahia.services.content.JCRSessionFactory;
 import org.jahia.utils.LanguageCodeConverters;
 import org.osgi.service.component.annotations.Component;
 
 import javax.inject.Inject;
 import javax.jcr.*;
-import javax.jcr.query.QueryResult;
-import javax.jcr.query.qom.*;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import java.io.BufferedInputStream;
-import java.io.InputStream;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.*;
 
 /**
@@ -78,13 +72,12 @@ public class API {
     public static final String MIXINS = "mixins";
     public static final String CHILDREN = "children";
     public static final String VERSIONS = "versions";
-    private static final String SELECTOR_NAME = "type";
     public static final String TYPE = "type";
     public static final String TARGET = "target";
     public static final String PARENT = "parent";
     public static final String PATH = "path";
 
-    private final static Map<String, ElementAccessor> accessors = new HashMap<String, ElementAccessor>(7);
+    protected final static Map<String, ElementAccessor> accessors = new HashMap<String, ElementAccessor>(7);
 
     static {
         Properties props = new Properties();
@@ -102,9 +95,6 @@ public class API {
         accessors.put(VERSIONS, new VersionElementAccessor());
         accessors.put("", new NodeElementAccessor());
     }
-
-    @Inject
-    private Repository repository;
 
     private static final ThreadLocal<SessionInfo> sessionHolder = new ThreadLocal<SessionInfo>();
 
@@ -124,6 +114,19 @@ public class API {
         }
     }
 
+    @Inject
+    private Repository repository;
+    protected String workspace;
+    protected String language;
+
+    public API() {
+    }
+
+    public API(String workspace, String language) {
+        this.workspace = workspace;
+        this.language = language;
+    }
+
     @GET
     @Path("/version")
     @Produces(MediaType.TEXT_PLAIN)
@@ -131,280 +134,29 @@ public class API {
         return VERSION;
     }
 
-    @GET
     @Path("/{workspace}/{language}/nodes")
-    @Produces(MediaType.APPLICATION_JSON)
-    /**
-     * Needed to get URI without trailing / to work :(
-     */
-    public Object getRootNode(@PathParam("workspace") String workspace,
-                              @PathParam("language") String language,
-                              @Context UriInfo context) {
-        return perform(workspace, language, "", "", "", context, READ, null);
+    public Nodes getNodes(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
+        final Nodes nodes = new Nodes(workspace, language);
+        nodes.initRepositoryWith(repository);
+        return nodes;
     }
 
-    @GET
-    @Path("/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
-            "|" + API.MIXINS +
-            "|" + API.PROPERTIES +
-            "|" + API.VERSIONS +
-            "))?}{subElement: .*}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object getNodeById(@PathParam("workspace") String workspace,
-                              @PathParam("language") String language,
-                              @PathParam("id") String id,
-                              @PathParam("subElementType") String subElementType,
-                              @PathParam("subElement") String subElement,
-                              @Context UriInfo context) {
-        return perform(workspace, language, id, subElementType, subElement, context, READ, null);
+    @Path("/{workspace}/{language}/byType")
+    public Types getByType(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
+        final Types byType = new Types(workspace, language);
+        byType.initRepositoryWith(repository);
+        return byType;
     }
 
-    @PUT
-    @Path("/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
-            "|" + API.MIXINS +
-            "|" + API.PROPERTIES +
-            "|" + API.VERSIONS +
-            "))?}{subElement: .*}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Object createOrUpdateChildNode(@PathParam("workspace") String workspace,
-                                          @PathParam("language") String language,
-                                          @PathParam("id") String id,
-                                          @PathParam("subElementType") String subElementType,
-                                          @PathParam("subElement") String subElement,
-                                          JSONNode childData,
-                                          @Context UriInfo context) {
-        ElementsProcessor processor = new ElementsProcessor(id, subElementType, subElement);
-        if (childData == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Missing body").build();
-        }
-        return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
+    @Path("/{workspace}/{language}/byPath")
+    public Paths getByPath(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
+        final Paths byPath = new Paths(workspace, language);
+        byPath.initRepositoryWith(repository);
+        return byPath;
     }
 
-    @PUT
-    @Path("/{workspace}/{language}/nodes/{id: [^/]*}/properties/{subElement}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Object createOrUpdateProperty(@PathParam("workspace") String workspace,
-                                         @PathParam("language") String language,
-                                         @PathParam("id") String id,
-                                         @PathParam("subElement") String subElement,
-                                         JSONProperty childData,
-                                         @Context UriInfo context) {
-        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
-        return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
-    }
-
-    @GET
-    @Path("/{workspace}/{language}/nodes/{id: [^/]*}/properties/{subElement}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object getProperty(@PathParam("workspace") String workspace,
-                              @PathParam("language") String language,
-                              @PathParam("id") String id,
-                              @PathParam("subElement") String subElement,
-                              @Context UriInfo context) {
-        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
-        return perform(workspace, language, context, READ, null, NodeAccessor.byId, processor);
-    }
-
-    @DELETE
-    @Path("/{workspace}/{language}/nodes/{id: [^/]*}/properties/{subElement}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Object deleteProperty(@PathParam("workspace") String workspace,
-                                 @PathParam("language") String language,
-                                 @PathParam("id") String id,
-                                 @PathParam("subElement") String subElement,
-                                 @Context UriInfo context) {
-        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
-        return perform(workspace, language, context, DELETE, null, NodeAccessor.byId, processor);
-    }
-
-    @DELETE
-    @Path("/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
-            "|" + API.MIXINS +
-            "|" + API.PROPERTIES +
-            "|" + API.VERSIONS +
-            "))?}{subElement: .*}")
-    public Object deleteNode(@PathParam("workspace") String workspace,
-                             @PathParam("language") String language,
-                             @PathParam("id") String id,
-                             @PathParam("subElementType") String subElementType,
-                             @PathParam("subElement") String subElement,
-                             List<String> subElementsToDelete,
-                             @Context UriInfo context) {
-        if (subElementsToDelete != null) {
-            return performBatchDelete(workspace, language, id, subElementType, subElementsToDelete, context);
-        }
-        return perform(workspace, language, id, subElementType, subElement, context, DELETE, null);
-    }
-
-    @GET
-    @Path("/{workspace}/{language}/byPath{path: /.*}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object getByPath(@PathParam("workspace") String workspace,
-                            @PathParam("language") String language,
-                            @PathParam("path") String path,
-                            @Context UriInfo context) {
-
-        // only consider useful segments, starting after /api/{workspace}/{language}/byPath
-        final List<PathSegment> usefulSegments = getUsefulSegments(context);
-        int index = 0;
-        for (PathSegment segment : usefulSegments) {
-            // check if segment is a sub-element marker
-            String subElementType = segment.getPath();
-            ElementAccessor accessor = accessors.get(subElementType);
-            if (accessor != null) {
-                String nodePath = computePathUpTo(usefulSegments, index);
-                String subElement = getSubElement(usefulSegments, index);
-                return perform(workspace, language, nodePath, subElementType, subElement, context, READ, null, NodeAccessor.byPath);
-            }
-            index++;
-        }
-
-        return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, READ, null, NodeAccessor.byPath);
-    }
-
-    private List<PathSegment> getUsefulSegments(UriInfo context) {
-        final List<PathSegment> pathSegments = context.getPathSegments();
-        return pathSegments.subList(4, pathSegments.size());
-    }
-
-    @POST
-    @Path("/{workspace}/{language}/byPath{path: /.*}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Object upload(@PathParam("workspace") String workspace,
-                         @PathParam("language") String language,
-                         @PathParam("path") String path,
-                         @FormDataParam("file") FormDataBodyPart part,
-                         @Context UriInfo context) {
-        final List<PathSegment> usefulSegments = getUsefulSegments(context);
-        final ElementsProcessor processor = new ElementsProcessor(computePathUpTo(usefulSegments, usefulSegments.size()), "", "");
-        Session session = null;
-
-        final String idOrPath = processor.getIdOrPath();
-        String fileName = null;
-        try {
-            session = getSession(workspace, language);
-            final Node node = NodeAccessor.byPath.getNode(idOrPath, session);
-
-            // check that the node is a folder
-            if (node.isNodeType(Constants.NT_FOLDER)) {
-
-                // get the file name
-                fileName = part.getContentDisposition().getFileName();
-                boolean isUpdate = false;
-                if (fileName == null) {
-                    // if we didn't get a file name for some reason, create one
-                    fileName = node.getName() + System.currentTimeMillis();
-                } else {
-                    // check if we've already have a child with the same name, in which case we want to update
-                    // todo: support same name siblings?
-                    isUpdate = node.hasNode(fileName);
-                }
-
-                Node childNode;
-                Node contentNode;
-                if (isUpdate) {
-                    // retrieve the existing node
-                    childNode = node.getNode(fileName);
-
-                    // check that we're dealing with a jnt:file node
-                    if (!childNode.isNodeType(Constants.NT_FILE)) {
-                        throw new IllegalArgumentException(fileName + " already exists and is not a " + Constants.NT_FILE + " node!");
-                    } else {
-                        contentNode = childNode.getNode(Constants.JCR_CONTENT);
-                    }
-                } else {
-                    // create the node
-                    childNode = node.addNode(fileName, Constants.JAHIANT_FILE);
-
-                    // actual content is in a jcr:content child node
-                    contentNode = childNode.addNode(Constants.JCR_CONTENT, Constants.JAHIANT_RESOURCE);
-                }
-
-                InputStream stream = new BufferedInputStream(part.getEntityAs(InputStream.class));
-                Binary binary = session.getValueFactory().createBinary(stream);
-                contentNode.setProperty(Constants.JCR_DATA, binary);
-                contentNode.setProperty(Constants.JCR_MIMETYPE, part.getMediaType().toString());
-
-                session.save();
-
-                final JSONNode jsonNode = new JSONNode(childNode, 0);
-                final Response.ResponseBuilder builder = isUpdate ? Response.ok(jsonNode) : Response.created(context.getAbsolutePath()).entity(jsonNode);
-                return builder.build();
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            throw new APIException(e, "upload", NodeAccessor.BY_PATH, idOrPath, null, Collections.singletonList(fileName), null);
-        } finally {
-            closeSession(session);
-        }
-    }
-
-    @GET
-    @Path("/{workspace}/{language}/byType/{type}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object getByType(@PathParam("workspace") String workspace,
-                            @PathParam("language") String language,
-                            @PathParam("type") String type,
-                            @QueryParam("nameContains") List<String> nameConstraints,
-                            @QueryParam("orderBy") String orderBy,
-                            @QueryParam("limit") int limit,
-                            @QueryParam("offset") int offset,
-                            @QueryParam("depth") int depth,
-                            @Context UriInfo context) {
-        Session session = null;
-
-        try {
-            session = getSession(workspace, language);
-            final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();
-            final ValueFactory valueFactory = session.getValueFactory();
-            final Selector selector = qomFactory.selector(URIUtils.unescape(type), SELECTOR_NAME);
-
-            // hardcode constraint on language for now: either jcr:language doesn't exist or jcr:language is "en"
-            Constraint constraint = qomFactory.or(
-                    qomFactory.not(qomFactory.propertyExistence(SELECTOR_NAME, Constants.JCR_LANGUAGE)),
-                    stringComparisonConstraint(qomFactory.propertyValue(SELECTOR_NAME, Constants.JCR_LANGUAGE), "en", qomFactory, valueFactory)
-            );
-
-            // if we have passed "nameContains" query parameters, only return nodes which name contains the specified terms
-            if (nameConstraints != null && !nameConstraints.isEmpty()) {
-                for (String name : nameConstraints) {
-                    final Comparison likeConstraint = qomFactory.comparison(qomFactory.nodeLocalName(SELECTOR_NAME), QueryObjectModelFactory.JCR_OPERATOR_LIKE,
-                            qomFactory.literal(valueFactory.createValue("%" + name + "%", PropertyType.STRING)));
-                    constraint = qomFactory.and(constraint, likeConstraint);
-                }
-            }
-
-            Ordering[] orderings = null;
-            // ordering deactivated because it currently doesn't work, probably due to a bug in QueryServiceImpl
-            if (exists(orderBy)) {
-                if ("desc".equalsIgnoreCase(orderBy)) {
-                    orderings = new Ordering[]{qomFactory.descending(qomFactory.nodeLocalName(SELECTOR_NAME))};
-                } else {
-                    orderings = new Ordering[]{qomFactory.ascending(qomFactory.nodeLocalName(SELECTOR_NAME))};
-                }
-            }
-
-            final QueryObjectModel query = qomFactory.createQuery(selector, constraint, orderings, new Column[]{qomFactory.column(SELECTOR_NAME, null, null)});
-            if (limit > 0) {
-                query.setLimit(limit);
-            }
-            query.setOffset(offset);
-
-            final QueryResult queryResult = query.execute();
-
-            final NodeIterator nodes = queryResult.getNodes();
-            final List<JSONNode> result = new LinkedList<JSONNode>();
-            while (nodes.hasNext()) {
-                result.add(new JSONNode(nodes.nextNode(), depth));
-            }
-
-            return Response.ok(result).build();
-        } catch (Exception e) {
-            throw new APIException(e);
-        } finally {
-            closeSession(session);
-        }
+    protected void initRepositoryWith(Repository repository) {
+        this.repository = repository;
     }
 
     @POST
@@ -433,43 +185,16 @@ public class API {
         }
     }
 
-    private Comparison stringComparisonConstraint(DynamicOperand operand, String valueOperandShouldBe, QueryObjectModelFactory qomFactory, ValueFactory valueFactory) throws RepositoryException {
-        return qomFactory.comparison(operand, QueryObjectModelFactory.JCR_OPERATOR_EQUAL_TO, qomFactory.literal(valueFactory.createValue(valueOperandShouldBe,
-                PropertyType.STRING)));
-    }
-
     public static boolean exists(String name) {
         return name != null && !name.isEmpty();
     }
 
-    private static String computePathUpTo(List<PathSegment> segments, int index) {
-        StringBuilder path = new StringBuilder(30 * index);
-        for (int i = 0; i < index; i++) {
-            final String segment = segments.get(i).getPath();
-            if (!segment.isEmpty()) {
-                path.append("/").append(segment);
-            }
-        }
-
-        final String result = path.toString();
-        return !result.isEmpty() ? result : "/";
-    }
-
-    private static String getSubElement(List<PathSegment> segments, int index) {
-        final int next = index + 1;
-        if (next < segments.size()) {
-            return segments.get(next).getPath();
-        } else {
-            return "";
-        }
-    }
-
-    private Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
-                           String operation, JSONItem data) {
+    protected Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
+                             String operation, JSONItem data) {
         return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.byId);
     }
 
-    private Object performBatchDelete(String workspace, String language, String idOrPath, String subElementType, List<String> subElements, UriInfo context) {
+    protected Object performBatchDelete(String workspace, String language, String idOrPath, String subElementType, List<String> subElements, UriInfo context) {
         Session session = null;
 
         try {
@@ -499,12 +224,12 @@ public class API {
         }
     }
 
-    private Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
-                           String operation, JSONItem data, NodeAccessor nodeAccessor) {
+    protected Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
+                             String operation, JSONItem data, NodeAccessor nodeAccessor) {
         return perform(workspace, language, context, operation, data, nodeAccessor, new ElementsProcessor(idOrPath, subElementType, subElement));
     }
 
-    private Object perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
+    protected Object perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
         Session session = null;
 
         final String idOrPath = processor.getIdOrPath();
@@ -533,7 +258,7 @@ public class API {
         }
     }
 
-    private Session getSession(String workspace, String language) throws RepositoryException {
+    protected Session getSession(String workspace, String language) throws RepositoryException {
         if (!exists(workspace)) {
             workspace = "default";
         }
@@ -556,7 +281,7 @@ public class API {
         return session;
     }
 
-    private void closeSession(Session session) {
+    protected void closeSession(Session session) {
         if (session != null && session.isLive()) {
             session.logout();
         }
@@ -565,7 +290,7 @@ public class API {
         sessionHolder.remove();
     }
 
-    private static interface NodeAccessor {
+    protected static interface NodeAccessor {
         public static final String BY_ID = "byId";
         public static final String BY_PATH = "byPath";
 
@@ -598,7 +323,7 @@ public class API {
         };
     }
 
-    private class ElementsProcessor {
+    protected static class ElementsProcessor {
         private String idOrPath;
         private String subElementType;
         private String subElement;
