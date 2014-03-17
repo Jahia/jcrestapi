@@ -87,7 +87,7 @@ public class API {
             throw new RuntimeException("Could not load jcrestapi.properties.");
         }
 
-        VERSION = props.getProperty("jcrestapi.version");
+        VERSION = "API version: 1\nModule version:" + props.getProperty("jcrestapi.version");
 
         accessors.put(PROPERTIES, new PropertyElementAccessor());
         accessors.put(CHILDREN, new ChildrenElementAccessor());
