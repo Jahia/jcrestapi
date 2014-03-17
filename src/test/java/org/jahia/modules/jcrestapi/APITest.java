@@ -79,8 +79,8 @@ public class APITest extends JerseyTest {
         try {
             expect().statusCode(SC_OK)
                     .contentType("text/plain")
-                    .body(equalTo(props.getProperty("jcrestapi.version")))
-                    .when().get(generateURL("/api/version"));
+                    .body(equalTo("API version: 1\nModule version:" + props.getProperty("jcrestapi.version")))
+                    .when().get(generateURL(API.API_PATH + "/version"));
         } finally {
             final List<LogRecord> loggedRecords = getLoggedRecords();
             for (LogRecord record : loggedRecords) {
