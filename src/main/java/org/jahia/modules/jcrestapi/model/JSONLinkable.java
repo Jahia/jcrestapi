@@ -39,6 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -53,6 +55,7 @@ import java.util.Map;
 @XmlAccessorType(XmlAccessType.NONE)
 public class JSONLinkable {
     static final String SELF = "self";
+    static final String ABSOLUTE = "absolute";
 
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
@@ -72,6 +75,7 @@ public class JSONLinkable {
     }
 
     public void initWith(String uri) {
+        addLink(new JSONLink(ABSOLUTE, URIUtils.getAbsoluteURI(uri)));
         addLink(new JSONLink(SELF, uri));
     }
 

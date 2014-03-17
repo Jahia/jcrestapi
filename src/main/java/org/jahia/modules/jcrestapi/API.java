@@ -47,7 +47,10 @@ import org.osgi.service.component.annotations.Component;
 
 import javax.inject.Inject;
 import javax.jcr.*;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -138,6 +141,7 @@ public class API {
     public Nodes getNodes(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Nodes nodes = new Nodes(workspace, language);
         nodes.initRepositoryWith(repository);
+        URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
         return nodes;
     }
 
@@ -145,6 +149,7 @@ public class API {
     public Types getByType(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Types byType = new Types(workspace, language);
         byType.initRepositoryWith(repository);
+        URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
         return byType;
     }
 
@@ -152,6 +157,7 @@ public class API {
     public Paths getByPath(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Paths byPath = new Paths(workspace, language);
         byPath.initRepositoryWith(repository);
+        URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
         return byPath;
     }
 

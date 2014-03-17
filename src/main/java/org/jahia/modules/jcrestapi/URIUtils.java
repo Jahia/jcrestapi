@@ -48,11 +48,14 @@ import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Christophe Laprun
  */
 public class URIUtils {
+    private static final AtomicReference<String> baseURI = new AtomicReference<String>();
+
     private static String getURIWithWorkspaceAndLanguage() {
         final API.SessionInfo currentSession = API.getCurrentSession();
         return API.API_PATH + "/" + currentSession.workspace + "/" + currentSession.language;
@@ -178,5 +181,16 @@ public class URIUtils {
 
     public static String addModulesContextTo(String uriAsString, UriInfo context) {
             return context.getBaseUri().toASCIIString() + uriAsString;
+    }
+
+    public static void setBaseURI(String baseURI) {
+        if (URIUtils.baseURI.get() == null) {
+            // remove final '/'
+            URIUtils.baseURI.set(baseURI.substring(0, baseURI.length() - 1));
+        }
+    }
+
+    public static String getAbsoluteURI(String relativeURI) {
+        return baseURI.get() + relativeURI;
     }
 }
