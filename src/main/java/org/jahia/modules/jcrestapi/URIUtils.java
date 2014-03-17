@@ -53,11 +53,9 @@ import java.net.URISyntaxException;
  * @author Christophe Laprun
  */
 public class URIUtils {
-    private static final String API_CONTEXT = "/api/";
-
     private static String getURIWithWorkspaceAndLanguage() {
         final API.SessionInfo currentSession = API.getCurrentSession();
-        return API_CONTEXT + currentSession.workspace + "/" + currentSession.language;
+        return API.API_PATH + "/" + currentSession.workspace + "/" + currentSession.language;
     }
 
     public static String getByPathURI(String path) {

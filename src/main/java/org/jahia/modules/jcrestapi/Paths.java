@@ -54,6 +54,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Christophe Laprun
@@ -61,6 +62,11 @@ import java.util.List;
 public class Paths extends API {
 
     static final String MAPPING = "byPath";
+
+    /**
+     * Records how many segments in API.API_PATH/{workspace}/{language}/Paths.MAPPING must be ignored to get actual path
+     */
+    private static final AtomicInteger IGNORE_SEGMENTS = new AtomicInteger(-1);
 
     public Paths(String workspace, String language) {
         super(workspace, language);
@@ -72,7 +78,7 @@ public class Paths extends API {
     public Object getByPath(@PathParam("path") String path,
                             @Context UriInfo context) {
 
-        // only consider useful segments, starting after /api/{workspace}/{language}/byPath
+        // only consider useful segments
         final List<PathSegment> usefulSegments = getUsefulSegments(context);
         int index = 0;
         for (PathSegment segment : usefulSegments) {
@@ -92,7 +98,27 @@ public class Paths extends API {
 
     private List<PathSegment> getUsefulSegments(UriInfo context) {
         final List<PathSegment> pathSegments = context.getPathSegments();
-        return pathSegments.subList(4, pathSegments.size());
+        return pathSegments.subList(getNumberOfIgnoredSegments(), pathSegments.size());
+    }
+
+    private static int getNumberOfIgnoredSegments() {
+        if(IGNORE_SEGMENTS.get() == -1) {
+            IGNORE_SEGMENTS.set(getSegmentsNbFrom(API.API_PATH) + 2 + getSegmentsNbFrom(MAPPING));
+        }
+
+        return IGNORE_SEGMENTS.get();
+    }
+
+    private static int getSegmentsNbFrom(String path) {
+        final String[] split = path.split("/");
+        int segments = 0;
+        for (String s : split) {
+            // only include non-empty segments
+            if(!s.isEmpty()) {
+                segments++;
+            }
+        }
+        return segments;
     }
 
     @POST
