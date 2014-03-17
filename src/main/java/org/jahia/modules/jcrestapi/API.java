@@ -66,7 +66,7 @@ public class API {
     public static final String CREATE_OR_UPDATE = "createOrUpdate";
     public static final String READ = "read";
 
-    static final String API_PATH = "/api";
+    static final String API_PATH = "/api/jcr/v1";
 
     public static final String PROPERTIES = "properties";
     public static final String MIXINS = "mixins";
