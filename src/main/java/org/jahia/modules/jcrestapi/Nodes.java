@@ -39,9 +39,12 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
 
+import javax.jcr.Node;
+import javax.jcr.Session;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -148,6 +151,30 @@ public class Nodes extends API {
             return performBatchDelete(workspace, language, id, subElementType, subElementsToDelete, context);
         }
         return perform(workspace, language, id, subElementType, subElement, context, DELETE, null);
+    }
+
+    @POST
+    @Path("/{id}/moveto/{newName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object renameNode(@PathParam("id") String id,
+                             @PathParam("newName") String newName,
+                             @Context UriInfo context) {
+        Session session = null;
+
+        try {
+            session = getSession(workspace, language);
+
+            final Node node = session.getNodeByIdentifier(id);
+            session.move(node.getPath(), node.getParent().getPath() + "/" + newName);
+
+            session.save();
+
+            return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id), context);
+        } catch (Exception e) {
+            throw new APIException(e);
+        } finally {
+            closeSession(session);
+        }
     }
 
 }

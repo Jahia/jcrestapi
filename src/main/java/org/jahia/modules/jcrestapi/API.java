@@ -159,32 +159,6 @@ public class API {
         this.repository = repository;
     }
 
-    @POST
-    @Path("/{workspace}/{language}/rename/{id}/to/{newName}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object renameNode(@PathParam("workspace") String workspace,
-                             @PathParam("language") String language,
-                             @PathParam("id") String id,
-                             @PathParam("newName") String newName,
-                             @Context UriInfo context) {
-        Session session = null;
-
-        try {
-            session = getSession(workspace, language);
-
-            final Node node = session.getNodeByIdentifier(id);
-            session.move(node.getPath(), node.getParent().getPath() + "/" + newName);
-
-            session.save();
-
-            return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id), context);
-        } catch (Exception e) {
-            throw new APIException(e);
-        } finally {
-            closeSession(session);
-        }
-    }
-
     public static boolean exists(String name) {
         return name != null && !name.isEmpty();
     }
