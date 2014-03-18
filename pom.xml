@@ -49,7 +49,7 @@
         <version>7.0.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>jcrestapi</artifactId>
-    <name>RESTful JCR Access</name>
+    <name>Jahia RESTful JCR Access</name>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <description>Module implementing a RESTful API to access JCR data.</description>
@@ -220,6 +220,7 @@
                 <configuration>
                     <instructions>
                         <Jahia-Depends>default,jaxrs-osgi-extender</Jahia-Depends>
+						<Jahia-Module-Type>system</Jahia-Module-Type>
                         <Private-Package>
                             org.jahia.modules.jcrestapi,
                             org.jahia.modules.jcrestapi.model,
