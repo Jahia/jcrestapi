@@ -58,7 +58,7 @@ import java.util.List;
  */
 public class Types extends API {
     private static final String SELECTOR_NAME = "type";
-    static final String MAPPING = "byType";
+    static final String MAPPING = "types";
 
     public Types(String workspace, String language) {
         super(workspace, language);

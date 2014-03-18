@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Paths extends API {
 
-    static final String MAPPING = "byPath";
+    static final String MAPPING = "paths";
 
     /**
      * Records how many segments in API.API_PATH/{workspace}/{language}/Paths.MAPPING must be ignored to get actual path
