@@ -106,7 +106,7 @@ public class Nodes extends API {
     }
 
     @PUT
-    @Path("/{id}/properties/{subElement}")
+    @Path("/{id: [^/]*}/properties/{subElement}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object createOrUpdateProperty(@PathParam("id") String id,
                                          @PathParam("subElement") String subElement,
