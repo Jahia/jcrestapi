@@ -22,8 +22,8 @@ using Response.cacheControl method instead of filter.
 - JS Client library?
 - Improve cross-site support
 - Improve authentication support, clarify which authentication options are supported
-- Define a versioning scheme
-- Should we use a vendor-specific content type?
+- <strike>Define a versioning scheme</strike> __(Done: use version number in the URIs)__
+- <strike>Should we use a vendor-specific content type?</strike> __(Done: deemed too complex at the moment without much upside)__
 - <strike>JSON-P support</strike> __(Done: no JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)__
 - <strike>Packaging</strike> __(Done)__
 - Documentation using apiary.io?
@@ -68,9 +68,16 @@ Since the API implementation is deployed as a module, it is available on your Ja
 context with the `/api` specific context. Therefore, all URIs targeting the API will start with `/modules/api`. Keep this in mind
 while looking at the examples below since we might not repeat the base context all the time.
 
+We further qualify the base context by adding `/jcr/v1` to the base context to specify that this particular API deals with the JCR
+domain and is currently in version 1. The scoping by domain allows us to potentially expand the API's reach to other aspects in the
+future while we also make it clear which version (if/when several versions are needed) of that particular domain API is being used
+by specifying it in the base context.
+
+`<basecontext>` will henceforth refer to the `/modules/api/jcr/v1` base context below.
+
 ### API version
 
-You can access the version of the API implementation using the `/modules/api/version` URI. This returns a plain text version String
+You can access the version of the API implementation using the `<basecontext>/version` URI. This returns a plain text version String
 for the currently running API implementation. This can also serve as a quick check to see if the API is currently running or not.
 
 ### Workspace and language
@@ -80,7 +87,7 @@ choose a combination of workspace _and_ language at any one time to work with JC
 specified in the URI path, using first, the escaped workspace name followed by the language code associated with the language you
 wish to retrieve data in.
 
-Therefore, all URIs targeting JCR data will be prefixed as follows: `/modules/api/<workspace name>/<language code>/<rest of the URI>`
+Therefore, all URIs targeting JCR data will be prefixed as follows: `<basecontext>/<workspace name>/<language code>/<rest of the URI>`
 
 In the following sections, we detail the different types of URIs the API responds to. We will use `<placeholder>` or `{placeholder}`
 indifferently to represent place holders in the different URIs. Each section will first present the URI template using the JAX-RS
@@ -127,11 +134,11 @@ todo
 ### Operating on nodes using their path
 
 #### URI template
-`/{workspace}/{language}/byPath{path: /.*}`
+`/{workspace}/{language}/paths{path: /.*}`
 
 #### URI elements
 
-- `byPath`: path element marking access to JCR nodes from their path
+- `paths`: path element marking access to JCR nodes from their path
 - `{path: /.*}`: the path of the resource to operate one
 
 The `path` path element should contain the absolute path to a given JCR node with optional sub-element resolution if one of the child resource
@@ -140,12 +147,12 @@ sub-element and the resolution of the sub-element will happen using the next pat
 
 #### Examples
 
-`/modules/api/default/en/byPath/users/root/profile` resolves to the `/users/root/profile` node in the `default` workspace using the `en` language.
+`<basecontext>/default/en/paths/users/root/profile` resolves to the `/users/root/profile` node in the `default` workspace using the `en` language.
 
-`/modules/api/live/fr/byPath/sites/foo/properties/bar` resolves to the French (`fr` language) version of the `bar` property of the `/sites/foo` node
+`<basecontext>/live/fr/paths/sites/foo/properties/bar` resolves to the French (`fr` language) version of the `bar` property of the `/sites/foo` node
 in the `live` workspace.
 
-`/modules/api/live/fr/ByPath/sites/foo/properties/bar/baz/foo` also resolves to the French version of the `bar` property of the `/sites/foo` node since
+`<basecontext>/live/fr/paths/sites/foo/properties/bar/baz/foo` also resolves to the French version of the `bar` property of the `/sites/foo` node since
  only the next path element is considered when a sub-element type if found in one of the path elements of the considered URI.
 
 #### Options
@@ -160,11 +167,11 @@ todo
 ### Retrieving nodes using their type
 
 #### URI template
-`{workspace}/{language}/byType/{type}`
+`{workspace}/{language}/types/{type}`
 
 #### URI elements
 
-- `byType`: path element marking access to JCR nodes from their type
+- `types`: path element marking access to JCR nodes from their type
 - `{type}`: the escaped name of the type of JCR nodes to retrieve
 
 #### Examples
