@@ -282,6 +282,7 @@ public class JSONProperty extends JSONItem<Property> {
                 break;
             default:
                 theValue = val.getString();
+                break;
         }
         return theValue;
     }
