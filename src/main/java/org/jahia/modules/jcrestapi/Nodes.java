@@ -132,7 +132,7 @@ public class Nodes extends API {
         if (childData == null) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Missing body").build();
         }
-        return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
+        return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.BY_ID, processor);
     }
 
     @PUT
@@ -143,7 +143,7 @@ public class Nodes extends API {
                                          JSONProperty childData,
                                          @Context UriInfo context) {
         ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
-        return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.byId, processor);
+        return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.BY_ID, processor);
     }
 
     @GET
@@ -153,7 +153,7 @@ public class Nodes extends API {
                               @PathParam("subElement") String subElement,
                               @Context UriInfo context) {
         ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
-        return perform(workspace, language, context, READ, null, NodeAccessor.byId, processor);
+        return perform(workspace, language, context, READ, null, NodeAccessor.BY_ID, processor);
     }
 
     @DELETE
@@ -163,7 +163,7 @@ public class Nodes extends API {
                                  @PathParam("subElement") String subElement,
                                  @Context UriInfo context) {
         ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
-        return perform(workspace, language, context, DELETE, null, NodeAccessor.byId, processor);
+        return perform(workspace, language, context, DELETE, null, NodeAccessor.BY_ID, processor);
     }
 
     @DELETE

@@ -120,7 +120,7 @@ public class JSONVersions extends JSONSubElementContainer {
                     return versionManager.getVersionHistory(path);
                 } catch (RepositoryException e) {
                     // can happen if the node is just created
-                    APIExceptionMapper.logger.debug("Couldn't retrieve the version history for node " + path, e);
+                    APIExceptionMapper.LOGGER.debug("Couldn't retrieve the version history for node " + path, e);
                     return null;
                 }
             }

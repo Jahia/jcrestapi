@@ -94,7 +94,7 @@ import java.util.*;
 @Path(API.API_PATH)
 @Produces({MediaType.APPLICATION_JSON})
 public class API {
-    public static final String VERSION;
+    private static final String VERSION;
     public static final String DELETE = "delete";
     public static final String CREATE_OR_UPDATE = "createOrUpdate";
     public static final String READ = "read";
@@ -110,29 +110,29 @@ public class API {
     public static final String PARENT = "parent";
     public static final String PATH = "path";
 
-    protected final static Map<String, ElementAccessor> accessors = new HashMap<String, ElementAccessor>(7);
+    protected final static Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
+
+    private static final ThreadLocal<SessionInfo> SESSION_HOLDER = new ThreadLocal<SessionInfo>();
 
     static {
         Properties props = new Properties();
         try {
             props.load(API.class.getClassLoader().getResourceAsStream("jcrestapi.properties"));
         } catch (Exception e) {
-            throw new RuntimeException("Could not load jcrestapi.properties.");
+            throw new RuntimeException("Could not load jcrestapi.properties.", e);
         }
 
         VERSION = "API version: 1\nModule version:" + props.getProperty("jcrestapi.version");
 
-        accessors.put(PROPERTIES, new PropertyElementAccessor());
-        accessors.put(CHILDREN, new ChildrenElementAccessor());
-        accessors.put(MIXINS, new MixinElementAccessor());
-        accessors.put(VERSIONS, new VersionElementAccessor());
-        accessors.put("", new NodeElementAccessor());
+        ACCESSORS.put(PROPERTIES, new PropertyElementAccessor());
+        ACCESSORS.put(CHILDREN, new ChildrenElementAccessor());
+        ACCESSORS.put(MIXINS, new MixinElementAccessor());
+        ACCESSORS.put(VERSIONS, new VersionElementAccessor());
+        ACCESSORS.put("", new NodeElementAccessor());
     }
 
-    private static final ThreadLocal<SessionInfo> sessionHolder = new ThreadLocal<SessionInfo>();
-
     public static SessionInfo getCurrentSession() {
-        return sessionHolder.get();
+        return SESSION_HOLDER.get();
     }
 
     public static class SessionInfo {
@@ -201,7 +201,7 @@ public class API {
 
     protected Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
                              String operation, JSONItem data) {
-        return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.byId);
+        return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.BY_ID);
     }
 
     protected Object performBatchDelete(String workspace, String language, String idOrPath, String subElementType, List<String> subElements, UriInfo context) {
@@ -215,9 +215,9 @@ public class API {
             idOrPath = processor.getIdOrPath();
             subElementType = processor.getSubElementType();
 
-            final Node node = NodeAccessor.byId.getNode(idOrPath, session);
+            final Node node = NodeAccessor.BY_ID.getNode(idOrPath, session);
 
-            final ElementAccessor accessor = accessors.get(subElementType);
+            final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 final Response response = accessor.perform(node, subElements, DELETE, null, context);
 
@@ -228,7 +228,7 @@ public class API {
                 return null;
             }
         } catch (Exception e) {
-            throw new APIException(e, DELETE, NodeAccessor.BY_ID, idOrPath, subElementType, subElements, null);
+            throw new APIException(e, DELETE, NodeAccessor.BY_ID.getType(), idOrPath, subElementType, subElements, null);
         } finally {
             closeSession(session);
         }
@@ -251,7 +251,7 @@ public class API {
 
             final Node node = nodeAccessor.getNode(idOrPath, session);
 
-            final ElementAccessor accessor = accessors.get(subElementType);
+            final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 final Response response = accessor.perform(node, subElement, operation, data, context);
 
@@ -286,7 +286,7 @@ public class API {
         }
 
         // put the session in the session holder so that other objects can access it if needed
-        sessionHolder.set(new SessionInfo(session, workspace, language));
+        SESSION_HOLDER.set(new SessionInfo(session, workspace, language));
 
         return session;
     }
@@ -297,18 +297,16 @@ public class API {
         }
 
         // reset session holder
-        sessionHolder.remove();
+        SESSION_HOLDER.remove();
     }
 
     protected static interface NodeAccessor {
-        public static final String BY_ID = "byId";
-        public static final String BY_PATH = "byPath";
-
         Node getNode(String idOrPath, Session session) throws RepositoryException;
 
         String getType();
 
-        NodeAccessor byId = new NodeAccessor() {
+        NodeAccessor BY_ID = new NodeAccessor() {
+            private static final String TYPE = "byId";
             @Override
             public Node getNode(String idOrPath, Session session) throws RepositoryException {
                 return idOrPath.isEmpty() ? session.getRootNode() : session.getNodeByIdentifier(idOrPath);
@@ -316,11 +314,12 @@ public class API {
 
             @Override
             public String getType() {
-                return BY_ID;
+                return TYPE;
             }
         };
 
-        NodeAccessor byPath = new NodeAccessor() {
+        NodeAccessor BY_PATH = new NodeAccessor() {
+            private static final String TYPE = "byPath";
             @Override
             public Node getNode(String idOrPath, Session session) throws RepositoryException {
                 return idOrPath.isEmpty() ? session.getRootNode() : session.getNode(idOrPath);
@@ -328,19 +327,19 @@ public class API {
 
             @Override
             public String getType() {
-                return BY_PATH;
+                return TYPE;
             }
         };
     }
 
     protected static class ElementsProcessor {
-        private String idOrPath;
-        private String subElementType;
-        private String subElement;
+        private final String idOrPath;
+        private final String subElementType;
+        private final String subElement;
 
         public ElementsProcessor(String idOrPath, String subElementType, String subElement) {
             // check if we're trying to access root's sub-elements
-            if (subElementType.isEmpty() && accessors.containsKey(idOrPath)) {
+            if (subElementType.isEmpty() && ACCESSORS.containsKey(idOrPath)) {
                 subElementType = idOrPath;
                 idOrPath = "";
             }

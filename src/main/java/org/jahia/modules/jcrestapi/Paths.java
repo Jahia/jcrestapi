@@ -114,16 +114,16 @@ public class Paths extends API {
         for (PathSegment segment : usefulSegments) {
             // check if segment is a sub-element marker
             String subElementType = segment.getPath();
-            ElementAccessor accessor = accessors.get(subElementType);
+            ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 String nodePath = computePathUpTo(usefulSegments, index);
                 String subElement = getSubElement(usefulSegments, index);
-                return perform(workspace, language, nodePath, subElementType, subElement, context, READ, null, NodeAccessor.byPath);
+                return perform(workspace, language, nodePath, subElementType, subElement, context, READ, null, NodeAccessor.BY_PATH);
             }
             index++;
         }
 
-        return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, READ, null, NodeAccessor.byPath);
+        return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, READ, null, NodeAccessor.BY_PATH);
     }
 
     private List<PathSegment> getUsefulSegments(UriInfo context) {
@@ -165,7 +165,7 @@ public class Paths extends API {
         String fileName = null;
         try {
             session = getSession(workspace, language);
-            final Node node = NodeAccessor.byPath.getNode(idOrPath, session);
+            final Node node = NodeAccessor.BY_PATH.getNode(idOrPath, session);
 
             // check that the node is a folder
             if (node.isNodeType(Constants.NT_FOLDER)) {
@@ -216,7 +216,7 @@ public class Paths extends API {
                 return null;
             }
         } catch (Exception e) {
-            throw new APIException(e, "upload", NodeAccessor.BY_PATH, idOrPath, null, Collections.singletonList(fileName), null);
+            throw new APIException(e, "upload", NodeAccessor.BY_PATH.getType(), idOrPath, null, Collections.singletonList(fileName), null);
         } finally {
             closeSession(session);
         }

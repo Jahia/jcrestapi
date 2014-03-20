@@ -165,7 +165,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
             final URI seeOtherURI = new URI(URIUtils.addModulesContextTo(seeOtherURIAsString, context));
             return Response.seeOther(seeOtherURI).build();
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Couldn't get a proper See Other URI from " + seeOtherURIAsString);
+            throw new IllegalArgumentException("Couldn't get a proper See Other URI from " + seeOtherURIAsString, e);
         }
     }
 

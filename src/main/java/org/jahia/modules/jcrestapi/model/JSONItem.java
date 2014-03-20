@@ -102,7 +102,7 @@ public abstract class JSONItem<T extends Item> extends JSONNamed {
         try {
             parent = item.getParent();
         } catch (ItemNotFoundException e) {
-            // item is root node, specify that parent is itself
+            // expected when the item is root node, specify that parent is itself
             parent = (Node) item;
         }
         addLink(new JSONLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));

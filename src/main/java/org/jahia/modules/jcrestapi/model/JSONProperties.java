@@ -70,7 +70,6 @@
 package org.jahia.modules.jcrestapi.model;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -141,7 +140,7 @@ public class JSONProperties extends JSONSubElementContainer {
 
     public static class PropertiesDeserializer extends JsonDeserializer<JSONProperties> {
         @Override
-        public JSONProperties deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
+        public JSONProperties deserialize(JsonParser parser, DeserializationContext context) throws IOException {
             ObjectCodec codec = parser.getCodec();
             ObjectNode root = codec.readTree(parser);
 

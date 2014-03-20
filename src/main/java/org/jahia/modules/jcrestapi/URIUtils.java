@@ -69,22 +69,21 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.model.JSONLinkable;
-
 import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Christophe Laprun
  */
-public class URIUtils {
-    private static final AtomicReference<String> baseURI = new AtomicReference<String>();
+public final class URIUtils {
+    private static final AtomicReference<String> BASE_URI = new AtomicReference<String>();
+
+    private URIUtils() {
+    }
 
     private static String getURIWithWorkspaceAndLanguage() {
         final API.SessionInfo currentSession = API.getCurrentSession();
@@ -134,25 +133,15 @@ public class URIUtils {
         }
     }
 
-    public static String getURIForChildren(JSONLinkable parentURI) {
-        return getURIForChildren(parentURI.getURI());
-    }
-
-    public static String getURIForChildren(String parentURI) {
-        return getChildURI(parentURI, API.CHILDREN, false);
-    }
-
     public static String getURIForChildren(Node node) {
         return getChildURI(getURIFor(node), API.CHILDREN, false);
     }
     public static String getURIForProperties(Node node) {
         return getChildURI(getURIFor(node), API.PROPERTIES, false);
     }
-
     public static String getURIForMixins(Node node) {
         return getChildURI(getURIFor(node), API.MIXINS, false);
     }
-
     public static String getURIForVersions(Node node) {
         return getChildURI(getURIFor(node), API.VERSIONS, false);
     }
@@ -181,18 +170,6 @@ public class URIUtils {
         return replace;
     }
 
-    public static URI getChildURI(URI parent, String childName) {
-        return getChildURI(parent, childName, false);
-    }
-
-    public static URI getChildURI(URI parent, String childName, boolean escapeChildName) {
-        try {
-            return new URI(getChildURI(parent.toASCIIString(), childName, escapeChildName));
-        } catch (URISyntaxException e) {
-            throw new APIException(e);
-        }
-    }
-
     public static String getChildURI(String parent, String childName, boolean escapeChildName) {
         if (childName.startsWith("/")) {
             childName = childName.substring(1);
@@ -214,13 +191,13 @@ public class URIUtils {
     }
 
     public static void setBaseURI(String baseURI) {
-        if (URIUtils.baseURI.get() == null) {
+        if (URIUtils.BASE_URI.get() == null) {
             // remove final '/'
-            URIUtils.baseURI.set(baseURI.substring(0, baseURI.length() - 1));
+            URIUtils.BASE_URI.set(baseURI.substring(0, baseURI.length() - 1));
         }
     }
 
     public static String getAbsoluteURI(String relativeURI) {
-        return baseURI.get() + relativeURI;
+        return BASE_URI.get() + relativeURI;
     }
 }

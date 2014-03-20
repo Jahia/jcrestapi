@@ -74,15 +74,15 @@ import javax.jcr.Repository;
 /**
  * @author Christophe Laprun
  */
-public class SpringBeansAccess {
-    private final static SpringBeansAccess instance = new SpringBeansAccess();
+public final class SpringBeansAccess {
+    private final static SpringBeansAccess INSTANCE = new SpringBeansAccess();
     private Repository repository;
 
     private SpringBeansAccess() {
     }
 
     public static SpringBeansAccess getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     public Repository getRepository() {
