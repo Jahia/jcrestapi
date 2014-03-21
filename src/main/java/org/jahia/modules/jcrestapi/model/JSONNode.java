@@ -79,6 +79,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import javax.ws.rs.core.MediaType;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * A JSON representation of a JCR node. <p/>
@@ -108,6 +112,7 @@ public class JSONNode extends JSONItem<Node> {
     private JSONVersions versions;
     protected JSONProperties properties;
     protected JSONChildren children;
+    private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
     @XmlElement
     protected String id;
@@ -118,6 +123,17 @@ public class JSONNode extends JSONItem<Node> {
 
     public JSONNode(Node node, int depth) throws RepositoryException {
         initWith(node, depth);
+    }
+
+    public String toString(){
+
+        String nodeString = "";
+        try {
+            nodeString = mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return nodeString;
     }
 
     public void initWith(Node node, int depth) throws RepositoryException {

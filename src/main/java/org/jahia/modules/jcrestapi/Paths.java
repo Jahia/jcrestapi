@@ -154,6 +154,7 @@ public class Paths extends API {
     @POST
     @Path("/{path: .*}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.TEXT_PLAIN)
     public Object upload(@PathParam("path") String path,
                          @FormDataParam("file") FormDataBodyPart part,
                          @Context UriInfo context) {
@@ -210,7 +211,8 @@ public class Paths extends API {
                 session.save();
 
                 final JSONNode jsonNode = new JSONNode(childNode, 0);
-                final Response.ResponseBuilder builder = isUpdate ? Response.ok(jsonNode) : Response.created(context.getAbsolutePath()).entity(jsonNode);
+                final String jsonString = jsonNode.toString();
+                final Response.ResponseBuilder builder = isUpdate ? Response.ok(jsonString) : Response.created(context.getAbsolutePath()).entity(jsonString);
                 return builder.build();
             } else {
                 return null;
