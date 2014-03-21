@@ -96,7 +96,7 @@ import java.util.Map;
 @XmlRootElement
 @JsonDeserialize(using = JSONChildren.ChildrenDeserializer.class)
 public class JSONChildren extends JSONSubElementContainer {
-    private HashMap<String, JSONNode> children;
+    private Map<String, JSONNode> children;
 
     public JSONChildren() {
     }
