@@ -69,20 +69,21 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Map;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import javax.ws.rs.core.MediaType;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * A JSON representation of a JCR node. <p/>
@@ -125,15 +126,12 @@ public class JSONNode extends JSONItem<Node> {
         initWith(node, depth);
     }
 
-    public String toString(){
-
-        String nodeString = "";
+    public String asJSONString() {
         try {
-            nodeString = mapper.writeValueAsString(this);
+            return mapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new APIException(e, "asJSONString", null, id, null, null, null);
         }
-        return nodeString;
     }
 
     public void initWith(Node node, int depth) throws RepositoryException {
