@@ -88,6 +88,8 @@ import javax.ws.rs.core.UriInfo;
 import java.util.*;
 
 /**
+ * The main entry point to the JCR RESTful API.
+ *
  * @author Christophe Laprun
  */
 @Component
@@ -160,6 +162,9 @@ public class API {
         this.language = language;
     }
 
+    /**
+     * Returns the current version of the API and of this implementation.
+     */
     @GET
     @Path("/version")
     @Produces(MediaType.TEXT_PLAIN)
@@ -167,6 +172,14 @@ public class API {
         return VERSION;
     }
 
+    /**
+     * Retrieves the sub-resources in charge of handling requests accessing resources by their identifiers.
+     *
+     * @param workspace the JCR workspace that we want to access
+     * @param language the language code in which we want to retrieve the data
+     * @param context a UriInfo instance, automatically injected, providing context about the request URI
+     * @return a Nodes instance configured to access JCR data from the specified workspace and language
+     */
     @Path("/{workspace}/{language}/" + Nodes.MAPPING)
     public Nodes getNodes(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Nodes nodes = new Nodes(workspace, language);
@@ -175,6 +188,14 @@ public class API {
         return nodes;
     }
 
+    /**
+     * Retrieves the sub-resources in charge of handling requests accessing resources by their types.
+     *
+     * @param workspace the JCR workspace that we want to access
+     * @param language  the language code in which we want to retrieve the data
+     * @param context   a UriInfo instance, automatically injected, providing context about the request URI
+     * @return a Types instance configured to access JCR data from the specified workspace and language
+     */
     @Path("/{workspace}/{language}/" + Types.MAPPING)
     public Types getByType(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Types byType = new Types(workspace, language);
@@ -183,6 +204,14 @@ public class API {
         return byType;
     }
 
+    /**
+     * Retrieves the sub-resources in charge of handling requests accessing resources by their paths.
+     *
+     * @param workspace the JCR workspace that we want to access
+     * @param language  the language code in which we want to retrieve the data
+     * @param context   a UriInfo instance, automatically injected, providing context about the request URI
+     * @return a Types instance configured to access JCR data from the specified workspace and language
+     */
     @Path("/{workspace}/{language}/" + Paths.MAPPING)
     public Paths getByPath(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
         final Paths byPath = new Paths(workspace, language);
@@ -195,8 +224,14 @@ public class API {
         this.repository = repository;
     }
 
-    public static boolean exists(String name) {
-        return name != null && !name.isEmpty();
+    /**
+     * Retrieves whether or not the specified String is not null and not empty.
+     *
+     * @param string the String to be tested
+     * @return <code>true</code> if the specified String is not null and not empty, <code>false</code> otherwise
+     */
+    public static boolean exists(String string) {
+        return string != null && !string.isEmpty();
     }
 
     protected Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
@@ -204,18 +239,31 @@ public class API {
         return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.BY_ID);
     }
 
-    protected Object performBatchDelete(String workspace, String language, String idOrPath, String subElementType, List<String> subElements, UriInfo context) {
+    /**
+     * Performs a batch delete of all specified sub-element types identified by the given list of sub-elements. Note that this method could actually
+     * be extended to include other types of batch operations.
+     *
+     * @param workspace the JCR workspace that we want to access
+     * @param language the language code in which we want to retrieve the data
+     * @param id the identifier of the parent node which sub-elements we want to delete
+     * @param subElementType the type of sub-elements to delete
+     * @param subElements a list of sub-elements names to delete
+     * @param context a UriInfo instance, automatically injected, providing context about the request URI
+     *
+     * @return a Response ready to be sent to the client
+     */
+    protected Response performBatchDelete(String workspace, String language, String id, String subElementType, List<String> subElements, UriInfo context) {
         Session session = null;
 
         try {
             session = getSession(workspace, language);
 
             // process given elements
-            final ElementsProcessor processor = new ElementsProcessor(idOrPath, subElementType, "");
-            idOrPath = processor.getIdOrPath();
+            final ElementsProcessor processor = new ElementsProcessor(id, subElementType, "");
+            id = processor.getIdOrPath();
             subElementType = processor.getSubElementType();
 
-            final Node node = NodeAccessor.BY_ID.getNode(idOrPath, session);
+            final Node node = NodeAccessor.BY_ID.getNode(id, session);
 
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
@@ -228,7 +276,7 @@ public class API {
                 return null;
             }
         } catch (Exception e) {
-            throw new APIException(e, DELETE, NodeAccessor.BY_ID.getType(), idOrPath, subElementType, subElements, null);
+            throw new APIException(e, DELETE, NodeAccessor.BY_ID.getType(), id, subElementType, subElements, null);
         } finally {
             closeSession(session);
         }
