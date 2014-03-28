@@ -1,14 +1,47 @@
 # RESTful JCR Access
 
-## Requirements
+## Overview
 
-- Provide a simple CRUD REST API to JCR nodes
-- Support only JSON as input/output format at this time
-- Legacy options that are available in the current version of the REST API don't need to be ported / duplicated
-- API should be accessible both from JS (directly or via frameworks) and _optionally_ traditional HTTP forms in
-browsers, directly from any REST-able technology
-- All JCR nodes should be accessible from the API: this mandates that authorization will need to be properly tackled
-since with great accessibility/power comes great responsibility!
+### REST, HATEOAS and HTTP
+
+REST stands for REpresentational State Transfer. It is an architectural style defined by R. Fielding that underlies the modern web. On the web,
+anything of interest can become a resource and be identified using a Universal Resource Identifier (URI). Resources are interacted with using representations that are passed
+between clients and servers.
+
+Hypermedia As The Engine Of Application State (HATEOAS) is a concept that states that all the information needed to interact with a resource should be contained in its
+representation. Consider a web site. You first access it by typing its URL (a special kind of URI) in your browser's location bar. The server sends you a representation (HTML
+page) of the web site's home page (the entry point resource). What you can do with that web page is contained in its representation: links, forms, etc. Of course,
+you could try to figure out what other resources might exist on that server by manually crafting URIs but it's much easier to follow the information contained in the HTML page.
+manipulated via representations that are passed between clients and servers. This is the essence of the HATEOAS concept.
+
+HyperText Transfer Protocol (HTTP) is the protocol on which the web is build. It defines a uniform interface that both clients and servers agree to and with which they can
+manipulate resources. In particular, the protocol defines methods (or verbs) corresponding to operations that can be done on resources. The main methods are:
+
+- GET: retrieve the identified resource
+- PUT: add / update the identified resource
+- POST: should only be used for complex operations or to create resources from a factory resource (both if needed)
+- DELETE: delete the identified resource
+
+For a good (and not overly complex) overview of REST, please see (Jos Dirksen's REST: From GET to HATEOAS presentation)[http://www.slideshare
+.net/josdirksen/rest-from-get-to-hateoas].
+
+### Goals
+
+The goals of this project are as follows:
+
+- Provide a simple Create-Read-Update-Delete (CRUD) RESTful API to JCR content
+- Leverage HATEOAS by providing all the required information to interact with a resource in its representation
+- Support only JSON representations
+- Optimize the API for Javascript client applications
+- Provide full JCR access from the API with the associated benefits and risks
+
+### Special provision for PUT and POST methods
+
+PUT and POST methods theoretically exchange full resource representations. However, nodes and properties representations can be quite complex with a potentially deep graph-like
+structure. Moreover, much of the exposed data is actually read-only (node type information, links...) or is or can be derived from the node type information. It would therefore
+be inefficient to require clients to pass all that information to the API during creation or update of resources. We adopt the convention that only the information that is
+either required or is being changed as a result of the operation is passed along to the API. This results in minimal effort on the client side and has the added benefit of
+reducing the amount of network chatter. The semantics we follow is therefore close to the PATCH method semantics in spirit, if not in implementation.
 
 ---
 
@@ -17,33 +50,39 @@ since with great accessibility/power comes great responsibility!
 - Improve cache control using ETag (for simple node GETs), in particular, can we use jcr:lastModified as an ETag and
 using Response.cacheControl method instead of filter.
 - Clarify usage of children vs. access via path and its consequences on NodeElementAccessor.
-- <strike>Design and implement versions access.</strike> __(Done)__
-- <strike>Re-design URIs to provide easier access to workspace and language.</strike> __(Done)__
+- <del>Design and implement versions access.</del> __(Done)__
+- <del>Re-design URIs to provide easier access to workspace and language.</del> __(Done)__
 - JS Client library?
 - Improve cross-site support
 - Improve authentication support, clarify which authentication options are supported
-- <strike>Define a versioning scheme</strike> __(Done: use version number in the URIs)__
-- <strike>Should we use a vendor-specific content type?</strike> __(Done: deemed too complex at the moment without much upside)__
-- <strike>JSON-P support</strike> __(Done: no JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)__
-- <strike>Packaging</strike> __(Done)__
+- <del>Define a versioning scheme</del> __(Done: use version number in the URIs)__
+- <del>Should we use a vendor-specific content type?</del> __(Done: deemed too complex at the moment without much upside)__
+- <del>JSON-P support</del> __(Done: no JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)__
+- <del>Packaging</del> __(Done)__
 - Documentation using apiary.io?
-- <strike>Support file uploads</strike> __(Done)__
+- <del>Support file uploads</del> __(Done)__
+- Support easier creation of same-name siblings using POST and JSON data
 
 ---
 
 ## Resources identification
 
-The natural match to map JCR data unto REST concepts is to use JCR nodes as resources, identified by their path,
+The natural match to map JCR data unto resources is to use JCR nodes as resources, identified either by their path or identifier,
 which is made rather easy since JCR data is stored mostly in tree form.
 
----
-
-## <a name="uri"/>URI design
+A node also defines sub-resources:
 
 - children for a given node are accessed using the `children` child resource
 - properties for a given node are found under the `properties` child resource
 - mixins for a given node are accessed using the `mixins` child resource
 - versions for a given node are found under the `versions` child resource
+
+Each of these sub-resources (which we also call _sub-element type_ as they identify a type of node sub-element) provides named access to their respective sub-elements as well.
+
+---
+
+## <a name="uri"/>URI design
+
 - `:` character is encoded by `__` in property names since `:` is a reserved character for URIs
 - indices of same name siblings are denoted using the `--` prefix
 
@@ -57,7 +96,7 @@ which is made rather easy since JCR data is stored mostly in tree form.
 
 ---
 
-## API URIs
+## API entry points
 
 The goal of this API is that you should be able to operate on its data using links provided within the returned representations.
 However, you still need to be able to retrieve that first representation to work with in the first place.
@@ -68,17 +107,16 @@ Since the API implementation is deployed as a module, it is available on your Ja
 context with the `/api` specific context. Therefore, all URIs targeting the API will start with `/modules/api`. Keep this in mind
 while looking at the examples below since we might not repeat the base context all the time.
 
-We further qualify the base context by adding `/jcr/v1` to the base context to specify that this particular API deals with the JCR
+We further qualify the base context by adding `/jcr/v1` to specify that this particular API deals with the JCR
 domain and is currently in version 1. The scoping by domain allows us to potentially expand the API's reach to other aspects in the
-future while we also make it clear which version (if/when several versions are needed) of that particular domain API is being used
-by specifying it in the base context.
+future while we also make it clear which version (if/when several versions are needed) of that particular domain API is being used.
 
 `<basecontext>` will henceforth refer to the `/modules/api/jcr/v1` base context below.
 
 ### API version
 
-You can access the version of the API implementation using the `<basecontext>/version` URI. This returns a plain text version String
-for the currently running API implementation. This can also serve as a quick check to see if the API is currently running or not.
+You can access the version of the API implementation performing a `GET` on the `<basecontext>/version` URI. This returns plain text information about both the version of the API
+and of the currently running implementation. This can also serve as a quick check to see if the API is currently running or not.
 
 ### Workspace and language
 
@@ -93,7 +131,7 @@ In the following sections, we detail the different types of URIs the API respond
 indifferently to represent place holders in the different URIs. Each section will first present the URI template using the JAX-RS
 `@Path` syntax for URIs which is quite self-explanatory for anyone with regular expression knowledge. We will then detail each part
 of the URI template, specify the expected result, define which options if any are available and, finally, which HTTP operations can
-be used on these URIs. Since we already about the workspace and language path elements, we won't address them in the following.
+be used on these URIs. Since we already talked about the workspace and language path elements, we won't address them in the following.
 
 ### Operating on nodes using their identifier
 
@@ -594,21 +632,3 @@ A node's versions are gathered within a `versions` object as follows:
     // other node elements...
 
 // todo
-
----
-
-## Operations
-
-- GET: retrieve the identified resource
-- PUT: add / update the identified resource
-- POST: should only be used for complex operations or to create resources from a factory resource (both if needed)
-- DELETE: delete the identified resource
-
-### Special provision for PUT and POST operations
-
-Nodes and properties representations can be quite complex with a potentially graph-like structure. Moreover,
-many of the exposed data is actually read-only (node type information, links...) or is or can be derived from the
-node type information. It would therefore be inefficient to require client code to pass all that information to the
-API during creation or update of resources. We adopt the convention that only the information that is either required
- or is being changed as a result of the operation is passed along to the API. This results in minimal effort on the
- client side and has the added benefit of reducing the amount of network chatter.
