@@ -487,16 +487,6 @@ creating a new `jmix__robots` resource in the `mixins` collection resource, usin
         }
     }
 
-To make things even simpler and since a property's value is the only thing that can be modified,
-we could adopt the following convention to set a property's value, to be equivalent to the precedent request:
-
-    PUT /sites/mySite/mixins/jmix__robots HTTP/1.1
-    Host: api.example.org
-
-    "properties" : {
-        "robots" : "User-agent: *"
-    }
-
 
 ### <a name="children"/>Children representation
 
