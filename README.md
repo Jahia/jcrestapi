@@ -205,7 +205,7 @@ todo
 ### Retrieving nodes using their type
 
 #### URI template
-`{workspace}/{language}/types/{type}`
+`/{workspace}/{language}/types/{type}`
 
 #### URI elements
 
@@ -316,8 +316,9 @@ quite appropriately `name` which contains the original, unescaped name of the it
 
 ### Node representation structure
 
-    "name" : <the node's unescaped name>,
-    "type" : <the node's node type name>,
+{
+    "name" : "<the node's unescaped name>",
+    "type" : "<the node's node type name>",
     "properties" : <properties representation>,
     "mixins" : <mixins representation>,
     "children" : <children representation>,
@@ -330,6 +331,7 @@ quite appropriately `name` which contains the original, unescaped name of the it
         "children" : { "href" : "<URI identifying the resource associated with this node's children>" },
         "versions" : { "href" : "<URI identifying the resource associated with this node's versions>" }
     }
+}
 
 Note that it should be possible for an API client to only request a subset of the complete structure. For example,
 a client might only be interested in properties for a given call and not care about the rest of the structure. This
@@ -353,15 +355,17 @@ A node's properties are gathered within a `properties` object that has the follo
 
 Each property is represented by an object with the following structure:
 
-    "name" : <unescaped name>,
+{
+    "name" : "<unescaped name>",
     "multiValued" : <boolean indicating whether the property is multi-valued or not>
     "reference": <boolean indicating whether the property value(s) point(s) to a node or not>
-    "value" : <value>,
-    "type" : <type>,
+    "value" : "<value>",
+    "type" : "<type>",
     "_links" : {
         "self" : { "href" : "<URI identifying the resource associated with the property>" },
         "type" : { "href" : "<URI identifying the resource associated with the property definition>" }
     }
+}
 
 `type` is the case-insensitive name of the JCR property type, and is one of: `STRING`, `BINARY`, `LONG`, `DOUBLE`,
 `DATE`, `BOOLEAN`, `NAME`, `PATH`, `REFERENCE`, `WEAKREFERENCE`, `URI`, and `DECIMAL`.
