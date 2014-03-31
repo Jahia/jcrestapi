@@ -234,7 +234,7 @@ public class API {
         return string != null && !string.isEmpty();
     }
 
-    protected Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
+    protected Response perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
                              String operation, JSONItem data) {
         return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.BY_ID);
     }
@@ -282,12 +282,12 @@ public class API {
         }
     }
 
-    protected Object perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
+    protected Response perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
                              String operation, JSONItem data, NodeAccessor nodeAccessor) {
         return perform(workspace, language, context, operation, data, nodeAccessor, new ElementsProcessor(idOrPath, subElementType, subElement));
     }
 
-    protected Object perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
+    protected Response perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
         Session session = null;
 
         final String idOrPath = processor.getIdOrPath();
