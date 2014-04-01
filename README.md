@@ -22,8 +22,8 @@ manipulate resources. In particular, the protocol defines methods (or verbs) cor
 - `POST`: should only be used for complex operations or to create resources from a factory resource (both if needed)
 - `DELETE`: delete the identified resource
 
-For a good (and not overly complex) overview of REST, please see (Jos Dirksen's REST: From GET to HATEOAS presentation)[http://www.slideshare
-.net/josdirksen/rest-from-get-to-hateoas].
+For a good (and not overly complex) overview of REST, please see
+(Jos Dirksen's REST: From GET to HATEOAS presentation)[http://www.slideshare.net/josdirksen/rest-from-get-to-hateoas].
 
 ### Goals
 
