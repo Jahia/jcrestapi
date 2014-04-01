@@ -107,7 +107,7 @@ public abstract class JSONItem<T extends Item> extends JSONNamed {
         }
         addLink(new JSONLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
 
-        addLink(new JSONLink(API.PATH, URIUtils.getByPathURI(item.getPath(), true)));
+        addLink(new JSONLink(API.PATH, URIUtils.getByPathURI(URIUtils.escape(item.getPath()), true)));
     }
 
     public JSONItem(T item) throws RepositoryException {
