@@ -23,7 +23,7 @@ manipulate resources. In particular, the protocol defines methods (or verbs) cor
 - `DELETE`: delete the identified resource
 
 For a good (and not overly complex) overview of REST, please see
-(Jos Dirksen's REST: From GET to HATEOAS presentation)[http://www.slideshare.net/josdirksen/rest-from-get-to-hateoas].
+[Jos Dirksen's REST: From GET to HATEOAS presentation](http://www.slideshare.net/josdirksen/rest-from-get-to-hateoas).
 
 ### Goals
 
