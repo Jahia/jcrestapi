@@ -193,7 +193,7 @@ public class APITest extends JerseyTest {
     @Test
     public void testGetJCRSystem() {
         expect().statusCode(SC_OK)
-                .contentType("application/json")
+                .contentType("application/hal+json")
                 .body(
                         "name", equalTo("jcr:system"),
                         "type", equalTo("rep:system")

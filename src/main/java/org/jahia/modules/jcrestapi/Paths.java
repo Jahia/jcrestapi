@@ -89,6 +89,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Christophe Laprun
  */
+@Produces({"application/hal+json"})
 public class Paths extends API {
 
     static final String MAPPING = "paths";
@@ -104,7 +105,6 @@ public class Paths extends API {
 
     @GET
     @Path("/{path: .*}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Object getByPath(@PathParam("path") String path,
                             @Context UriInfo context) {
 

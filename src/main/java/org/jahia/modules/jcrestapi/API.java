@@ -94,7 +94,7 @@ import java.util.*;
  */
 @Component
 @Path(API.API_PATH)
-@Produces({MediaType.APPLICATION_JSON})
+@Produces({"application/hal+json"})
 public class API {
     private static final String VERSION;
     public static final String DELETE = "delete";

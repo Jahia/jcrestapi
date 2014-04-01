@@ -85,6 +85,7 @@ import java.util.List;
 /**
  * @author Christophe Laprun
  */
+@Produces({"application/hal+json"})
 public class Nodes extends API {
     static final String MAPPING = "nodes";
 
@@ -94,7 +95,6 @@ public class Nodes extends API {
 
     @GET
     @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
     /**
      * Needed to get URI without trailing / to work :(
      */
@@ -108,7 +108,6 @@ public class Nodes extends API {
             "|" + API.PROPERTIES +
             "|" + API.VERSIONS +
             "))?}{subElement: .*}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Object getNodeById(@PathParam("id") String id,
                               @PathParam("subElementType") String subElementType,
                               @PathParam("subElement") String subElement,
@@ -148,7 +147,6 @@ public class Nodes extends API {
 
     @GET
     @Path("/{id: [^/]*}/properties/{subElement}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Object getProperty(@PathParam("id") String id,
                               @PathParam("subElement") String subElement,
                               @Context UriInfo context) {
@@ -185,7 +183,6 @@ public class Nodes extends API {
 
     @POST
     @Path("/{id}/moveto/{newName}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Object renameNode(@PathParam("id") String id,
                              @PathParam("newName") String newName,
                              @Context UriInfo context) {
