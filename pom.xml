@@ -92,9 +92,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git@github.com:metacosm/jcrestapi.git</connection>
-        <developerConnection>scm:git:git@github.com:metacosm/jcrestapi.git</developerConnection>
-        <url>scm:git:git@github.com:metacosm/jcrestapi.git</url>
+        <connection>scm:git:git@github.com:Jahia/jcrestapi.git</connection>
+        <developerConnection>scm:git:git@github.com:Jahia/jcrestapi.git</developerConnection>
+        <url>scm:git:git@github.com:Jahia/jcrestapi.git</url>
     </scm>
 
     <repositories>
