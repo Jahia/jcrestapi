@@ -80,6 +80,7 @@ import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionIterator;
 import javax.jcr.version.VersionManager;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -91,6 +92,7 @@ import java.util.Map;
 @XmlRootElement
 public class JSONVersions extends JSONSubElementContainer {
 
+    @XmlElement
     private Map<String, JSONVersion> versions;
 
     public JSONVersions(JSONNode parent, Node node) throws RepositoryException {
