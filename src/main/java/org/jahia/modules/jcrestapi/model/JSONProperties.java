@@ -83,9 +83,6 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
@@ -99,6 +96,7 @@ import java.util.Map;
 @XmlRootElement
 @JsonDeserialize(using = JSONProperties.PropertiesDeserializer.class)
 public class JSONProperties extends JSONSubElementContainer {
+    @XmlElement
     private Map<String, JSONProperty> properties;
 
     public JSONProperties() {
@@ -124,14 +122,11 @@ public class JSONProperties extends JSONSubElementContainer {
         }
     }
 
-    @XmlElement
     public Map<String, JSONProperty> getProperties() {
         return properties;
     }
 
-    @PUT
-    @Path("{name}")
-    public void addProperty(@PathParam("name") String name, JSONProperty property) {
+    public void addProperty(String name, JSONProperty property) {
         if (properties == null) {
             properties = new HashMap<String, JSONProperty>(7);
         }

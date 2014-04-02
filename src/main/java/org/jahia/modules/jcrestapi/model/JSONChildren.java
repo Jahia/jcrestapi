@@ -82,7 +82,6 @@ import org.jahia.modules.jcrestapi.URIUtils;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.Path;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
@@ -96,6 +95,7 @@ import java.util.Map;
 @XmlRootElement
 @JsonDeserialize(using = JSONChildren.ChildrenDeserializer.class)
 public class JSONChildren extends JSONSubElementContainer {
+    @XmlElement
     private Map<String, JSONNode> children;
 
     public JSONChildren() {
@@ -119,8 +119,6 @@ public class JSONChildren extends JSONSubElementContainer {
         }
     }
 
-    @XmlElement
-    @Path(API.CHILDREN)
     Map<String, JSONNode> getChildren() {
         return children;
     }

@@ -82,7 +82,6 @@ import org.jahia.modules.jcrestapi.URIUtils;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
-import javax.ws.rs.Path;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
@@ -113,7 +112,6 @@ public class JSONMixins extends JSONSubElementContainer {
         }
     }
 
-    @Path(API.MIXINS)
     public Map<String, JSONMixin> getMixins() {
         return mixins;
     }
