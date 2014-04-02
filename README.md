@@ -96,150 +96,36 @@ Each of these sub-resources (which we also call _sub-element type_ as they ident
 
 ---
 
-## API entry points
+## Basic API workflow
 
-The goal of this API is that you should be able to operate on its data using links provided within the returned representations.
-However, you still need to be able to retrieve that first representation to work with in the first place.
+Using the API is then a matter of:
 
-### Base context
+1. Identifying which resource to work with.
+2. Deciding which HTTP method to use to operate on the identified resource.
+3. Invoke the HTTP method on the resource passing it any necessary data.
 
-Since the API implementation is deployed as a module, it is available on your Jahia Digital Factory instance under the `/modules`
-context with the `/api` specific context. Therefore, all URIs targeting the API will start with `/modules/api`. Keep this in mind
-while looking at the examples below since we might not repeat the base context all the time.
+Since client and server exchange representations to signify state changes, when you need to pass data to create or update a resource, the API server expects a
+representation it can understand. In this particular implementation, representations that are expected as input data of operations __MUST__ have the exact same
+structure as the representation you would retrieve performing a `GET` operation on that particular resource.
 
-We further qualify the base context by adding `/jcr/v1` to specify that this particular API deals with the JCR
-domain and is currently in version 1. The scoping by domain allows us to potentially expand the API's reach to other aspects in the
-future while we also make it clear which version (if/when several versions are needed) of that particular domain API is being used.
-
-`<basecontext>` will henceforth refer to the `/modules/api/jcr/v1` base context below.
-
-### API version
-
-You can access the version of the API implementation performing a `GET` on the `<basecontext>/version` URI. This returns plain text information about both the version of the API
-and of the currently running implementation. This can also serve as a quick check to see if the API is currently running or not.
-
-### Workspace and language
-
-You can access all the different workspaces and languages available in the Jahia Digital Factory JCR repository. However, you must
-choose a combination of workspace _and_ language at any one time to work with JCR data. Which workspace and language to use are
-specified in the URI path, using first, the escaped workspace name followed by the language code associated with the language you
-wish to retrieve data in.
-
-Therefore, all URIs targeting JCR data will be prefixed as follows: `<basecontext>/<workspace name>/<language code>/<rest of the URI>`
-
-In the following sections, we detail the different types of URIs the API responds to. We will use `<placeholder>` or `{placeholder}`
-indifferently to represent place holders in the different URIs. Each section will first present the URI template using the JAX-RS
-`@Path` syntax for URIs which is quite self-explanatory for anyone with regular expression knowledge. We will then detail each part
-of the URI template, specify the expected result, define which options if any are available and, finally, which HTTP operations can
-be used on these URIs. Since we already talked about the workspace and language path elements, we won't address them in the following.
-
-### Operating on nodes using their identifier
-
-#### URI template
-`/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/children|mixins|properties|versions)?}{subElement: .*}`
-
-#### URI elements
-
-- `nodes`: path element marking access to JCR nodes from their identifier
-- `{id: [^/]*}`: the identifier of the node we want to operate on, which is defined as all characters up to the next `/` character
-- `{subElementType: (/children|mixins|properties|versions)?}`: an optional sub-element type to operate on the identified node's sub-resources
- as defined in the [URI Design](#uri) section
-- `{subElement: .*}`: an optional sub-element escaped name to operate on a specific sub-resource of the identified node
-
-If no `subElementType` path element is provided then no `subElement` path element can be provided either and the resource on which the API
-will operate is the node identified by the specified `id` path element.
-
-If a `subElementType` path element is provided but no `subElement` path element is provided, then the API will operate on the collection of
-specified type of child resources for the node identified by the specified `id` path element.
-
-If a `subElementType` path element is provided and a `subElement` path element is provided, then the API will operate on the child resource
-identified by the `subElement` path element for the node identified by the specified `id` path element.
-
-#### Examples
-
-todo
-
-#### Options
-
-todo
-
-#### Allowed HTTP operations
-
-- `GET`: to retrieve the identified resource
-- `PUT`: to create (if it doesn't already exist) or update the identified resource
-- `DELETE`: to delete the identified resource
-
-### Operating on nodes using their path
-
-#### URI template
-`/{workspace}/{language}/paths{path: /.*}`
-
-#### URI elements
-
-- `paths`: path element marking access to JCR nodes from their path
-- `{path: /.*}`: the path of the resource to operate one
-
-The `path` path element should contain the absolute path to a given JCR node with optional sub-element resolution if one of the child resource
-names defined in the [URI Design](#uri) section is found. Note that once a sub-element is found, the node resolution will occur up to that
-sub-element and the resolution of the sub-element will happen using the next path element, all others being discarded.
-
-#### Examples
-
-`<basecontext>/default/en/paths/users/root/profile` resolves to the `/users/root/profile` node in the `default` workspace using the `en` language.
-
-`<basecontext>/live/fr/paths/sites/foo/properties/bar` resolves to the French (`fr` language) version of the `bar` property of the `/sites/foo` node
-in the `live` workspace.
-
-`<basecontext>/live/fr/paths/sites/foo/properties/bar/baz/foo` also resolves to the French version of the `bar` property of the `/sites/foo` node since
- only the next path element is considered when a sub-element type if found in one of the path elements of the considered URI.
-
-#### Options
-
-todo
-
-#### Allowed HTTP operations
-
-- `GET`: to retrieve the identified resource
-- `POST`: to upload a file as a child node of the identified resource
-
-### Retrieving nodes using their type
-
-#### URI template
-`/{workspace}/{language}/types/{type}`
-
-#### URI elements
-
-- `types`: path element marking access to JCR nodes from their type
-- `{type}`: the escaped name of the type of JCR nodes to retrieve
-
-#### Examples
-
-todo
-
-#### Options
-
-Options are specified using query parameters in the URI, further refining the request. Here is the list of available query parameters:
-
-- `nameContains`: a possibly multi-valued String (by passing the query parameter several time in the URI) specifying which String(s) the retrieved
-nodes must contain in their name. This is an `AND` constraint so further value of this parameter further limit the possible names.
-- `orderBy`: a String specifying whether returned nodes should be ordered by ascending order (the default) or by descending order if the `desc`
-value is passed.
-- `limit`: an integer specifying how many nodes should be returned at most
-- `offset`: an integer specifying how many nodes are skipped so that paging can be implemented
-- `depth`: an integer specifying whether the returned nodes hierarchy is expanded to include sub-elements or not (default is `0` so no sub-elements
-included)
-
-#### Allowed HTTP operations
-
-- `GET`: to retrieve the identified nodes
+So, for example, if you're trying to add several properties to a given node, you could do it several different ways. Either you could `PUT` each property individually using each
+ property URI as target URI and passing the JSON representation of a property for each invocation. You could also use the `properties` sub-resource for this node and invoke the
+ `PUT` method with a body corresponding to the JSON representation of a `properties` resource. This second way would result in modifying several properties using a single call
+ to the API.
 
 ---
 
 ## Resources representation
 
 This version of the API will use the [JSON](http://json.org) representation format as specified by the
-[RFC 4627](http://www.ietf.org/rfc/rfc4627.txt) with the `application/json` media type,
-with specific representations for node elements.
+[RFC 4627](http://www.ietf.org/rfc/rfc4627.txt) augmented by the [HAL](http://tools.ietf.org/html/draft-kelly-json-hal-06) specification as explained below. The media type for
+our specific representations for node elements is therefore `application/hal+json`.
+
+Note that representations elements are not ordered so you shouldn't depend on elements of a given representation being in a specific order. In particular,
+if elements appear in a given order in examples in this document this doesn't mean that they will appear in the same order in representations you will retrieve from the API.
+
+Note also that we focus only on salient parts in examples so the representations that are shown might actually be incomplete and missing some data that we didn't consider
+relevant for that specific example. In particular, links sections are often elided in examples for brevity's sake.
 
 // todo: it might be worth it to describe the API using a JSON schema definition as per http://json-schema.org/
 
@@ -263,12 +149,24 @@ via its path (in JCR parlance), then a `path` link pointing to the URI allowing 
 its path. When appropriate, another `parent` link will also be available, pointing to the parent node of
 the resource. Specific objects might add more link types when appropriate.
 
+We add a little bit of redundant information to make links easier to work with from a javascript client application: we add a `rel` property to each link that repeats the name
+of the link from within it so that when iterating over the links collection, we can easily retrieve the name of the relation from an individual link object.
+
 To sum up, the `_links` section will look similarly to the following example:
 
     "_links" : {
-        "self" : { "href" : "<relative URI (to the API base URI) identifying the associated resource>" },
-        "absolute" : { "href" : "<absolute URI identifying the associated resource>" },
-        "type" : { "href" : "<URI identifying the resource associated with the resource type>" }
+        "self" : {
+            "rel" : "self",
+            "href" : "<relative URI (to the API base URI) identifying the associated resource>"
+        },
+        "absolute" : {
+            "rel" : "absolute",
+            "href" : "<absolute URI identifying the associated resource>"
+        },
+        "type" : {
+            "rel" : "type",
+            "href" : "<URI identifying the resource associated with the resource type>"
+        }
         ... other links as appropriate
     }
 
@@ -323,17 +221,46 @@ quite appropriately `name` which contains the original, unescaped name of the it
     "children" : <children representation>,
     "versions" : <versions representation>,
     "_links" : {
-        "self" : { "href" : "<URI identifying the resource associated with this node>" },
-        "type" : { "href" : "<URI identifying the resource associated with this node's type>" },
-        "properties" : { "href" : "<URI identifying the resource associated with this node's properties>" },
-        "mixins" : { "href" : "<URI identifying the resource associated with this node's mixins>" },
-        "children" : { "href" : "<URI identifying the resource associated with this node's children>" },
-        "versions" : { "href" : "<URI identifying the resource associated with this node's versions>" }
+        "absolute": {
+            "rel": "absolute",
+            "href": "<An absolute URL directly usable to retrieve this node's representation>"
+        },
+        "versions": {
+            "rel": "versions",
+            "href": "<URI identifying the resource associated with this node's versions>"
+        },
+        "mixins": {
+            "rel": "mixins",
+            "href": "<URI identifying the resource associated with this node's mixins>"
+        },
+        "path": {
+            "rel": "path",
+            "href": "<URI identifying the URI to access this node by path>"
+        },
+        "children": {
+            "rel": "children",
+            "href": "<URI identifying the resource associated with this node's children>"
+        },
+        "parent": {
+            "rel": "parent",
+            "href": "<URI identifying the resource associated with this node's parent or itself if the node is the root node>"
+        },
+        "self": {
+            "rel": "self",
+            "href": "<URI identifying the resource associated with this node>"
+        },
+        "properties": {
+            "rel": "properties",
+            "href": "<URI identifying the resource associated with this node's properties>"
+        },
+        "type": {
+            "rel": "type",
+            "href": "<URI identifying the resource associated with this node's type>"
+        }
     }
 
-Note that it should be possible for an API client to only request a subset of the complete structure. For example,
-a client might only be interested in properties for a given call and not care about the rest of the structure. This
-should be handled using query parameters during the `GET` request on the node resource.
+Note that it is possible for an API client to only request a subset of the complete structure. For example,
+a client might only be interested in properties for a given call and not care about the rest of the structure.
 
 ### <a name="properties"/>Properties representation
 
@@ -345,8 +272,18 @@ A node's properties are gathered within a `properties` object that has the follo
             <escaped property name> : <property representation>,
         </for each property>
         "_links" : {
-            "self" : { "href" : "<URI identifying the resource associated with the parent's node properties resource>" },
-            "parent" : { "href" : "<URI identifying the resource associated with the parent node>" }
+            "absolute" : {
+                "rel" : "absolute",
+                "href" : "<An absolute URL directly usable to retrieve this properties representation>"
+            },
+            "parent" : {
+                "rel" : "parent",
+                "href" : "<URI of the resource associated with the parent node of this properties sub-resource>"
+            },
+            "self" : {
+                "rel" : "self",
+                "href" : "<URI of the resource associated with this properties resource>"
+            }
         }
     },
     // other node elements...
@@ -359,8 +296,26 @@ Each property is represented by an object with the following structure:
     "value" : "<value>",
     "type" : "<type>",
     "_links" : {
-        "self" : { "href" : "<URI identifying the resource associated with the property>" },
-        "type" : { "href" : "<URI identifying the resource associated with the property definition>" }
+        "path" : {
+            "rel" : "path",
+            "href" : "<URI identifying the URI to access this property by path>"
+        },
+        "absolute" : {
+            "rel" : "absolute",
+            "href" : "<An absolute URL directly usable to retrieve this property's representation>"
+        },
+        "parent" : {
+            "rel" : "parent",
+            "href" : "<URI identifying the resource associated with this property's parent node>"
+        },
+        "self" : {
+            "rel" : "self",
+            "href" : "<URI identifying the resource associated with this property>"
+        },
+        "type" : {
+            "rel" : "type",
+            "href" : "<URI identifying the resource associated with this property definition>"
+        }
     }
 
 `type` is the case-insensitive name of the JCR property type, and is one of: `STRING`, `BINARY`, `LONG`, `DOUBLE`,
@@ -387,8 +342,10 @@ being defined by the `mix:referenceable` mixin:
     "multiValued" : false,
     "reference" : false,
     "_links" : {
-        "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__uuid" },
-        "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition" }
+        ...
+        "self" : { "href" : "<basecontext>/default/en/nodes/039cdef3-289a-4fee-b80e-54da0ad35195/properties/jcr__uuid" },
+        "type" : { "href" : "<basecontext>/default/en/paths/jcr__system/jcr__nodeTypes/mix__referenceable/jcr__propertyDefinition" }
+        ...
     }
 
 An example of the `jcr:mixinTypes` property on a `/sites/mySite` node.
@@ -399,8 +356,10 @@ An example of the `jcr:mixinTypes` property on a `/sites/mySite` node.
     "type" : "string",
     "reference" : false,
     "_links" : {
-        "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__mixinTypes" },
-        "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition" }
+        ...
+        "self" : { "href" : "<basecontext>/default/en/nodes/039cdef3-289a-4fee-b80e-54da0ad35195/properties/jcr__mixinTypes" },
+        "type" : { "href" : "<basecontext>/default/en/paths/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition" }
+        ...
     }
 
 An example showing how indexed, same name properties URIs are represented, here the node type associated with the
@@ -412,8 +371,9 @@ property's definition is the second property defined on the `nt:base` node type:
     "type" : "string",
     "reference" : false,
     "_links" : {
-        "self" : { "href" : "http://api.example.org/sites/mySite/properties/jcr__primaryType" },
-        "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2" }
+        ...
+        "type" : { "href" : "<basecontext>/default/en/paths/jcr__system/jcr__nodeTypes/nt__base/jcr__propertyDefinition--2" }
+        ...
     }
 
 An example showing how a `j:defaultSite` reference property pointing to a `/sites/mySite` node on a `/sites` node is
@@ -425,9 +385,10 @@ represented, demonstrating the `target` field in the `_links` section:
     "type" : "weakreference",
     "reference" : true,
     "_links" : {
-        "self" : { "href" : "http://api.example.org/sites/properties/j__defaultSite" },
-        "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__virtualsitesFolder/jcr__propertyDefinition--3" },
-        "target" : { "href" : "http://api.example.org/sites/mySite" }
+        ...
+        "type" : { "rel" : "type", "href" : "<basecontext>/default/en/paths/jcr__system/jcr__nodeTypes/jnt__virtualsitesFolder/jcr__propertyDefinition--3" },
+        "target" : { "rel" : "target", "href" : "http://api.example.org/sites/mySite" }
+        ...
     }
 
 
@@ -441,8 +402,18 @@ A node's attached mixins information is gathered within a `mixins` object on the
             <escaped mixin name> : <mixin representation>,
         </for each mixin>
         "_links" : {
-            "self" : { "href" : "<URI identifying the resource associated with the parent's node mixins resource>" },
-            "parent" : { "href" : "<URI identifying the resource associated with the parent node>" }
+            "absolute" : {
+                "rel" : "absolute",
+                "href" : "<An absolute URL directly usable to retrieve this mixins sub-resource representation>"
+            },
+            "parent" : {
+                "rel" : "parent",
+                "href" : "<URI of the resource associated with the parent node of this mixins sub-resource>"
+            },
+            "self" : {
+                "rel" : "self",
+                "href" : "<URI of the resource associated with this nmixins resource>"
+            }
         }
     },
     // other node elements...
@@ -451,19 +422,21 @@ Here is the structure for a mixin representation:
 
     "name" : <the mixin's unescaped name>,
     "_links" : {
-        "self" : { "href" : "<URI identifying the resource associated with the mixin in the context of the enclosing node>" },
-        "type" : { "href" : "<URI identifying the resource associated with the mixin's node type>" }
+        "absolute" : {
+            "rel" : "absolute",
+            "href" : "<An absolute URL directly usable to retrieve this mixin's representation>"
+        },
+        "self" : {
+            "rel" : "self",
+            "href" : "<URI identifying the resource associated with the mixin in the context of the enclosing node>"
+        },
+        "type" : {
+            "rel" : "type",
+            "href" : "<URI identifying the resource associated with the mixin's node type>"
+        }
     }
 
 #### Examples
-
-For a mixin named `jmix:robots` attached to a `/sites/mySite` node, we would use the following representation:
-
-    "name" : "jmix:robots",
-     "_links" : {
-          "self" : { "href" : "http://api.example.org/sites/mySite/mixins/jmix__robots" },
-          "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/jmix__robots" }
-     }
 
 Given the following mixin definition:
 
@@ -471,14 +444,36 @@ Given the following mixin definition:
          extends=jnt:virtualsite
         - robots (string, textarea) = 'User-agent: *'
 
-To attach this mixin to an existing `/sites/mySite` node, a client would perform the following,
+we would get, assuming it is attached to the `49bf6a13-96a8-480a-ae8a-2a82136d1c67` node, a representation similar to:
+
+    "_links" : {
+        "absolute" : {
+           "rel" : "absolute",
+           "href" : "http://localhost:8080/modules/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67/mixins/jmix__robots"
+        },
+        "self" : {
+           "rel" : "self",
+           "href" : "/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67/mixins/jmix__robots"
+        },
+        "type" : {
+           "rel" : "type",
+           "href" : "/api/jcr/v1/default/en/paths/jcr__system/jcr__nodeTypes/jmix__robots"
+        }
+    },
+    "name" : "jmix:robots",
+    "properties" : {
+        "j:robots" : "String"
+    },
+    "type" : "jmix:robots"
+
+To attach this mixin to an existing `49bf6a13-96a8-480a-ae8a-2a82136d1c67` node, a client would perform the following,
 creating a new `jmix__robots` resource in the `mixins` collection resource, using a `PUT` request:
 
-    PUT /sites/mySite/mixins/jmix__robots HTTP/1.1
+    PUT /api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67/mixins/jmix__robots HTTP/1.1
     Host: api.example.org
 
     "properties" : {
-        "robots" : {
+        "j__robots" : {
             "value" : "User-agent: *"
         }
     }
@@ -494,8 +489,18 @@ Children of a given node are gathered within a `children` object, as follows:
             <escaped child name> : <child representation>,
         </for each child>
         "_links" : {
-            "self" : { "href" : "<URI identifying the resource associated with the parent's node children resource>" },
-            "parent" : { "href" : "<URI identifying the resource associated with the parent node>" }
+            "absolute" : {
+                "rel" : "absolute",
+                "href" : "<An absolute URL directly usable to retrieve this children sub-resource representation>"
+            },
+            "parent" : {
+                "rel" : "parent",
+                "href" : "<URI identifying the resource associated with the parent node>"
+            },
+            "self" : {
+                "rel" : "self",
+                "href" : "<URI identifying the resource associated with the parent's node children resource>"
+            }
         }
     },
     // other node elements...
@@ -505,35 +510,79 @@ its primary node type and its associated URIs (for both associated node, node ty
 
     "name" : <unescaped child name>,
     "type" : <nodetype name>,
+    "id" : <identifier of the child node>,
     "_links" : {
-        "self" : { "href" : "<URI identifying the resource associated with the child's node>" },
-        "type" : { "href" : "<URI identifying the resource associated with the child's node type>" },
-        "parent" : { "href" : "<URI identifying the resource associated with the parent node>" }
+        "absolute": {
+            "rel": "absolute",
+            "href": "<An absolute URL directly usable to retrieve this node's representation>"
+        },
+        "path": {
+            "rel": "path",
+            "href": "<URI identifying the URI to access this node by path>"
+        },
+        "parent": {
+            "rel": "parent",
+            "href": "<URI identifying the resource associated with this node's parent>"
+        },
+        "self": {
+            "rel": "self",
+            "href": "<URI identifying the resource associated with this node>"
+        },
+        "type": {
+            "rel": "type",
+            "href": "<URI identifying the resource associated with this node's type>"
+        }
     }
 
 #### Example
 
 Below is the representation of a `tags` child element of a `/sites/mySite` node,
-within the context of the enclosing's node `children` element:
+within the context of the enclosing node `children` element:
 
     // ...
     "children" : {
-        // ...
-
         "tags" : {
+            "_links" : {
+                "path" : {
+                    "rel" : "path",
+                    "href" : "/api/jcr/v1/default/en/paths/sites/mySite/tags"
+                },
+                "absolute" : {
+                    "rel" : "absolute",
+                    "href" : "http://localhost:8080/modules/api/jcr/v1/default/en/nodes/e3a6e425-0afa-490b-a319-514db66eea04"
+                },
+                "parent" : {
+                    "rel" : "parent",
+                    "href" : "/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67"
+                },
+                "self" : {
+                    "rel" : "self",
+                    "href" : "/api/jcr/v1/default/en/nodes/e3a6e425-0afa-490b-a319-514db66eea04"
+                },
+                "type" : {
+                    "rel" : "type",
+                    "href" : "/api/jcr/v1/default/en/paths/jcr__system/jcr__nodeTypes/jnt__tagList"
+                }
+            },
             "name" : "tags",
             "type" : "jnt:tagList",
-            "_links" : {
-                "self" : { "href" : "http://api.example.org/sites/mySite/tags" },
-                "type" : { "href" : "http://api.example.org/jcr__system/jcr__nodeTypes/jnt__tagList" }
-            }
+            "id" : "e3a6e425-0afa-490b-a319-514db66eea04"
         },
-
-        // ...
-        "_links" : {
-            "self" : { "href" : "http://api.example.org/sites/mySite/children" }
+    // ...
+    "_links" : {
+        "absolute" : {
+            "rel" : "absolute",
+            "href" : "http://localhost:8080/modules/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67/children"
+        },
+        "parent" : {
+            "rel" : "parent",
+            "href" : "/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67"
+        },
+        "self" : {
+            "rel" : "self",
+            "href" : "/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67/children"
         }
-    }
+    },
     // ...
 
 #### Special considerations for same-name siblings
@@ -544,16 +593,16 @@ instances of same-named children. They are created using the `children` resource
 at the end of the parent node's children collection. Their URIs and escaped names use the `--<index>` suffix
 convention we discussed previously.
 
-For example, assuming a `/foo` node allows for multiple `bar` children:
+For example, assuming a `foo` node allows for multiple `bar` children:
 
     # Adding a bar child
-    PUT /foo/children/bar HTTP/1.1
+    PUT <basecontext>/default/en/nodes/foo/children/bar HTTP/1.1
     Host: api.example.org
     // bar content
 
     # Response
     HTTP/1.1 200 OK
-    Content-Type: application/json
+    Content-Type: application/hal+json
 
     "name" : "foo",
     // ...
@@ -561,18 +610,13 @@ For example, assuming a `/foo` node allows for multiple `bar` children:
         "bar" : {
             "name" : "bar",
             "type" : "bar:nodeType",
-            "_links" : {
-                "self" : { "href" : "http://api.example.org/foo/bar" },
-                // ...
-            }
+            // ...
         },
-        "_links" : {
-            "self" : { "href" : "http://api.example.org/foo/children" }
-        }
+        // ...
     }
 
     # Adding a bar child
-    PUT /foo/children/bar HTTP/1.1
+    PUT <basecontext>/default/en/nodes/foo/children/bar HTTP/1.1
     Host: api.example.org
     // another bar child content
 
@@ -586,22 +630,14 @@ For example, assuming a `/foo` node allows for multiple `bar` children:
         "bar" : {
             "name" : "bar",
             "type" : "bar:nodeType",
-            "_links" : {
-                "self" : { "href" : "http://api.example.org/foo/bar" },
-                // ...
-            }
+            // ...
         },
         "bar--2" : {
             "name" : "bar",
             "type" : "bar:nodeType",
-            "_links" : {
-                "self" : { "href" : "http://api.example.org/foo/bar--2" },
-                // ...
-            }
+            // ...
         },
-        "_links" : {
-            "self" : { "href" : "http://api.example.org/foo/children" }
-        }
+        // ...
     }
 
 // todo: how to support orderable children and in particular re-ordering operations?
@@ -616,9 +652,222 @@ A node's versions are gathered within a `versions` object as follows:
             <escaped version name> : <version representation>,
         </for each version>
         "_links" : {
-            "self" : { "href" : "<URI identifying the resource associated with the parent's node versions resource>" }
-        }
+            "absolute" : {
+                "rel" : "absolute",
+                "href" : "http://localhost:8080/modules/api/jcr/v1/default/en/nodes/ca13b885-a4f9-4641-a8b8-c0fe3d8ecce6/versions"
+            },
+            "parent" : {
+                "rel" : "parent",
+                "href" : "/api/jcr/v1/default/en/nodes/ca13b885-a4f9-4641-a8b8-c0fe3d8ecce6"
+            },
+            "self" : {
+                "rel" : "self",
+                "href" : "/api/jcr/v1/default/en/nodes/ca13b885-a4f9-4641-a8b8-c0fe3d8ecce6/versions"
+            }
+        },
     },
     // other node elements...
 
-// todo
+Each version is represented as follows:
+
+    "_links" : {
+        "absolute" : {
+            "rel" : "absolute",
+            "href" : "<absolute URI identifying the associated resource>"
+        },
+        "self" : {
+            "rel" : "self",
+            "href" : "<URI of the resource associated with this version>"
+        },
+        "nodeAtVersion" : {
+            "rel" : "nodeAtVersion",
+            "href" : "<URI corresponding to the node data (frozen node) associated with this version>"
+        },
+        "next" : {
+            "rel" : "next",
+            "href" : "<URI of the linear successor of this version if it exists (otherwise this link is skipped)>"
+        },
+        "previous" : {
+            "rel" : "previous",
+            "href" : "<URI of the linear predecessor of this version if it exists (otherwise this link is skipped)>"
+        }
+    },
+    "name" : "<unescaped name of this version>",
+    "created" : <creation time of this version>
+
+## API entry points
+
+The goal of this API is that you should be able to operate on its data using links provided within the returned representations.
+However, you still need to be able to retrieve that first representation to work with in the first place.
+
+### Base context
+
+Since the API implementation is deployed as a module, it is available on your Jahia Digital Factory instance under the `/modules`
+context with the `/api` specific context. Therefore, all URIs targeting the API will start with `/modules/api`. Keep this in mind
+while looking at the examples below since we might not repeat the base context all the time.
+
+We further qualify the base context by adding `/jcr/v1` to specify that this particular API deals with the JCR
+domain and is currently in version 1. The scoping by domain allows us to potentially expand the API's reach to other aspects in the
+future while we also make it clear which version (if/when several versions are needed) of that particular domain API is being used.
+
+`<basecontext>` will henceforth refer to the `/modules/api/jcr/v1` base context below.
+
+### Authentication
+
+Access to the JCR content is protected and different users will be able to see different content. It is therefore required to authenticate properly before using the API. In
+fact, some errors (usually `PathNotFoundException`s) can be the result of attempting to access a node for which you don't have proper access level. There are several options to
+log into Jahia Digital Factory from clients.
+
+If you use a browser and log in, the API will use your existing session.
+
+From a non-browser client, you have different options. You can programatically log in using the `/cms/login` URL, `POST`ing to it as follows:
+`<your Jahia root context>/cms/login?doLogin=true&restMode=true&username=<user name>&password=<user password>&redirectActive=false`
+For example, if you're using cURL, you would do it as follows:
+`curl -i -X POST --cookie-jar cookies.txt '<Jahia DF context>/cms/login?doLogin=true&restMode=true&username=<user name>&password=<user password>&redirectActive=false'`
+Note that we're using the `cookie-jar` option. This is needed to record the session information sent back by the server as we then need to provide it for each subsequent request
+ using this mode.
+
+Alternatively, you can use the `Authentication` HTTP header, using the `Basic` authentication mode. You can generate a `Basic` authentication token using your credentials and
+then provide it using the `Authentication` header with each request to the API. See
+[Client side Basic HTTP Authentication](http://en.wikipedia.org/wiki/Basic_access_authentication#Client_side) for more details on how to do this.
+
+### API version
+
+You can access the version of the API implementation performing a `GET` on the `<basecontext>/version` URI. This returns plain text information about both the version of the API
+and of the currently running implementation. This can also serve as a quick check to see if the API is currently running or not.
+
+### Workspace and language
+
+You can access all the different workspaces and languages available in the Jahia Digital Factory JCR repository. However, you must
+choose a combination of workspace _and_ language at any one time to work with JCR data. Which workspace and language to use are
+specified in the URI path, using first, the escaped workspace name followed by the language code associated with the language you
+wish to retrieve data in.
+
+Therefore, all URIs targeting JCR data will be prefixed as follows: `<basecontext>/<workspace name>/<language code>/<rest of the URI>`
+
+In the following sections, we detail the different types of URIs the API responds to. We will use `<placeholder>` or `{placeholder}`
+indifferently to represent place holders in the different URIs. Each section will first present the URI template using the JAX-RS
+`@Path` syntax for URIs which is quite self-explanatory for anyone with regular expression knowledge. We will then detail each part
+of the URI template, specify the expected result, define which options if any are available and, finally, which HTTP operations can
+be used on these URIs. Since we already talked about the workspace and language path elements, we won't address them in the following.
+
+### Operating on nodes using their identifier
+
+#### URI template
+`/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/children|mixins|properties|versions)?}{subElement: .*}`
+
+#### URI elements
+
+- `nodes`: path element marking access to JCR nodes from their identifier
+- `{id: [^/]*}`: the identifier of the node we want to operate on, which is defined as all characters up to the next `/` character
+- `{subElementType: (/children|mixins|properties|versions)?}`: an optional sub-element type to operate on the identified node's sub-resources
+ as defined in the [URI Design](#uri) section
+- `{subElement: .*}`: an optional sub-element escaped name to operate on a specific sub-resource of the identified node
+
+If no `subElementType` path element is provided then no `subElement` path element can be provided either and the resource on which the API
+will operate is the node identified by the specified `id` path element.
+
+If a `subElementType` path element is provided but no `subElement` path element is provided, then the API will operate on the collection of
+specified type of child resources for the node identified by the specified `id` path element.
+
+If a `subElementType` path element is provided and a `subElement` path element is provided, then the API will operate on the child resource
+identified by the `subElement` path element for the node identified by the specified `id` path element.
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified resource
+- `PUT`: to create (if it doesn't already exist) or update the identified resource
+- `DELETE`: to delete the identified resource
+- `POST`: to rename a resource but leave it at the same spot in the hierarchy
+
+#### Examples
+
+`GET <basecontext>/default/en/nodes/` will retrieve the root node of the `default` workspace using its English version when internationalized
+exists.
+
+`GET <basecontext>/live/fr/nodes/children` will retrieve only the children of the root node in the `live` workspace using the French version.
+
+`PUT <basecontext>/default/en/nodes/27d671f6-9c75-4604-8f81-0d1861c5e302/properties/foo` with the `{"value" : "bar"}` JSON body data will
+create (or update if it already exists) the `foo` property of the node identified by the `27d671f6-9c75-4604-8f81-0d1861c5e302` identifier
+and sets its value to `bar`.
+
+`PUT <basecontext>/default/en//nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/mixins/jmix__rating` with the
+`{"properties" : {"j__lastVote": {"value": "-1"}, "j__nbOfVotes": {"value": "100"}, "j__sumOfVotes": {"value": "1000"}}}'` JSON body data will add the `jmix:rating` mixin on the
+`eae598a3-8a41-4003-9c6b-f31018ee0e46` node, initializing it with the following properties values: `j:lastVote` set to `-1`,
+`j:nbOfVotes` set to `100` and `j:sumOfVotes` set to `1000`. If the mixin already existed on this node then the properties would only be updated to the specified values.
+Once that `jmix:rating` is added to the node, you can then modify its properties as you would do with "normal" properties.
+For example, `PUT <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties/j__sumOfVotes` with the `{"value": "3000"}` JSON body data will update the `j:sumOfVotes`
+property to `3000`.
+`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/mixins/jmix__rating` will remove the mixin from the node, while
+`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties/j__sumOfVotes` will just remove the `j:sumOfVotes` property.
+
+`POST <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/moveto/newName` will rename the `eae598a3-8a41-4003-9c6b-f31018ee0e46` node to `newName`,
+leaving it at the same spot in the JCR tree.
+
+### Operating on nodes using their path
+
+#### URI template
+`/{workspace}/{language}/paths{path: /.*}`
+
+#### URI elements
+
+- `paths`: path element marking access to JCR nodes from their path
+- `{path: /.*}`: the path of the resource to operate one
+
+The `path` path element should contain the absolute path to a given JCR node with optional sub-element resolution if one of the child resource
+names defined in the [URI Design](#uri) section is found. Note that once a sub-element is found, the node resolution will occur up to that
+sub-element and the resolution of the sub-element will happen using the next path element, all others being discarded.
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified resource
+- `POST`: to upload a file as a child node of the identified resource using `multipart/form-data` content type and specifying the file to upload using the `file` parameter
+
+#### Examples
+
+`<basecontext>/default/en/paths/users/root/profile` resolves to the `/users/root/profile` node in the `default` workspace using the `en` language.
+
+`<basecontext>/live/fr/paths/sites/foo/properties/bar` resolves to the French (`fr` language) version of the `bar` property of the `/sites/foo` node
+in the `live` workspace.
+
+`<basecontext>/live/fr/paths/sites/foo/properties/bar/baz/foo` also resolves to the French version of the `bar` property of the `/sites/foo` node since
+ only the next path element is considered when a sub-element type if found in one of the path elements of the considered URI.
+
+`POST <basecontext>default/en/paths/users/root/files` using `multipart/form-data` content type and specifying the file to upload using the `file` parameter will upload the
+specified file to the `/users/root/files` content directory. Using cURL: `curl -i -H "Authorization:Basic cm9vdDpyb290MTIzNA==" -F file=@file.png
+<basecontext>/default/en/paths/users/root/files`. The API will respond with the new node's representation, including its links and identifier so that you can further work with it.
+
+### Retrieving nodes using their type
+
+#### URI template
+`/{workspace}/{language}/types/{type}`
+
+#### URI elements
+
+- `types`: path element marking access to JCR nodes from their type
+- `{type}`: the escaped name of the type of JCR nodes to retrieve
+
+#### Options
+
+Options are specified using query parameters in the URI, further refining the request. Here is the list of available query parameters:
+
+- `nameContains`: a possibly multi-valued String (by passing the query parameter several time in the URI) specifying which String(s) the retrieved
+nodes must contain in their name. This is an `AND` constraint so further value of this parameter further limit the possible names.
+- `orderBy`: a String specifying whether returned nodes should be ordered by ascending order (the default) or by descending order if the `desc`
+value is passed.
+- `limit`: an integer specifying how many nodes should be returned at most
+- `offset`: an integer specifying how many nodes are skipped so that paging can be implemented
+- `depth`: an integer specifying whether the returned nodes hierarchy is expanded to include sub-elements or not (default is `0` so no sub-elements
+included)
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified nodes
+
+#### Examples
+
+`GET <basecontext>/default/en/types/genericnt__event?nameContains=jahia` will retrieve all the `genericnt:event` nodes which name contains `jahia`.
+
+`GET <basecontext>/default/en/types/genericnt__event?nameContains=rest&offset=5&limit=10` will retrieve at most 10 `genericnt:event` nodes starting with the 6th one and which name
+contains `rest`.
+
