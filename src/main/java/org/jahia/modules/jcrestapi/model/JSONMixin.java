@@ -69,6 +69,7 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
@@ -88,6 +89,9 @@ public class JSONMixin extends JSONNamed {
     @XmlElement
     private Map<String, String> properties;
 
+    @XmlElement
+    private String type;
+
     public JSONMixin() {
     }
 
@@ -95,6 +99,10 @@ public class JSONMixin extends JSONNamed {
         // todo: should we try to point to the actual mixin definition instead of pointing to the relative path to the mixin in the context of the parent node
         // todo: should we add parent link?
         super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true), item.getName());
+
+        this.type = item.getName();
+
+        addLink(new JSONLink(API.TYPE, URIUtils.getTypeURI(URIUtils.escape(this.type))));
 
         final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
         properties = new HashMap<String, String>(propertyDefinitions.length);
