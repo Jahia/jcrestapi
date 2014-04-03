@@ -654,15 +654,15 @@ A node's versions are gathered within a `versions` object as follows:
         "_links" : {
             "absolute" : {
                 "rel" : "absolute",
-                "href" : "http://localhost:8080/modules/api/jcr/v1/default/en/nodes/ca13b885-a4f9-4641-a8b8-c0fe3d8ecce6/versions"
+                "href" : "<An absolute URL directly usable to retrieve this versions sub-resource representation>"
             },
             "parent" : {
                 "rel" : "parent",
-                "href" : "/api/jcr/v1/default/en/nodes/ca13b885-a4f9-4641-a8b8-c0fe3d8ecce6"
+                "href" : "<URI identifying the resource associated with this versions sub-resource's parent>"
             },
             "self" : {
                 "rel" : "self",
-                "href" : "/api/jcr/v1/default/en/nodes/ca13b885-a4f9-4641-a8b8-c0fe3d8ecce6/versions"
+                "href" : "<URI identifying the resource associated with this node>"
             }
         },
     },
@@ -673,7 +673,7 @@ Each version is represented as follows:
     "_links" : {
         "absolute" : {
             "rel" : "absolute",
-            "href" : "<absolute URI identifying the associated resource>"
+            "href" : "<An absolute URL directly usable to retrieve this version's representation>"
         },
         "self" : {
             "rel" : "self",
