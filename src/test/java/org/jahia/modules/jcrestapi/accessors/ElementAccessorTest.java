@@ -39,8 +39,37 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.NodeUtil;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import javax.jcr.RepositoryException;
+import javax.ws.rs.core.Response;
+
 /**
  * @author Christophe Laprun
  */
-public class ElementAccessorTest {
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(API.class)
+public abstract class ElementAccessorTest {
+    @Before
+    public void setUp() {
+        // fake session, at least to get access to a workspace name and language code for URIUtils
+        PowerMockito.mockStatic(API.class);
+        PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(null, "default", "en"));
+    }
+
+    @Test
+    public void testPerformMinimalSingleReadNoSubElement() throws RepositoryException {
+        final Response response = getAccessor().perform(NodeUtil.createMockNode(), (String) null, API.READ, null, null);
+        Assert.assertEquals(Response.Status.OK, response.getStatusInfo());
+    }
+
+    public abstract ElementAccessor getAccessor();
 }

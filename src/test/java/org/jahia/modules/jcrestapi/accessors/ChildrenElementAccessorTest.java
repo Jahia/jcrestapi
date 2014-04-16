@@ -42,5 +42,11 @@ package org.jahia.modules.jcrestapi.accessors;
 /**
  * @author Christophe Laprun
  */
-public class ChildrenElementAccessorTest {
+public class ChildrenElementAccessorTest extends ElementAccessorTest {
+    private final ChildrenElementAccessor accessor = new ChildrenElementAccessor();
+
+    @Override
+    public ElementAccessor getAccessor() {
+        return accessor;
+    }
 }

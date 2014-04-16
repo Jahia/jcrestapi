@@ -39,8 +39,69 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.mockito.Mockito;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
+
 /**
  * @author Christophe Laprun
  */
 public class NodeUtil {
+
+    public static Node createMockNode() throws RepositoryException {
+        // mock node type
+        NodeType nodeType = Mockito.mock(NodeType.class);
+        Mockito.stub(nodeType.getName()).toReturn("nodeType");
+
+        // mock parent
+        Node parent = Mockito.mock(Node.class);
+        Mockito.stub(parent.getIdentifier()).toReturn("parentId");
+
+        // mock node
+        Node node = Mockito.mock(Node.class);
+        Mockito.stub(node.getPrimaryNodeType()).toReturn(nodeType);
+        Mockito.stub(node.getParent()).toReturn(parent);
+        Mockito.stub(node.getPath()).toReturn("/path/to/node");
+        Mockito.stub(node.getNodes()).toReturn(new NodeIterator() {
+            @Override
+            public Node nextNode() {
+                return null;
+            }
+
+            @Override
+            public void skip(long skipNum) {
+
+            }
+
+            @Override
+            public long getSize() {
+                return 0;
+            }
+
+            @Override
+            public long getPosition() {
+                return 0;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public Object next() {
+                return null;
+            }
+
+            @Override
+            public void remove() {
+
+            }
+        });
+
+        return node;
+    }
 }
