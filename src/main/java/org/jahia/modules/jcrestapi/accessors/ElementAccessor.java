@@ -92,7 +92,7 @@ import java.util.List;
 public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
 
     protected Object getElement(Node node, String subElement) throws RepositoryException {
-        if (subElement.isEmpty()) {
+        if (!API.exists(subElement)) {
             return getSubElementContainer(node);
         } else {
             return getSubElement(node, subElement);
