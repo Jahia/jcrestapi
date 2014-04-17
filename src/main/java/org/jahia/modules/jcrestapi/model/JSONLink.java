@@ -108,4 +108,30 @@ public class JSONLink {
             return (String) uri;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        JSONLink jsonLink = (JSONLink) o;
+
+        return rel.equals(jsonLink.rel) && uri.equals(jsonLink.uri);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = rel.hashCode();
+        result = 31 * result + uri.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "JSONLink{" +
+                "rel='" + rel + '\'' +
+                ", uri=" + uri +
+                '}';
+    }
 }
