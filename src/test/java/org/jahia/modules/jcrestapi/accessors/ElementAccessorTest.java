@@ -41,7 +41,7 @@ package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.NodeUtil;
-import org.junit.Assert;
+import org.jahia.modules.jcrestapi.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,15 +50,17 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(API.class)
-public abstract class ElementAccessorTest {
+public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
     @Before
     public void setUp() {
         // fake session, at least to get access to a workspace name and language code for URIUtils
@@ -71,7 +73,13 @@ public abstract class ElementAccessorTest {
         final Response response = getAccessor().perform(NodeUtil.createMockNode(), (String) null, API.READ, null, null);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+
+        C container = getContainerFrom(response);
+        final Map<String, JSONLink> links = container.getLinks();
+        assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
     }
 
-    public abstract ElementAccessor getAccessor();
+    protected abstract C getContainerFrom(Response response);
+
+    public abstract ElementAccessor<C, T, U> getAccessor();
 }

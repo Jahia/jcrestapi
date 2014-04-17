@@ -39,14 +39,24 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.model.JSONChildren;
+import org.jahia.modules.jcrestapi.model.JSONNode;
+
+import javax.ws.rs.core.Response;
+
 /**
  * @author Christophe Laprun
  */
-public class ChildrenElementAccessorTest extends ElementAccessorTest {
+public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildren, JSONNode, JSONNode> {
     private final ChildrenElementAccessor accessor = new ChildrenElementAccessor();
 
     @Override
-    public ElementAccessor getAccessor() {
+    protected JSONChildren getContainerFrom(Response response) {
+        return (JSONChildren) response.getEntity();
+    }
+
+    @Override
+    public ElementAccessor<JSONChildren, JSONNode, JSONNode> getAccessor() {
         return accessor;
     }
 }
