@@ -42,7 +42,6 @@ package org.jahia.modules.jcrestapi.model;
 import org.jahia.modules.jcrestapi.API;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 /**
@@ -53,7 +52,7 @@ public class JSONLinkTest {
     @Test
     public void constructingWithNullRelShouldFail() {
         try {
-            new JSONLink(null, null);
+            JSONLink.createLink(null, null);
             failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
         } catch (IllegalArgumentException e) {
             // expected
@@ -63,7 +62,7 @@ public class JSONLinkTest {
     @Test
     public void constructingWithNullLinkShouldFail() {
         try {
-            new JSONLink(API.SELF, null);
+            JSONLink.createLink(API.SELF, null);
             failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
         } catch (IllegalArgumentException e) {
             // expected
@@ -73,7 +72,65 @@ public class JSONLinkTest {
     @Test
     public void constructingWithEmptyRelShouldFail() {
         try {
-            new JSONLink("", null);
+            JSONLink.createLink("", null);
+            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
+
+    @Test
+    public void constructingWithEmptyLinkShouldFail() {
+        try {
+            JSONLink.createLink("foo", "");
+            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            JSONLink.createLink("foo", new String[]{});
+            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
+
+    @Test
+    public void constructingWithArrayShouldFailIfALinkIsEmptyOrNull() {
+        try {
+            JSONLink.createLink("foo", new String[]{""});
+            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            JSONLink.createLink("foo", new String[]{null});
+            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            JSONLink.createLink("foo", new String[]{"foo", null});
+            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+
+        try {
+            JSONLink.createLink("foo", new String[]{"foo", ""});
+            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
+
+    @Test
+    public void constructingWithOtherThanStringOrStringArrayShouldFail() {
+        try {
+            JSONLink.createLink("foo", new Object());
             failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
         } catch (IllegalArgumentException e) {
             // expected

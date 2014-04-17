@@ -87,7 +87,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         C container = getContainerFrom(response);
         final Map<String, JSONLink> links = container.getLinks();
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
-        assertThat(links.get(API.PARENT)).isEqualTo(new JSONLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
+        assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
     }
 
     protected abstract C getContainerFrom(Response response);

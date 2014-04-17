@@ -126,12 +126,12 @@ public class JSONProperty extends JSONItem<Property> {
             }
 
             if (reference) {
-                addLink(new JSONLink(API.TARGET, links));
+                addLink(JSONLink.createLink(API.TARGET, links));
             }
         } else {
             this.value = convertValue(property.getValue());
             if (reference) {
-                addLink(new JSONLink(API.TARGET, getTargetLink(property.getString(), type)));
+                addLink(JSONLink.createLink(API.TARGET, getTargetLink(property.getString(), type)));
             }
         }
     }

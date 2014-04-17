@@ -97,7 +97,7 @@ public abstract class JSONItem<T extends Item> extends JSONNamed {
         initWith(URIUtils.getURIFor(item), item.getName());
         this.type = getUnescapedTypeName(item);
 
-        addLink(new JSONLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
+        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
         Node parent;
         try {
             parent = item.getParent();
@@ -105,9 +105,9 @@ public abstract class JSONItem<T extends Item> extends JSONNamed {
             // expected when the item is root node, specify that parent is itself
             parent = (Node) item;
         }
-        addLink(new JSONLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
+        addLink(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
 
-        addLink(new JSONLink(API.PATH, URIUtils.getByPathURI(URIUtils.escape(item.getPath()), true)));
+        addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(URIUtils.escape(item.getPath()), true)));
     }
 
     public JSONItem(T item) throws RepositoryException {

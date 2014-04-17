@@ -101,12 +101,12 @@ public class JSONLinkable {
     }
 
     public String getURI() {
-        return getLink(API.SELF).getURI();
+        return getLink(API.SELF).getURIAsString();
     }
 
     public void initWith(String uri) {
-        addLink(new JSONLink(API.ABSOLUTE, URIUtils.getAbsoluteURI(uri)));
-        addLink(new JSONLink(API.SELF, uri));
+        addLink(JSONLink.createLink(API.ABSOLUTE, URIUtils.getAbsoluteURI(uri)));
+        addLink(JSONLink.createLink(API.SELF, uri));
     }
 
     protected void addLink(JSONLink link) {

@@ -99,12 +99,12 @@ public class JSONVersion extends JSONNamed {
         this.created = version.getCreated();
         final Version linearPredecessor = version.getLinearPredecessor();
         if (linearPredecessor != null) {
-            addLink(new JSONLink("previous", URIUtils.getURIFor(linearPredecessor)));
+            addLink(JSONLink.createLink("previous", URIUtils.getURIFor(linearPredecessor)));
         }
         final Version linearSuccessor = version.getLinearSuccessor();
         if (linearSuccessor != null) {
-            addLink(new JSONLink("next", URIUtils.getURIFor(linearSuccessor)));
+            addLink(JSONLink.createLink("next", URIUtils.getURIFor(linearSuccessor)));
         }
-        addLink(new JSONLink("nodeAtVersion", URIUtils.getURIFor(version.getFrozenNode())));
+        addLink(JSONLink.createLink("nodeAtVersion", URIUtils.getURIFor(version.getFrozenNode())));
     }
 }

@@ -69,48 +69,66 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
+import org.jahia.modules.jcrestapi.API;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Arrays;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONLink {
+public abstract class JSONLink {
     @XmlElement
     private String rel;
-    @XmlElement(name = "href")
-    private Object uri;
 
-    public JSONLink() {
+    private JSONLink(String rel) {
+        this.rel = rel;
     }
 
-    public JSONLink(String rel, Object link) {
-        if(!API.exists(rel)) {
+    public static JSONLink createLink(String rel, Object link) {
+        if (!API.exists(rel)) {
             throw new IllegalArgumentException("Must provide a valid relation. Was '" + rel + "'");
         }
 
-        if (!(link instanceof String) && !(link instanceof String[])) {
-            throw new IllegalArgumentException("Given link object needs to be a String or String[]. Was " + (link == null ? null : link.getClass().getSimpleName()));
+        if (link instanceof String) {
+            String linkAsString = (String) link;
+            if (linkAsString.isEmpty()) {
+                throw new IllegalArgumentException("Must provide a valid link. Was '" + link + "'");
+            }
+            return new SimpleJSONLink(rel, linkAsString);
+        } else {
+            if (link instanceof String[] && ((String[]) link).length > 0) {
+                String[] links = (String[]) link;
+
+                for (int i = 0; i < links.length; i++) {
+                    String s = links[i];
+                    if (!API.exists(s)) {
+                        throw new IllegalArgumentException("All links in the link array must be non-null and non-empty. Invalid link at index " + i);
+                    }
+                }
+                return new MultipleJSONLink(rel, links);
+            }
+
+            throw new IllegalArgumentException("Only String and String[] instances are currently supported as links. Was '" + link + "'");
         }
 
-        this.rel = rel;
-        this.uri = link;
     }
 
     String getRel() {
         return rel;
     }
 
-    public String getURI() {
-        if (uri instanceof String[]) {
-            return ((String[]) uri)[0];
-        } else {
-            return (String) uri;
-        }
+    public abstract Object getURI();
+
+    public abstract String getURIAsString();
+
+    public boolean isMultiple() {
+        return false;
     }
 
     @Override
@@ -120,14 +138,14 @@ public class JSONLink {
 
         JSONLink jsonLink = (JSONLink) o;
 
-        return rel.equals(jsonLink.rel) && uri.equals(jsonLink.uri);
+        return rel.equals(jsonLink.rel) && getURI().equals(jsonLink.getURI());
 
     }
 
     @Override
     public int hashCode() {
         int result = rel.hashCode();
-        result = 31 * result + uri.hashCode();
+        result = 31 * result + getURI().hashCode();
         return result;
     }
 
@@ -135,7 +153,52 @@ public class JSONLink {
     public String toString() {
         return "JSONLink{" +
                 "rel='" + rel + '\'' +
-                ", uri=" + uri +
+                ", uri=" + getURIAsString() +
                 '}';
+    }
+
+    private static class SimpleJSONLink extends JSONLink {
+        private final String link;
+
+        private SimpleJSONLink(String rel, String link) {
+            super(rel);
+            this.link = link;
+        }
+
+        @Override
+        @XmlElement(name = "href")
+        public Object getURI() {
+            return link;
+        }
+
+        @Override
+        public String getURIAsString() {
+            return link;
+        }
+    }
+
+    private static class MultipleJSONLink extends JSONLink {
+        private final String[] links;
+
+        public MultipleJSONLink(String rel, String[] link) {
+            super(rel);
+            this.links = link;
+        }
+
+        @Override
+        @XmlElement(name = "href")
+        public Object getURI() {
+            return links;
+        }
+
+        @Override
+        public String getURIAsString() {
+            return Arrays.toString(links);
+        }
+
+        @Override
+        public boolean isMultiple() {
+            return true;
+        }
     }
 }

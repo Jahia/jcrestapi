@@ -140,16 +140,16 @@ public class JSONNode extends JSONItem<Node> {
 
         if (depth > 0) {
             properties = new JSONProperties(this, node);
-            addLink(new JSONLink(API.PROPERTIES, properties.getURI()));
+            addLink(JSONLink.createLink(API.PROPERTIES, properties.getURI()));
 
             mixins = new JSONMixins(this, node);
-            addLink(new JSONLink(API.MIXINS, mixins.getURI()));
+            addLink(JSONLink.createLink(API.MIXINS, mixins.getURI()));
 
             children = new JSONChildren(this, node);
-            addLink(new JSONLink(API.CHILDREN, children.getURI()));
+            addLink(JSONLink.createLink(API.CHILDREN, children.getURI()));
 
             versions = new JSONVersions(this, node);
-            addLink(new JSONLink(API.VERSIONS, versions.getURI()));
+            addLink(JSONLink.createLink(API.VERSIONS, versions.getURI()));
         } else {
             properties = null;
             mixins = null;
