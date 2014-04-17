@@ -61,11 +61,15 @@ import java.util.Map;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(API.class)
 public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
+
+    static final String WORKSPACE = "default";
+    static final String LANGUAGE = "en";
+
     @Before
     public void setUp() {
         // fake session, at least to get access to a workspace name and language code for URIUtils
         PowerMockito.mockStatic(API.class);
-        PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(null, "default", "en"));
+        PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(null, WORKSPACE, LANGUAGE));
     }
 
     @Test
