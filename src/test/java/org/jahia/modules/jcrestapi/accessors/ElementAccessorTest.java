@@ -49,6 +49,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 
@@ -68,7 +69,8 @@ public abstract class ElementAccessorTest {
     @Test
     public void testPerformMinimalSingleReadNoSubElement() throws RepositoryException {
         final Response response = getAccessor().perform(NodeUtil.createMockNode(), (String) null, API.READ, null, null);
-        Assert.assertEquals(Response.Status.OK, response.getStatusInfo());
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
     }
 
     public abstract ElementAccessor getAccessor();
