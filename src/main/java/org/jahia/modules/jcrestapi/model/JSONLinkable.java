@@ -76,6 +76,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -114,5 +115,9 @@ public class JSONLinkable {
 
     protected JSONLink getLink(String relation) {
         return links.get(relation);
+    }
+
+    public Map<String, JSONLink> getLinks() {
+        return Collections.unmodifiableMap(links);
     }
 }
