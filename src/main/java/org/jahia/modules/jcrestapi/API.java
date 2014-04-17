@@ -96,6 +96,8 @@ import java.util.*;
 @Path(API.API_PATH)
 @Produces({"application/hal+json"})
 public class API {
+    public static final String SELF = "self";
+    public static final String ABSOLUTE = "absolute";
     private static final String VERSION;
     public static final String DELETE = "delete";
     public static final String CREATE_OR_UPDATE = "createOrUpdate";
