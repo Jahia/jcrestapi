@@ -41,6 +41,7 @@ package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.NodeUtil;
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,6 +52,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -74,13 +76,15 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     @Test
     public void testPerformMinimalSingleReadNoSubElement() throws RepositoryException {
-        final Response response = getAccessor().perform(NodeUtil.createMockNode(), (String) null, API.READ, null, null);
+        final Node node = NodeUtil.createMockNode();
+        final Response response = getAccessor().perform(node, (String) null, API.READ, null, null);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
 
         C container = getContainerFrom(response);
         final Map<String, JSONLink> links = container.getLinks();
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
+        assertThat(links.get(API.PARENT)).isEqualTo(new JSONLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
     }
 
     protected abstract C getContainerFrom(Response response);
