@@ -92,7 +92,7 @@
         <slf4j.version>1.6.6</slf4j.version>
         <mockito.version>1.9.5</mockito.version>
         <powermock.version>1.5.4</powermock.version>
-        <assertj.version>1.5.0</assertj.version>
+        <assertj.version>1.6.0</assertj.version>
     </properties>
 
     <scm>
