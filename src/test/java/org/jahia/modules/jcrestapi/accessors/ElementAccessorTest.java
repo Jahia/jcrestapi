@@ -42,7 +42,10 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.NodeUtil;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.model.*;
+import org.jahia.modules.jcrestapi.model.JSONItem;
+import org.jahia.modules.jcrestapi.model.JSONLink;
+import org.jahia.modules.jcrestapi.model.JSONLinkable;
+import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,12 +53,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Christophe Laprun
@@ -75,7 +78,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
     }
 
     @Test
-    public void testPerformMinimalSingleReadNoSubElement() throws RepositoryException {
+    public void readWithoutSubElementShouldReturnContainer() throws RepositoryException {
         final Node node = NodeUtil.createMockNode();
         final Response response = getAccessor().perform(node, (String) null, API.READ, null, null);
 
