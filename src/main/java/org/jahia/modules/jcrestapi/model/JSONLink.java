@@ -89,11 +89,15 @@ public class JSONLink {
     }
 
     public JSONLink(String rel, Object link) {
-        this.rel = rel;
+        if(!API.exists(rel)) {
+            throw new IllegalArgumentException("Must provide a valid relation. Was '" + rel + "'");
+        }
 
         if (!(link instanceof String) && !(link instanceof String[])) {
-            throw new IllegalArgumentException("Given link object needs to be a String or String[]. Was " + link.getClass().getSimpleName());
+            throw new IllegalArgumentException("Given link object needs to be a String or String[]. Was " + (link == null ? null : link.getClass().getSimpleName()));
         }
+
+        this.rel = rel;
         this.uri = link;
     }
 
