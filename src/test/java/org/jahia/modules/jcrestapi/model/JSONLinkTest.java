@@ -49,51 +49,29 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
  */
 public class JSONLinkTest {
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void constructingWithNullRelShouldFail() {
-        try {
-            JSONLink.createLink(null, null);
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
-        }
+        JSONLink.createLink(null, null);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void constructingWithNullLinkShouldFail() {
-        try {
-            JSONLink.createLink(API.SELF, null);
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
-        }
+        JSONLink.createLink(API.SELF, null);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void constructingWithEmptyRelShouldFail() {
-        try {
-            JSONLink.createLink("", null);
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
-        }
+        JSONLink.createLink("", null);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void constructingWithEmptyLinkShouldFail() {
-        try {
-            JSONLink.createLink("foo", "");
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
-        }
+        JSONLink.createLink("foo", "");
+    }
 
-        try {
-            JSONLink.createLink("foo", new String[]{});
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void constructingWithEmptyLinkArrayShouldFail() {
+        JSONLink.createLink("foo", new String[]{});
     }
 
     @Test
@@ -127,13 +105,8 @@ public class JSONLinkTest {
         }
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void constructingWithOtherThanStringOrStringArrayShouldFail() {
-        try {
-            JSONLink.createLink("foo", new Object());
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
-        }
+        JSONLink.createLink("foo", new Object());
     }
 }
