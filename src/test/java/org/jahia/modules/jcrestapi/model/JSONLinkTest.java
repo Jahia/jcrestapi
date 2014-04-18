@@ -42,6 +42,9 @@ package org.jahia.modules.jcrestapi.model;
 import org.jahia.modules.jcrestapi.API;
 import org.junit.Test;
 
+import java.util.Arrays;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 /**
@@ -108,5 +111,29 @@ public class JSONLinkTest {
     @Test(expected = IllegalArgumentException.class)
     public void constructingWithOtherThanStringOrStringArrayShouldFail() {
         JSONLink.createLink("foo", new Object());
+    }
+
+    @Test
+    public void checkAccessorsOnSimpleLink() {
+        final String rel = "rel";
+        final String link = "link";
+        final JSONLink jsonLink = JSONLink.createLink(rel, link);
+        assertThat(jsonLink).isNotNull();
+        assertThat(jsonLink.getRel()).isEqualTo(rel);
+        assertThat(jsonLink.getURI()).isEqualTo(link);
+        assertThat(jsonLink.getURIAsString()).isEqualTo(link);
+        assertThat(jsonLink.isMultiple()).isFalse();
+    }
+
+    @Test
+    public void checkAccessorsOnArrayLink() {
+        final String rel = "rel";
+        final String[] links = new String[]{"link1", "link2"};
+        final JSONLink jsonLink = JSONLink.createLink(rel, links);
+        assertThat(jsonLink).isNotNull();
+        assertThat(jsonLink.getRel()).isEqualTo(rel);
+        assertThat(jsonLink.getURI()).isEqualTo(links);
+        assertThat(jsonLink.getURIAsString()).isEqualTo(Arrays.toString(links));
+        assertThat(jsonLink.isMultiple()).isTrue();
     }
 }
