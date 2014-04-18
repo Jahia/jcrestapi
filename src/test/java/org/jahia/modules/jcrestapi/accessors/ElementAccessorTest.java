@@ -40,7 +40,7 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.NodeUtil;
+import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONItem;
 import org.jahia.modules.jcrestapi.model.JSONLink;
@@ -81,7 +81,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     @Test
     public void readWithoutSubElementShouldReturnContainer() throws RepositoryException {
-        final Node node = NodeUtil.createMockNode();
+        final Node node = Mocks.createMockNode();
         final Response response = getAccessor().perform(node, (String) null, API.READ, null, null);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);

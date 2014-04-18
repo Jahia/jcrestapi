@@ -49,7 +49,7 @@ import javax.jcr.nodetype.NodeType;
 /**
  * @author Christophe Laprun
  */
-public class NodeUtil {
+public class Mocks {
 
     public static Node createMockNode() throws RepositoryException {
         // mock node type
