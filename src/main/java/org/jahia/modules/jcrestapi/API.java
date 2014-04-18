@@ -226,16 +226,6 @@ public class API {
         this.repository = repository;
     }
 
-    /**
-     * Retrieves whether or not the specified String is not null and not empty.
-     *
-     * @param string the String to be tested
-     * @return <code>true</code> if the specified String is not null and not empty, <code>false</code> otherwise
-     */
-    public static boolean exists(String string) {
-        return string != null && !string.isEmpty();
-    }
-
     protected Response perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,
                              String operation, JSONItem data) {
         return perform(workspace, language, idOrPath, subElementType, subElement, context, operation, data, NodeAccessor.BY_ID);
@@ -319,11 +309,11 @@ public class API {
     }
 
     protected Session getSession(String workspace, String language) throws RepositoryException {
-        if (!exists(workspace)) {
+        if (!Utils.exists(workspace)) {
             workspace = "default";
         }
 
-        if (!exists(language)) {
+        if (!Utils.exists(language)) {
             language = "en"; // todo: retrieve configured default language if possible
         }
 

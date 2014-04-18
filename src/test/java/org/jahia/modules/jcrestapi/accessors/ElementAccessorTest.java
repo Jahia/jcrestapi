@@ -73,6 +73,8 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
     @Before
     public void setUp() {
         // fake session, at least to get access to a workspace name and language code for URIUtils
+        // DANGER: must be careful with PowerMockito as it appears to replace ALL the static methods
+        // so you might get default return values for methods you don't expect
         PowerMockito.mockStatic(API.class);
         PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(null, WORKSPACE, LANGUAGE));
     }

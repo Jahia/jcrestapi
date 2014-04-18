@@ -130,7 +130,7 @@ public class Types extends API {
 
             Ordering[] orderings = null;
             // ordering deactivated because it currently doesn't work, probably due to a bug in QueryServiceImpl
-            if (exists(orderBy)) {
+            if (Utils.exists(orderBy)) {
                 if ("desc".equalsIgnoreCase(orderBy)) {
                     orderings = new Ordering[]{qomFactory.descending(qomFactory.nodeLocalName(SELECTOR_NAME))};
                 } else {

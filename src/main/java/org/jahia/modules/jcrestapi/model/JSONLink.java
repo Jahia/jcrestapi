@@ -69,7 +69,7 @@
  */
 package org.jahia.modules.jcrestapi.model;
 
-import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.Utils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -91,7 +91,7 @@ public abstract class JSONLink {
     }
 
     public static JSONLink createLink(String rel, Object link) {
-        if (!API.exists(rel)) {
+        if (!Utils.exists(rel)) {
             throw new IllegalArgumentException("Must provide a valid relation. Was '" + rel + "'");
         }
 
@@ -107,7 +107,7 @@ public abstract class JSONLink {
 
                 for (int i = 0; i < links.length; i++) {
                     String s = links[i];
-                    if (!API.exists(s)) {
+                    if (!Utils.exists(s)) {
                         throw new IllegalArgumentException("All links in the link array must be non-null and non-empty. Invalid link at index " + i);
                     }
                 }

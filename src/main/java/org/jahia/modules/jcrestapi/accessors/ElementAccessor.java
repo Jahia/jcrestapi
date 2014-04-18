@@ -71,6 +71,7 @@ package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.Utils;
 import org.jahia.modules.jcrestapi.model.JSONItem;
 import org.jahia.modules.jcrestapi.model.JSONLinkable;
 import org.jahia.modules.jcrestapi.model.JSONNode;
@@ -92,7 +93,7 @@ import java.util.List;
 public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
 
     protected Object getElement(Node node, String subElement) throws RepositoryException {
-        if (!API.exists(subElement)) {
+        if (!Utils.exists(subElement)) {
             return getSubElementContainer(node);
         } else {
             return getSubElement(node, subElement);
@@ -146,7 +147,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
             List<T> result = new ArrayList<T>(subElements.size());
             for (String subElement : subElements) {
                 final T element = getSubElement(node, subElement);
-                if(element != null) {
+                if (element != null) {
                     result.add(element);
                 }
             }
