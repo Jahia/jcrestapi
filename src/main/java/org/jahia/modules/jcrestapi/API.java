@@ -159,9 +159,13 @@ public class API {
     public API() {
     }
 
-    public API(String workspace, String language) {
+    public API(String workspace, String language, Repository repository, UriInfo context) {
         this.workspace = workspace;
         this.language = language;
+        this.repository = repository;
+        if (context != null) {
+            URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
+        }
     }
 
     /**
@@ -184,10 +188,7 @@ public class API {
      */
     @Path("/{workspace}/{language}/" + Nodes.MAPPING)
     public Nodes getNodes(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
-        final Nodes nodes = new Nodes(workspace, language);
-        nodes.initRepositoryWith(repository);
-        URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
-        return nodes;
+        return new Nodes(workspace, language, repository, context);
     }
 
     /**
@@ -200,10 +201,7 @@ public class API {
      */
     @Path("/{workspace}/{language}/" + Types.MAPPING)
     public Types getByType(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
-        final Types byType = new Types(workspace, language);
-        byType.initRepositoryWith(repository);
-        URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
-        return byType;
+        return new Types(workspace, language, repository, context);
     }
 
     /**
@@ -216,14 +214,7 @@ public class API {
      */
     @Path("/{workspace}/{language}/" + Paths.MAPPING)
     public Paths getByPath(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {
-        final Paths byPath = new Paths(workspace, language);
-        byPath.initRepositoryWith(repository);
-        URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
-        return byPath;
-    }
-
-    protected void initRepositoryWith(Repository repository) {
-        this.repository = repository;
+        return new Paths(workspace, language, repository, context);
     }
 
     protected Response perform(String workspace, String language, String idOrPath, String subElementType, String subElement, UriInfo context,

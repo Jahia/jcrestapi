@@ -77,6 +77,7 @@ import org.jahia.modules.jcrestapi.model.JSONNode;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;
+import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -99,8 +100,8 @@ public class Paths extends API {
      */
     private static final AtomicInteger IGNORE_SEGMENTS = new AtomicInteger(-1);
 
-    public Paths(String workspace, String language) {
-        super(workspace, language);
+    public Paths(String workspace, String language, Repository repository, UriInfo context) {
+        super(workspace, language, repository, context);
     }
 
     @GET

@@ -74,6 +74,7 @@ import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
 
 import javax.jcr.Node;
+import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -89,8 +90,8 @@ import java.util.List;
 public class Nodes extends API {
     static final String MAPPING = "nodes";
 
-    public Nodes(String workspace, String language) {
-        super(workspace, language);
+    public Nodes(String workspace, String language, Repository repository, UriInfo context) {
+        super(workspace, language, repository, context);
     }
 
     @GET
