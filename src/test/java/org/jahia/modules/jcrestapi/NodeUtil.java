@@ -63,6 +63,7 @@ public class NodeUtil {
         // mock node
         Node node = Mockito.mock(Node.class);
         Mockito.stub(node.getPrimaryNodeType()).toReturn(nodeType);
+        Mockito.stub(node.getIdentifier()).toReturn("nodeId");
         Mockito.stub(node.getParent()).toReturn(parent);
         Mockito.stub(node.getPath()).toReturn("/path/to/node");
         Mockito.stub(node.getNodes()).toReturn(new NodeIterator() {
