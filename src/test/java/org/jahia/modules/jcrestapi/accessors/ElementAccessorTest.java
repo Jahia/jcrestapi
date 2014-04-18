@@ -56,6 +56,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +71,8 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
     static final String WORKSPACE = "default";
     static final String LANGUAGE = "en";
 
+    private UriInfo context;
+
     @Before
     public void setUp() {
         // fake session, at least to get access to a workspace name and language code for URIUtils
@@ -77,12 +80,16 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         // so you might get default return values for methods you don't expect
         PowerMockito.mockStatic(API.class);
         PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(null, WORKSPACE, LANGUAGE));
+
+        // set base URI for absolute links
+        context = Mocks.createMockUriInfo();
+        URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
     }
 
     @Test
     public void readWithoutSubElementShouldReturnContainer() throws RepositoryException {
         final Node node = Mocks.createMockNode();
-        final Response response = getAccessor().perform(node, (String) null, API.READ, null, null);
+        final Response response = getAccessor().perform(node, (String) null, API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
 
@@ -90,6 +97,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         final Map<String, JSONLink> links = container.getLinks();
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
+        assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
     }
 
     protected abstract C getContainerFrom(Response response);

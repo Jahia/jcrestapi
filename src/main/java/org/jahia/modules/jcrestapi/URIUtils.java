@@ -192,8 +192,11 @@ public final class URIUtils {
 
     public static void setBaseURI(String baseURI) {
         if (URIUtils.BASE_URI.get() == null) {
-            // remove final '/'
-            URIUtils.BASE_URI.set(baseURI.substring(0, baseURI.length() - 1));
+            // remove final '/' if needed
+            if (baseURI.endsWith("/")) {
+                baseURI = baseURI.substring(0, baseURI.length() - 1);
+            }
+            URIUtils.BASE_URI.set(baseURI);
         }
     }
 

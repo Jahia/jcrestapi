@@ -45,11 +45,16 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @author Christophe Laprun
  */
 public class Mocks {
+
+    public static final String BASE_URI = "http://api.example.org:9999/context/subContext";
 
     public static Node createMockNode() throws RepositoryException {
         // mock node type
@@ -104,5 +109,16 @@ public class Mocks {
         });
 
         return node;
+    }
+
+    public static UriInfo createMockUriInfo() {
+        final UriInfo info = Mockito.mock(UriInfo.class);
+        try {
+            Mockito.stub(info.getBaseUri()).toReturn(new URI(BASE_URI));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        return info;
     }
 }
