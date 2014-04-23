@@ -71,6 +71,7 @@ public class Mocks {
         Mockito.stub(node.getIdentifier()).toReturn("nodeId");
         Mockito.stub(node.getParent()).toReturn(parent);
         Mockito.stub(node.getPath()).toReturn("/path/to/node");
+        Mockito.stub(node.getMixinNodeTypes()).toReturn(new NodeType[]{});
         Mockito.stub(node.getNodes()).toReturn(new NodeIterator() {
             @Override
             public Node nextNode() {

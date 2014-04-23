@@ -42,21 +42,14 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.model.JSONItem;
 import org.jahia.modules.jcrestapi.model.JSONLink;
-import org.jahia.modules.jcrestapi.model.JSONLinkable;
+import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,26 +57,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Christophe Laprun
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(API.class)
-public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
+public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementContainer, JSONNode, JSONNode> {
+    private final NodeElementAccessor accessor = new NodeElementAccessor();
 
-    static final String WORKSPACE = "default";
-    static final String LANGUAGE = "en";
+    @Override
+    protected JSONSubElementContainer getContainerFrom(Response response) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected UriInfo context;
-
-    @Before
-    public void setUp() {
-        // fake session, at least to get access to a workspace name and language code for URIUtils
-        // DANGER: must be careful with PowerMockito as it appears to replace ALL the static methods
-        // so you might get default return values for methods you don't expect
-        PowerMockito.mockStatic(API.class);
-        PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(null, WORKSPACE, LANGUAGE));
-
-        // set base URI for absolute links
-        context = Mocks.createMockUriInfo();
-        URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
+    @Override
+    public ElementAccessor<JSONSubElementContainer, JSONNode, JSONNode> getAccessor() {
+        return accessor;
     }
 
     @Test
@@ -92,15 +76,14 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         final Response response = getAccessor().perform(node, (String) null, API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+        final Object entity = response.getEntity();
+        assertThat(entity instanceof JSONNode);
 
-        C container = getContainerFrom(response);
-        final Map<String, JSONLink> links = container.getLinks();
+        JSONNode jsonNode = (JSONNode) entity;
+        final Map<String, JSONLink> links = jsonNode.getLinks();
+
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
-        assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
+        assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getParent().getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
     }
-
-    protected abstract C getContainerFrom(Response response);
-
-    public abstract ElementAccessor<C, T, U> getAccessor();
 }

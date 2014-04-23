@@ -105,10 +105,12 @@ public class JSONMixins extends JSONSubElementContainer {
         super(parent, API.MIXINS);
 
         final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
-        mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
-        for (NodeType mixinNodeType : mixinNodeTypes) {
-            final String name = mixinNodeType.getName();
-            mixins.put(URIUtils.escape(name), new JSONMixin(node, mixinNodeType));
+        if (mixinNodeTypes != null) {
+            mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
+            for (NodeType mixinNodeType : mixinNodeTypes) {
+                final String name = mixinNodeType.getName();
+                mixins.put(URIUtils.escape(name), new JSONMixin(node, mixinNodeType));
+            }
         }
     }
 

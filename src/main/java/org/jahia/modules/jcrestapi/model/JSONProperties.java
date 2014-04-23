@@ -112,13 +112,15 @@ public class JSONProperties extends JSONSubElementContainer {
         final PropertyIterator props = node.getProperties();
 
         // properties URI builder
-        properties = new HashMap<String, JSONProperty>((int) props.getSize());
-        while (props.hasNext()) {
-            Property property = props.nextProperty();
-            final String propertyName = property.getName();
+        if (props != null) {
+            properties = new HashMap<String, JSONProperty>((int) props.getSize());
+            while (props.hasNext()) {
+                Property property = props.nextProperty();
+                final String propertyName = property.getName();
 
-            // add property
-            this.properties.put(URIUtils.escape(propertyName), new JSONProperty(property));
+                // add property
+                this.properties.put(URIUtils.escape(propertyName), new JSONProperty(property));
+            }
         }
     }
 
