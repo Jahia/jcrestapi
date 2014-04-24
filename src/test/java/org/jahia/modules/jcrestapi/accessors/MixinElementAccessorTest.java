@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONMixins;
 import org.jahia.modules.jcrestapi.model.JSONNode;
@@ -50,6 +51,16 @@ import javax.ws.rs.core.Response;
  */
 public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins, JSONMixin, JSONNode> {
     private final MixinElementAccessor accessor = new MixinElementAccessor();
+
+    @Override
+    protected String getSubElementName() {
+        return Mocks.MIXIN + 0;
+    }
+
+    @Override
+    protected JSONMixin getSubElementFrom(Response response) {
+        return (JSONMixin) response.getEntity();
+    }
 
     @Override
     protected JSONMixins getContainerFrom(Response response) {

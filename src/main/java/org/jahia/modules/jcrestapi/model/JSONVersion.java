@@ -105,6 +105,9 @@ public class JSONVersion extends JSONNamed {
         if (linearSuccessor != null) {
             addLink(JSONLink.createLink("next", URIUtils.getURIFor(linearSuccessor)));
         }
-        addLink(JSONLink.createLink("nodeAtVersion", URIUtils.getURIFor(version.getFrozenNode())));
+        final Node frozenNode = version.getFrozenNode();
+        if (frozenNode != null) {
+            addLink(JSONLink.createLink("nodeAtVersion", URIUtils.getURIFor(frozenNode)));
+        }
     }
 }

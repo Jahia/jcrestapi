@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONVersion;
 import org.jahia.modules.jcrestapi.model.JSONVersions;
@@ -50,6 +51,16 @@ import javax.ws.rs.core.Response;
  */
 public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions, JSONVersion, JSONNode> {
     private final VersionElementAccessor accessor = new VersionElementAccessor();
+
+    @Override
+    protected String getSubElementName() {
+        return Mocks.VERSION;
+    }
+
+    @Override
+    protected JSONVersion getSubElementFrom(Response response) {
+        return (JSONVersion) response.getEntity();
+    }
 
     @Override
     protected JSONVersions getContainerFrom(Response response) {

@@ -55,6 +55,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Map;
@@ -74,12 +75,14 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
     protected UriInfo context;
 
     @Before
-    public void setUp() {
+    public void setUp() throws RepositoryException {
         // fake session, at least to get access to a workspace name and language code for URIUtils
+        final Session mockSession = Mocks.createMockSession();
+
         // DANGER: must be careful with PowerMockito as it appears to replace ALL the static methods
         // so you might get default return values for methods you don't expect
         PowerMockito.mockStatic(API.class);
-        PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(null, WORKSPACE, LANGUAGE));
+        PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(mockSession, WORKSPACE, LANGUAGE));
 
         // set base URI for absolute links
         context = Mocks.createMockUriInfo();
@@ -88,7 +91,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     @Test
     public void readWithoutSubElementShouldReturnContainer() throws RepositoryException {
-        final Node node = Mocks.createMockNode();
+        final Node node = Mocks.createMockNode(Mocks.NODE_ID, Mocks.PATH_TO_NODE);
         final Response response = getAccessor().perform(node, (String) null, API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
@@ -99,6 +102,21 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
     }
+
+    @Test
+    public void readWithSubElementShouldReturnSubElementWithThatName() throws RepositoryException {
+        final Node node = Mocks.createMockNode(Mocks.NODE_ID, Mocks.PATH_TO_NODE);
+        final Response response = getAccessor().perform(node, getSubElementName(), API.READ, null, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+
+        T subElement = getSubElementFrom(response);
+        assertThat(subElement).isNotNull();
+    }
+
+    protected abstract String getSubElementName();
+
+    protected abstract T getSubElementFrom(Response response);
 
     protected abstract C getContainerFrom(Response response);
 

@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.model.JSONProperties;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
 
@@ -49,6 +50,16 @@ import javax.ws.rs.core.Response;
  */
 public class PropertyElementAccessorTest extends ElementAccessorTest<JSONProperties, JSONProperty, JSONProperty> {
     private final PropertyElementAccessor accessor = new PropertyElementAccessor();
+
+    @Override
+    protected String getSubElementName() {
+        return Mocks.PROPERTY + 0;
+    }
+
+    @Override
+    protected JSONProperty getSubElementFrom(Response response) {
+        return (JSONProperty) response.getEntity();
+    }
 
     @Override
     protected JSONProperties getContainerFrom(Response response) {

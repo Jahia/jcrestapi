@@ -105,9 +105,11 @@ public class JSONMixin extends JSONNamed {
         addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(URIUtils.escape(this.type))));
 
         final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
-        properties = new HashMap<String, String>(propertyDefinitions.length);
-        for (PropertyDefinition property : propertyDefinitions) {
-            properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
+        if (propertyDefinitions != null) {
+            properties = new HashMap<String, String>(propertyDefinitions.length);
+            for (PropertyDefinition property : propertyDefinitions) {
+                properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
+            }
         }
     }
 

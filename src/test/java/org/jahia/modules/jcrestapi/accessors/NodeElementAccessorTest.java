@@ -70,9 +70,13 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         return accessor;
     }
 
+    @Override
     @Test
+    /**
+     * Overriden because NodeElementAccessor only returns data about the node that's given, not any other sub-elements.
+     */
     public void readWithoutSubElementShouldReturnContainer() throws RepositoryException {
-        final Node node = Mocks.createMockNode();
+        final Node node = Mocks.createMockNode(Mocks.NODE_ID, Mocks.PATH_TO_NODE);
         final Response response = getAccessor().perform(node, (String) null, API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
@@ -85,5 +89,15 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getParent().getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
+    }
+
+    @Override
+    protected String getSubElementName() {
+        return null;
+    }
+
+    @Override
+    protected JSONNode getSubElementFrom(Response response) {
+        return (JSONNode) response.getEntity();
     }
 }

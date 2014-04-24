@@ -39,6 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.model.JSONChildren;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 
@@ -49,6 +50,16 @@ import javax.ws.rs.core.Response;
  */
 public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildren, JSONNode, JSONNode> {
     private final ChildrenElementAccessor accessor = new ChildrenElementAccessor();
+
+    @Override
+    protected String getSubElementName() {
+        return Mocks.CHILD + 0;
+    }
+
+    @Override
+    protected JSONNode getSubElementFrom(Response response) {
+        return (JSONNode) response.getEntity();
+    }
 
     @Override
     protected JSONChildren getContainerFrom(Response response) {
