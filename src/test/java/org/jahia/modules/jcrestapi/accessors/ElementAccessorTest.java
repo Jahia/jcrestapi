@@ -101,6 +101,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
+        assertThat(links.get(API.SELF)).isEqualTo(JSONLink.createLink(API.SELF, getContainerURIFor(node)));
     }
 
     @Test
@@ -112,7 +113,23 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
         T subElement = getSubElementFrom(response);
         assertThat(subElement).isNotNull();
+
+        final Map<String, JSONLink> links = subElement.getLinks();
+        assertThat(links).containsKeys(API.ABSOLUTE, API.SELF);
+
+        assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
     }
+
+    protected JSONLink getSelfLinkForChild(Node node) throws RepositoryException {
+        final String containerURI = getContainerURIFor(node);
+        return JSONLink.createLink(API.SELF, URIUtils.getChildURI(containerURI, getSubElementName(), true));
+    }
+
+    private String getContainerURIFor(Node node) throws RepositoryException {
+        return URIUtils.getChildURI(URIUtils.getIdURI(node.getIdentifier()), getSubElementType(), true);
+    }
+
+    protected abstract String getSubElementType();
 
     protected abstract String getSubElementName();
 

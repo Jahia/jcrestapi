@@ -92,6 +92,11 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
     }
 
     @Override
+    protected String getSubElementType() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     protected String getSubElementName() {
         return null;
     }
@@ -99,5 +104,17 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
     @Override
     protected JSONNode getSubElementFrom(Response response) {
         return (JSONNode) response.getEntity();
+    }
+
+    /**
+     * NodeElementAccessor should only return info about the node it operates on, nothing else.
+     *
+     * @param node
+     * @return
+     * @throws RepositoryException
+     */
+    @Override
+    protected JSONLink getSelfLinkForChild(Node node) throws RepositoryException {
+        return JSONLink.createLink(API.SELF, URIUtils.getIdURI(node.getIdentifier()));
     }
 }

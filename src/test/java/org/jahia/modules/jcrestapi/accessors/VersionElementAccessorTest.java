@@ -39,11 +39,16 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
+import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.model.JSONLink;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONVersion;
 import org.jahia.modules.jcrestapi.model.JSONVersions;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 
 /**
@@ -51,6 +56,11 @@ import javax.ws.rs.core.Response;
  */
 public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions, JSONVersion, JSONNode> {
     private final VersionElementAccessor accessor = new VersionElementAccessor();
+
+    @Override
+    protected String getSubElementType() {
+        return API.VERSIONS;
+    }
 
     @Override
     protected String getSubElementName() {
@@ -70,5 +80,17 @@ public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions
     @Override
     public ElementAccessor<JSONVersions, JSONVersion, JSONNode> getAccessor() {
         return accessor;
+    }
+
+    /**
+     * Versions are nodes so they can be directly accessed by their id.
+     *
+     * @param node
+     * @return
+     * @throws javax.jcr.RepositoryException
+     */
+    @Override
+    protected JSONLink getSelfLinkForChild(Node node) throws RepositoryException {
+        return JSONLink.createLink(API.SELF, URIUtils.getIdURI(Mocks.VERSION_ID));
     }
 }

@@ -67,6 +67,8 @@ public class Mocks {
     public static final String CHILD = "child";
     public static final String NODE_ID = "nodeId";
     public static final String MIXIN = "mixin";
+    public static final String VERSION_ID = "versionId";
+    public static final String CHILD_ID = "childId";
 
     public static Node createMockNode(String id, String pathToNode) throws RepositoryException {
         return createMockNode(id, pathToNode, 1, 1, 1);
@@ -94,7 +96,7 @@ public class Mocks {
         // mock children
         for (int i = 0; i < numberOfChildren; i++) {
             final String childName = CHILD + i;
-            final Node child = createMockNode("childId", pathToNode + "/" + childName, 0, 0, 0);
+            final Node child = createMockNode(CHILD_ID + i, pathToNode + "/" + childName, 0, 0, 0);
             when(node.getNode(childName)).thenReturn(child);
         }
 
@@ -161,6 +163,7 @@ public class Mocks {
         // mock version
         Version version = mock(Version.class);
         when(version.getName()).thenReturn(VERSION);
+        when(version.getIdentifier()).thenReturn(VERSION_ID);
 
         // mock version history
         VersionHistory versionHistory = mock(VersionHistory.class);

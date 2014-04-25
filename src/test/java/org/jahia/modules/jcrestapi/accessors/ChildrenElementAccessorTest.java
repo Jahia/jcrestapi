@@ -39,10 +39,15 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
+import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.model.JSONChildren;
+import org.jahia.modules.jcrestapi.model.JSONLink;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 
 /**
@@ -50,6 +55,11 @@ import javax.ws.rs.core.Response;
  */
 public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildren, JSONNode, JSONNode> {
     private final ChildrenElementAccessor accessor = new ChildrenElementAccessor();
+
+    @Override
+    protected String getSubElementType() {
+        return API.CHILDREN;
+    }
 
     @Override
     protected String getSubElementName() {
@@ -69,5 +79,17 @@ public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildre
     @Override
     public ElementAccessor<JSONChildren, JSONNode, JSONNode> getAccessor() {
         return accessor;
+    }
+
+    /**
+     * Children are nodes so they can be directly accessed by their id.
+     *
+     * @param node
+     * @return
+     * @throws RepositoryException
+     */
+    @Override
+    protected JSONLink getSelfLinkForChild(Node node) throws RepositoryException {
+        return JSONLink.createLink(API.SELF, URIUtils.getIdURI(Mocks.CHILD_ID + 0));
     }
 }
