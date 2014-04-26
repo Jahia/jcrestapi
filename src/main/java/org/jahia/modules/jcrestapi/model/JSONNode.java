@@ -204,4 +204,7 @@ public class JSONNode extends JSONItem<Node> {
         return versions != null ? versions.getVersions() : null;
     }
 
+    public String getId() {
+        return id;
+    }
 }

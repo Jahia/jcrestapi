@@ -42,10 +42,7 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.model.JSONItem;
-import org.jahia.modules.jcrestapi.model.JSONLink;
-import org.jahia.modules.jcrestapi.model.JSONLinkable;
-import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
+import org.jahia.modules.jcrestapi.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,7 +88,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     @Test
     public void readWithoutSubElementShouldReturnContainer() throws RepositoryException {
-        final Node node = Mocks.createMockNode(Mocks.NODE_ID, Mocks.PATH_TO_NODE);
+        final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE);
         final Response response = getAccessor().perform(node, (String) null, API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
@@ -106,7 +103,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     @Test
     public void readWithSubElementShouldReturnSubElementWithThatName() throws RepositoryException {
-        final Node node = Mocks.createMockNode(Mocks.NODE_ID, Mocks.PATH_TO_NODE);
+        final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE);
         final Response response = getAccessor().perform(node, getSubElementName(), API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
@@ -118,6 +115,12 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF);
 
         assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
+        assertThat(subElement.getURI()).isEqualTo(links.get(API.SELF).getURIAsString());
+
+        if (subElement instanceof JSONNamed) {
+            JSONNamed named = (JSONNamed) subElement;
+            assertThat(named.getName()).isEqualTo(getSubElementName());
+        }
     }
 
     protected JSONLink getSelfLinkForChild(Node node) throws RepositoryException {

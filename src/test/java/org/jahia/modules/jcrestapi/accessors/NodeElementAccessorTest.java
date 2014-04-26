@@ -76,7 +76,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
      * Overriden because NodeElementAccessor only returns data about the node that's given, not any other sub-elements.
      */
     public void readWithoutSubElementShouldReturnContainer() throws RepositoryException {
-        final Node node = Mocks.createMockNode(Mocks.NODE_ID, Mocks.PATH_TO_NODE);
+        final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE);
         final Response response = getAccessor().perform(node, (String) null, API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
@@ -84,11 +84,15 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         assertThat(entity instanceof JSONNode);
 
         JSONNode jsonNode = (JSONNode) entity;
+        // check that the return JSONNode is the same as the one we called perform on
+        assertThat(jsonNode.getId()).isEqualTo(node.getIdentifier());
+
         final Map<String, JSONLink> links = jsonNode.getLinks();
 
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getParent().getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
+        assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
     }
 
     @Override
@@ -98,7 +102,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
 
     @Override
     protected String getSubElementName() {
-        return null;
+        return Mocks.NODE_NAME; // subElement name is the node's name since that's what perform should return
     }
 
     @Override

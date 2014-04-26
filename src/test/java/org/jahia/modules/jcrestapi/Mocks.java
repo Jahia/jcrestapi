@@ -69,12 +69,13 @@ public class Mocks {
     public static final String MIXIN = "mixin";
     public static final String VERSION_ID = "versionId";
     public static final String CHILD_ID = "childId";
+    public static final String NODE_NAME = "node";
 
-    public static Node createMockNode(String id, String pathToNode) throws RepositoryException {
-        return createMockNode(id, pathToNode, 1, 1, 1);
+    public static Node createMockNode(String name, String id, String pathToNode) throws RepositoryException {
+        return createMockNode(name, id, pathToNode, 1, 1, 1);
     }
 
-    public static Node createMockNode(String id, String pathToNode, int numberOfChildren, int numberOfProperties, int numberOfMixins) throws RepositoryException {
+    public static Node createMockNode(String name, String id, String pathToNode, int numberOfChildren, int numberOfProperties, int numberOfMixins) throws RepositoryException {
 
         // mock node type
         NodeType nodeType = createNodeType("nodeType");
@@ -96,7 +97,7 @@ public class Mocks {
         // mock children
         for (int i = 0; i < numberOfChildren; i++) {
             final String childName = CHILD + i;
-            final Node child = createMockNode(CHILD_ID + i, pathToNode + "/" + childName, 0, 0, 0);
+            final Node child = createMockNode(childName, CHILD_ID + i, pathToNode + "/" + childName, 0, 0, 0);
             when(node.getNode(childName)).thenReturn(child);
         }
 
@@ -116,6 +117,7 @@ public class Mocks {
         when(node.getPath()).thenReturn(pathToNode);
         when(node.getNodes()).thenReturn(new EmptyNodeIterator());
         when(node.isNodeType(Constants.MIX_VERSIONABLE)).thenReturn(true);
+        when(node.getName()).thenReturn(name);
 
         return node;
     }
