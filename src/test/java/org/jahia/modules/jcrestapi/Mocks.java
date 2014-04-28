@@ -131,6 +131,7 @@ public class Mocks {
     protected static Property createMockProperty(Node parent, String propertyName, NodeType parentNodeType) throws RepositoryException {
         // mock property definition
         PropertyDefinition propertyDefinition = mock(PropertyDefinition.class);
+        when(propertyDefinition.getName()).thenReturn(propertyName);
 
         // add property definition to parent node type
         final PropertyDefinition[] definitions = {propertyDefinition};
