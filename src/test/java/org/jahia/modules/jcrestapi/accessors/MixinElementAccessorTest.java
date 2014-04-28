@@ -39,19 +39,44 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.model.JSONMixin;
 import org.jahia.modules.jcrestapi.model.JSONMixins;
 import org.jahia.modules.jcrestapi.model.JSONNode;
+import org.junit.Test;
+import org.mockito.Mockito;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Christophe Laprun
  */
 public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins, JSONMixin, JSONNode> {
+    private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
     private final MixinElementAccessor accessor = new MixinElementAccessor();
+
+    protected JSONNode getDataForNewChild(String name) throws IOException {
+        return mapper.readValue(
+                "{" +
+                        "   \"properties\" : {" +
+                        "       \"j__lastVote\": {\"value\": \"-1\"}," +
+                        "       \"j__nbOfVotes\": {\"value\": \"100\"}," +
+                        "       \"j__sumOfVotes\": {\"value\": \"1000\"}" +
+                        "   }" +
+                        "}", JSONNode.class
+        );
+    }
 
     @Override
     protected String getSubElementType() {
@@ -76,5 +101,26 @@ public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins, JS
     @Override
     public ElementAccessor<JSONMixins, JSONMixin, JSONNode> getAccessor() {
         return accessor;
+    }
+
+    @Test
+    public void simpleCreateShouldWork() throws RepositoryException, URISyntaxException, IOException, RepositoryException {
+        final Node node = createBasicNode();
+        final String newChildName = "newChild";
+        final JSONNode dataForNewChild = getDataForNewChild(newChildName);
+
+        // rather crappy way of doing things but at least we check that we give in is what we get out
+        final String location = context.getBaseUri().toASCIIString() + "/" + getContainerURIFor(node) + "/" + newChildName;
+        Mockito.when(context.getAbsolutePath()).thenReturn(new URI(location));
+
+        final Response response = getAccessor().perform(node, newChildName, API.CREATE_OR_UPDATE, dataForNewChild, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.CREATED);
+
+        assertThat(response.getLocation()).isEqualTo(new URI(location));
+
+        JSONMixin subElement = getSubElementFrom(response);
+        assertThat(subElement).isNotNull();
+
     }
 }

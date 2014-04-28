@@ -105,8 +105,8 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
     @Override
     protected CreateOrUpdateResult<JSONMixin> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
         // if the node doesn't already have the mixin, add it
-        final boolean isUpdate = !node.isNodeType(subElement);
-        if (isUpdate) {
+        final boolean isCreation = !node.isNodeType(subElement);
+        if (isCreation) {
             node.addMixin(subElement);
         }
 
@@ -116,7 +116,7 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
         // we now need to use the rest of the given child data to add / update the parent node content
         NodeElementAccessor.initNodeFrom(node, childData);
 
-        return new CreateOrUpdateResult<JSONMixin>(isUpdate, new JSONMixin(node, mixin));
+        return new CreateOrUpdateResult<JSONMixin>(!isCreation, new JSONMixin(node, mixin));
     }
 
     @Override
