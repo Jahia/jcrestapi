@@ -88,7 +88,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     @Test
     public void readWithoutSubElementShouldReturnContainer() throws RepositoryException {
-        final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE);
+        final Node node = createBasicNode();
         final Response response = getAccessor().perform(node, (String) null, API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
@@ -101,9 +101,13 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         assertThat(links.get(API.SELF)).isEqualTo(JSONLink.createLink(API.SELF, getContainerURIFor(node)));
     }
 
+    protected Node createBasicNode() throws RepositoryException {
+        return Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE);
+    }
+
     @Test
     public void readWithSubElementShouldReturnSubElementWithThatName() throws RepositoryException {
-        final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE);
+        final Node node = createBasicNode();
         final Response response = getAccessor().perform(node, getSubElementName(), API.READ, null, context);
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
