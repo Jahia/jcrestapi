@@ -40,6 +40,8 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.api.Constants;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
@@ -51,7 +53,10 @@ import javax.jcr.version.VersionManager;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -85,7 +90,7 @@ public class Mocks {
         when(parent.getIdentifier()).thenReturn("parentId");
 
         // mock node
-        Node node = mock(Node.class);
+        final Node node = mock(Node.class);
 
         // mock properties
         for (int i = 0; i < numberOfProperties; i++) {
@@ -102,14 +107,15 @@ public class Mocks {
         }
 
         // mock mixins
+        NodeType[] mixins = null;
         if (numberOfMixins > 0) {
-            final NodeType[] mixins = new NodeType[numberOfMixins];
+            mixins = new NodeType[numberOfMixins];
             for (int i = 0; i < numberOfMixins; i++) {
                 final String mixinName = MIXIN + i;
                 mixins[i] = createNodeType(mixinName);
             }
-            when(node.getMixinNodeTypes()).thenReturn(mixins);
         }
+        final NodeType[] finalMixins = mixins;
 
         when(node.getPrimaryNodeType()).thenReturn(nodeType);
         when(node.getIdentifier()).thenReturn(id);
@@ -118,6 +124,24 @@ public class Mocks {
         when(node.getNodes()).thenReturn(new EmptyNodeIterator());
         when(node.isNodeType(Constants.MIX_VERSIONABLE)).thenReturn(true);
         when(node.getName()).thenReturn(name);
+        when(node.getMixinNodeTypes()).thenReturn(finalMixins);
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                NodeType[] newMixins;
+                final NodeType mixin = createNodeType(invocation.getArguments()[0].toString());
+                if(finalMixins != null) {
+                    newMixins = Arrays.copyOf(finalMixins, finalMixins.length + 1);
+                    newMixins[finalMixins.length] = mixin;
+                } else {
+                    newMixins = new NodeType[]{mixin};
+                }
+
+                when(node.getMixinNodeTypes()).thenReturn(newMixins);
+                return null;
+            }
+        }).when(node).addMixin(anyString());
 
         return node;
     }
