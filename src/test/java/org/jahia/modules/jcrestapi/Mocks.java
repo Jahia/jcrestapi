@@ -90,7 +90,7 @@ public class Mocks {
         // mock properties
         for (int i = 0; i < numberOfProperties; i++) {
             final String propertyName = PROPERTY + i;
-            final Property property = createMockProperty(node, propertyName);
+            final Property property = createMockProperty(node, propertyName, nodeType);
             when(node.getProperty(propertyName)).thenReturn(property);
         }
 
@@ -128,16 +128,17 @@ public class Mocks {
         return nodeType;
     }
 
-    protected static Property createMockProperty(Node parent, String propertyName) throws RepositoryException {
+    protected static Property createMockProperty(Node parent, String propertyName, NodeType parentNodeType) throws RepositoryException {
         // mock property definition
         PropertyDefinition propertyDefinition = mock(PropertyDefinition.class);
 
-        // mock property node type
-        NodeType propertyNodeType = createNodeType("propertyType");
-        when(propertyNodeType.getDeclaredPropertyDefinitions()).thenReturn(new PropertyDefinition[]{propertyDefinition});
+        // add property definition to parent node type
+        final PropertyDefinition[] definitions = {propertyDefinition};
+        when(parentNodeType.getDeclaredPropertyDefinitions()).thenReturn(definitions);
+        when(parentNodeType.getPropertyDefinitions()).thenReturn(definitions);
 
         // set the property definition's node type
-        when(propertyDefinition.getDeclaringNodeType()).thenReturn(propertyNodeType);
+        when(propertyDefinition.getDeclaringNodeType()).thenReturn(parentNodeType);
 
         // mock property
         Property property = mock(Property.class);
