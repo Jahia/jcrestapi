@@ -79,6 +79,8 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.PropertyDefinition;
 import java.util.List;
 
 /**
@@ -106,8 +108,21 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     }
 
     static Integer getTypeOfPropertyOnNode(String propName, Node node) throws RepositoryException {
-        JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
-        final ExtendedPropertyDefinition propType = wrapper.getApplicablePropertyDefinition(propName);
+        PropertyDefinition propType = null;
+
+        if (node instanceof JCRNodeWrapper) {
+            JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
+            propType = wrapper.getApplicablePropertyDefinition(propName);
+        } else {
+            final NodeType type = node.getPrimaryNodeType();
+            final PropertyDefinition[] propertyDefinitions = type.getPropertyDefinitions();
+            for (PropertyDefinition definition : propertyDefinitions) {
+                if(definition.getName().equals(propName)) {
+                    propType = definition;
+                    break;
+                }
+            }
+        }
 
         return propType == null ? null : propType.getRequiredType();
     }
