@@ -132,7 +132,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         return JSONLink.createLink(API.SELF, URIUtils.getChildURI(containerURI, getSubElementName(), true));
     }
 
-    private String getContainerURIFor(Node node) throws RepositoryException {
+    protected String getContainerURIFor(Node node) throws RepositoryException {
         return URIUtils.getChildURI(URIUtils.getIdURI(node.getIdentifier()), getSubElementType(), true);
     }
 
