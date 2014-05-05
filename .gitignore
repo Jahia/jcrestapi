@@ -6,3 +6,5 @@
 *.ipr
 target
 .DS_Store
+repository.xml
+repository
