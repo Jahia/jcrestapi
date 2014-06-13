@@ -113,6 +113,11 @@ So, for example, if you're trying to add several properties to a given node, you
  property URI as target URI and passing the JSON representation of a property for each invocation. You could also use the `properties` sub-resource for this node and invoke the
  `PUT` method with a body corresponding to the JSON representation of a `properties` resource. This second way would result in modifying several properties using a single call
  to the API.
+ 
+__Note regarding asynchronous calls to the RESTful API:__ While the API implementation can properly handle concurrent requests at any given time, 
+it is not designed to handle <strong>re-entrant</strong> requests. This will result in an exception. This could happen if you're calling the API from Javascript and you're 
+calling back to the API in your success callback in an asynchronous call. There normally shouldn't be a need for such calls which is why we are not currently supporting this use
+case. We might revisit this position if such need arises.
 
 ---
 
