@@ -96,7 +96,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(API.class)
-public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
+public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
 
     static final String WORKSPACE = "default";
     static final String LANGUAGE = "en";

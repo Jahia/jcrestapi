@@ -74,10 +74,7 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
-import org.jahia.modules.jcrestapi.model.JSONItem;
-import org.jahia.modules.jcrestapi.model.JSONLinkable;
-import org.jahia.modules.jcrestapi.model.JSONNode;
-import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
+import org.jahia.modules.jcrestapi.model.*;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -92,7 +89,7 @@ import java.util.List;
 /**
  * @author Christophe Laprun
  */
-public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONLinkable, U extends JSONItem> {
+public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
 
     protected Object getElement(Node node, String subElement) throws RepositoryException {
         if (!Utils.exists(subElement)) {
