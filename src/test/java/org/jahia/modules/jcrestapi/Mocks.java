@@ -71,7 +71,9 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.apache.jackrabbit.value.StringValue;
 import org.jahia.api.Constants;
+import org.jahia.modules.jcrestapi.accessors.PropertyElementAccessor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -87,6 +89,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -115,7 +118,7 @@ public class Mocks {
     public static Node createMockNode(String name, String id, String pathToNode, int numberOfChildren, int numberOfProperties, int numberOfMixins) throws RepositoryException {
 
         // mock node type
-        NodeType nodeType = createNodeType("nodeType");
+        final NodeType nodeType = createNodeType("nodeType");
 
         // mock parent
         Node parent = mock(Node.class);
@@ -174,6 +177,21 @@ public class Mocks {
                 return null;
             }
         }).when(node).addMixin(anyString());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                final PropertyDefinition[] definitions = nodeType.getPropertyDefinitions();
+                final String propertyName = invocation.getArguments()[0].toString();
+                final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionFrom(propertyName, definitions);
+                if(definition != null && definition.getRequiredType() == ((Integer) invocation.getArguments()[2])) {
+                    final Property property = createMockProperty(node, propertyName, nodeType, false);
+                    when(property.getValue()).thenReturn(new StringValue(invocation.getArguments()[1].toString()));
+                    return property;
+                }
+                return null;
+            }
+        }).when(node).setProperty(anyString(), anyString(), anyInt());
 
         return node;
     }
