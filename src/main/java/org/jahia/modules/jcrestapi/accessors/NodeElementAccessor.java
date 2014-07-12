@@ -120,34 +120,34 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
     }
 
     public static void initNodeFrom(Node node, JSONNode jsonNode) throws RepositoryException {
-        // mixins
-        final Map<String, JSONMixin> mixins = jsonNode.getMixins();
-        if (mixins != null) {
-            for (String mixinName : mixins.keySet()) {
-                mixinName = URIUtils.unescape(mixinName);
-                node.addMixin(mixinName);
+        if (jsonNode != null) {
+            // mixins
+            final Map<String, JSONMixin> mixins = jsonNode.getMixins();
+            if (mixins != null) {
+                for (String mixinName : mixins.keySet()) {
+                    mixinName = URIUtils.unescape(mixinName);
+                    node.addMixin(mixinName);
+                }
             }
-        }
 
+            // properties
+            final Map<String, JSONProperty> jsonProperties = jsonNode.getProperties();
+            if (jsonProperties != null) {
+                final Set<Map.Entry<String, JSONProperty>> properties = jsonProperties.entrySet();
 
-        // properties
-        final Map<String, JSONProperty> jsonProperties = jsonNode.getProperties();
-        if (jsonProperties != null) {
-            final Set<Map.Entry<String, JSONProperty>> properties = jsonProperties.entrySet();
-
-            // set the properties
-            for (Map.Entry<String, JSONProperty> entry : properties) {
-                PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
+                // set the properties
+                for (Map.Entry<String, JSONProperty> entry : properties) {
+                    PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
+                }
             }
-        }
 
-
-        // children
-        final Map<String, JSONNode> children = jsonNode.getChildren();
-        if (children != null) {
-            for (JSONNode jsonChild : children.values()) {
-                final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
-                initNodeFrom(child, jsonChild);
+            // children
+            final Map<String, JSONNode> children = jsonNode.getChildren();
+            if (children != null) {
+                for (JSONNode jsonChild : children.values()) {
+                    final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
+                    initNodeFrom(child, jsonChild);
+                }
             }
         }
     }

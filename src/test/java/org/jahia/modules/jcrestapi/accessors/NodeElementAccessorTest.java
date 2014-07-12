@@ -80,8 +80,11 @@ import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 import org.junit.Test;
 
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -125,6 +128,38 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getParent().getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
         assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
+    }
+
+    @Override
+    protected JSONNode getDataForNewChild(String name) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * We're not creating new nodes from NodeElementAccessor, just updating so this test is checking that we properly have a null operation if we don't pass any new information.
+     *
+     * @throws RepositoryException
+     * @throws URISyntaxException
+     * @throws IOException
+     */
+    @Test
+    public void simpleCreateShouldWork() throws RepositoryException, URISyntaxException, IOException {
+        final Node node = createBasicNode();
+
+        final Response response = getAccessor().perform(node, (String) null, API.CREATE_OR_UPDATE, null, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+
+        final JSONNode jsonNode = getSubElementFrom(response);
+        assertThat(jsonNode.getName()).isEqualTo(node.getName());
+        assertThat(jsonNode.getId()).isEqualTo(node.getIdentifier());
+        final NodeIterator nodes = node.getNodes();
+        final String[] childNames = new String[(int)nodes.getSize()];
+        for(int i = 0; nodes.hasNext(); i++) {
+            final Node child = nodes.nextNode();
+            childNames[i] = child.getName();
+        }
+        assertThat(jsonNode.getChildren()).containsKeys(childNames);
     }
 
     @Override
