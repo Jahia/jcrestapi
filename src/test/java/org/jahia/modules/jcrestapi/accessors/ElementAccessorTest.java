@@ -153,10 +153,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
         assertThat(subElement.getURI()).isEqualTo(links.get(API.SELF).getURIAsString());
 
-        if (subElement instanceof JSONNamed) {
-            JSONNamed named = (JSONNamed) subElement;
-            assertThat(named.getName()).isEqualTo(getSubElementName());
-        }
+        assertThat(subElement.getName()).isEqualTo(getSubElementName());
     }
 
     protected JSONLink getSelfLinkForChild(Node node) throws RepositoryException {
