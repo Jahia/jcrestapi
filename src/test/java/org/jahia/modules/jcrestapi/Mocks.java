@@ -208,6 +208,29 @@ public class Mocks {
         return property;
     }
 
+    public static PropertyDefinition createPropertyDefinition(String propertyName, NodeType parentNodeType, final PropertyDefinition[] definitions) {
+        // mock property definition
+        PropertyDefinition propertyDefinition = mock(PropertyDefinition.class);
+        when(propertyDefinition.getName()).thenReturn(propertyName);
+
+        // add property definition to parent node type
+        PropertyDefinition[] newPropertyDefinitions;
+        if (definitions != null) {
+            final int length = definitions.length;
+            newPropertyDefinitions = new PropertyDefinition[length + 1];
+            System.arraycopy(definitions, 0, newPropertyDefinitions, 0, length);
+            newPropertyDefinitions[length] = propertyDefinition;
+        } else {
+            newPropertyDefinitions = new PropertyDefinition[]{propertyDefinition};
+        }
+        when(parentNodeType.getDeclaredPropertyDefinitions()).thenReturn(newPropertyDefinitions);
+        when(parentNodeType.getPropertyDefinitions()).thenReturn(newPropertyDefinitions);
+
+        // set the property definition's node type
+        when(propertyDefinition.getDeclaringNodeType()).thenReturn(parentNodeType);
+        return propertyDefinition;
+    }
+
     public static UriInfo createMockUriInfo() {
         final UriInfo info = mock(UriInfo.class);
         try {
