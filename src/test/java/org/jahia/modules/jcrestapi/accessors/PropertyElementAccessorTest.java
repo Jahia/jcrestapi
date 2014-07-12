@@ -76,13 +76,29 @@ import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.model.JSONProperties;
 import org.jahia.modules.jcrestapi.model.JSONProperty;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 /**
  * @author Christophe Laprun
  */
 public class PropertyElementAccessorTest extends ElementAccessorTest<JSONProperties, JSONProperty, JSONProperty> {
     private final PropertyElementAccessor accessor = new PropertyElementAccessor();
+
+    @Override
+    protected void prepareNodeIfNeeded(Node node, String newChildName) throws RepositoryException {
+        // property definition for newChildName needs to be added to the parent's property definitions before we start testing
+        final NodeType nodeType = node.getPrimaryNodeType();
+        Mocks.createPropertyDefinition(newChildName, nodeType, nodeType.getPropertyDefinitions());
+    }
+
+    @Override
+    protected JSONProperty getDataForNewChild(String name) throws IOException {
+        return mapper.readValue("{\"name\":\"" + name + "\",\"value\": \"value\"}", JSONProperty.class);
+    }
 
     @Override
     protected String getSubElementType() {
