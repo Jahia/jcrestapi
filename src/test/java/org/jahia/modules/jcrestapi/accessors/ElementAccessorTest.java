@@ -71,6 +71,8 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
@@ -78,6 +80,7 @@ import org.jahia.modules.jcrestapi.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -85,8 +88,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,6 +107,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     static final String WORKSPACE = "default";
     static final String LANGUAGE = "en";
+    static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
     protected UriInfo context;
 
@@ -154,6 +162,37 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         assertThat(subElement.getURI()).isEqualTo(links.get(API.SELF).getURIAsString());
 
         assertThat(subElement.getName()).isEqualTo(getSubElementName());
+    }
+
+    @Test
+    public void simpleCreateShouldWork() throws RepositoryException, URISyntaxException, IOException {
+        final Node node = createBasicNode();
+        final String newChildName = "newChild";
+        prepareNodeIfNeeded(node, newChildName);
+        final U dataForNewChild = getDataForNewChild(newChildName);
+
+        // rather crappy way of doing things but at least we check that we give in is what we get out
+        final String location = context.getBaseUri().toASCIIString() + "/" + getContainerURIFor(node) + "/" + newChildName;
+        Mockito.when(context.getAbsolutePath()).thenReturn(new URI(location));
+
+        final Response response = getAccessor().perform(node, newChildName, API.CREATE_OR_UPDATE, dataForNewChild, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.CREATED);
+
+        assertThat(response.getLocation()).isEqualTo(new URI(location));
+
+        T subElement = getSubElementFrom(response);
+        assertThat(subElement).isNotNull();
+        assertThat(subElement.getName()).isEqualTo(newChildName);
+
+    }
+
+    protected void prepareNodeIfNeeded(Node node, String newChildName) throws RepositoryException {
+        // do nothing by default
+    }
+
+    protected U getDataForNewChild(String name) throws RepositoryException, IOException {
+        return null;
     }
 
     protected JSONLink getSelfLinkForChild(Node node) throws RepositoryException {
