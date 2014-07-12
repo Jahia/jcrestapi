@@ -128,7 +128,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
             return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
         }
 
-        throw new IllegalArgumentException("Unknown operation: '" + operation + "'");
+        throw new UnsupportedOperationException("Unsupported operation: " + operation);
     }
 
     public Response perform(Node node, List<String> subElements, String operation, List<U> childData, UriInfo context) throws RepositoryException {

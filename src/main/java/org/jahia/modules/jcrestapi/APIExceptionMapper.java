@@ -108,7 +108,10 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
         Response.ResponseBuilder builder;
         if (cause instanceof RepositoryException) {
             builder = toResponse((RepositoryException) cause);
-        } else {
+        } else if (cause instanceof UnsupportedOperationException) {
+            builder = Response.status(Response.Status.METHOD_NOT_ALLOWED);
+        }
+        else {
             builder = defaultResponse(cause);
         }
 
