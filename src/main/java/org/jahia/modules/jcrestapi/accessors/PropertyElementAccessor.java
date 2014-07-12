@@ -110,7 +110,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     }
 
     static Integer getTypeOfPropertyOnNode(String propName, Node node) throws RepositoryException {
-        PropertyDefinition propType = null;
+        PropertyDefinition propType;
 
         if (node instanceof JCRNodeWrapper) {
             JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
@@ -118,15 +118,21 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
         } else {
             final NodeType type = node.getPrimaryNodeType();
             final PropertyDefinition[] propertyDefinitions = type.getPropertyDefinitions();
-            for (PropertyDefinition definition : propertyDefinitions) {
-                if(definition.getName().equals(propName)) {
-                    propType = definition;
-                    break;
-                }
-            }
+            propType = getPropertyDefinitionFrom(propName, propertyDefinitions);
         }
 
         return propType == null ? null : propType.getRequiredType();
+    }
+
+    public static PropertyDefinition getPropertyDefinitionFrom(String propName, PropertyDefinition[] propertyDefinitions) {
+        PropertyDefinition propType = null;
+        for (PropertyDefinition definition : propertyDefinitions) {
+            if(definition.getName().equals(propName)) {
+                propType = definition;
+                break;
+            }
+        }
+        return propType;
     }
 
     @Override
