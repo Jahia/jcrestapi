@@ -87,6 +87,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 /**
  * @author Christophe Laprun
@@ -127,9 +128,12 @@ public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions
     @Override
     @Test
     public void simpleCreateShouldWork() throws RepositoryException, URISyntaxException, IOException {
-        final Response response = getAccessor().perform(null, (String) null, API.CREATE_OR_UPDATE, null, context);
-
-        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.METHOD_NOT_ALLOWED);
+        try {
+            getAccessor().perform(null, (String) null, API.CREATE_OR_UPDATE, null, context);
+            failBecauseExceptionWasNotThrown(UnsupportedOperationException.class);
+        } catch (UnsupportedOperationException e) {
+            assertThat(e.getLocalizedMessage()).contains("create", "update");
+        }
     }
 
     /**
