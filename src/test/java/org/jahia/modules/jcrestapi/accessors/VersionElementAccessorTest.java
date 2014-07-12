@@ -78,10 +78,15 @@ import org.jahia.modules.jcrestapi.model.JSONLink;
 import org.jahia.modules.jcrestapi.model.JSONNode;
 import org.jahia.modules.jcrestapi.model.JSONVersion;
 import org.jahia.modules.jcrestapi.model.JSONVersions;
+import org.junit.Test;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Christophe Laprun
@@ -112,6 +117,19 @@ public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions
     @Override
     public ElementAccessor<JSONVersions, JSONVersion, JSONNode> getAccessor() {
         return accessor;
+    }
+
+    @Override
+    protected JSONNode getDataForNewChild(String name) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Test
+    public void simpleCreateShouldWork() throws RepositoryException, URISyntaxException, IOException {
+        final Response response = getAccessor().perform(null, (String) null, API.CREATE_OR_UPDATE, null, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.METHOD_NOT_ALLOWED);
     }
 
     /**
