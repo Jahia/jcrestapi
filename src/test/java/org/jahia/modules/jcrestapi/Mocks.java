@@ -115,7 +115,7 @@ public class Mocks {
         return createMockNode(name, id, pathToNode, 1, 1, 1);
     }
 
-    public static Node createMockNode(String name, String id, String pathToNode, int numberOfChildren, int numberOfProperties, int numberOfMixins) throws RepositoryException {
+    public static Node createMockNode(String name, String id, final String pathToNode, int numberOfChildren, int numberOfProperties, int numberOfMixins) throws RepositoryException {
 
         // mock node type
         final NodeType nodeType = createNodeType("nodeType");
@@ -192,6 +192,14 @@ public class Mocks {
                 return null;
             }
         }).when(node).setProperty(anyString(), anyString(), anyInt());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                final String name = invocation.getArguments()[0].toString();
+                return createMockNode(name, name + "Id", pathToNode + "/" + name);
+            }
+        }).when(node).addNode(anyString());
 
         return node;
     }

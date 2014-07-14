@@ -81,6 +81,7 @@ import org.jahia.modules.jcrestapi.model.JSONNode;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 /**
  * @author Christophe Laprun
@@ -111,6 +112,12 @@ public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildre
     @Override
     public ElementAccessor<JSONChildren, JSONNode, JSONNode> getAccessor() {
         return accessor;
+    }
+
+    @Override
+    protected JSONNode getDataForNewChild(String name) throws IOException {
+        return mapper.readValue("{\"name\":\"" + name + "\"}", JSONNode.class
+        );
     }
 
     /**
