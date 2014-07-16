@@ -77,7 +77,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.model.JSONLink;
+import org.jahia.modules.jcrestapi.links.JSONLink;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;

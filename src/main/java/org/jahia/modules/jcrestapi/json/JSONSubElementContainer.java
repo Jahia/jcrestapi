@@ -73,8 +73,8 @@ package org.jahia.modules.jcrestapi.json;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.model.JSONLink;
-import org.jahia.modules.jcrestapi.model.JSONLinkable;
+import org.jahia.modules.jcrestapi.links.JSONLink;
+import org.jahia.modules.jcrestapi.links.JSONLinkable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

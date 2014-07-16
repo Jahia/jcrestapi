@@ -76,7 +76,7 @@ import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.json.JSONNode;
 import org.jahia.modules.jcrestapi.json.JSONSubElementContainer;
-import org.jahia.modules.jcrestapi.model.JSONLink;
+import org.jahia.modules.jcrestapi.links.JSONLink;
 import org.junit.Test;
 
 import javax.jcr.Node;

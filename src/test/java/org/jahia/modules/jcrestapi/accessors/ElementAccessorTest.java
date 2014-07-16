@@ -80,7 +80,7 @@ import org.jahia.modules.jcrestapi.json.JSONItem;
 import org.jahia.modules.jcrestapi.json.JSONNamed;
 import org.jahia.modules.jcrestapi.json.JSONNode;
 import org.jahia.modules.jcrestapi.json.JSONSubElementContainer;
-import org.jahia.modules.jcrestapi.model.JSONLink;
+import org.jahia.modules.jcrestapi.links.JSONLink;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

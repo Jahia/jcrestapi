@@ -69,103 +69,138 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.links;
 
-import org.jahia.modules.jcrestapi.API;
-import org.junit.Test;
+import org.jahia.modules.jcrestapi.Utils;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Arrays;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 /**
  * @author Christophe Laprun
  */
-public class JSONLinkTest {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class JSONLink {
+    @XmlElement
+    private String rel;
 
-    @Test(expected = IllegalArgumentException.class)
-    public void constructingWithNullRelShouldFail() {
-        JSONLink.createLink(null, null);
+    private JSONLink(String rel) {
+        this.rel = rel;
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void constructingWithNullLinkShouldFail() {
-        JSONLink.createLink(API.SELF, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructingWithEmptyRelShouldFail() {
-        JSONLink.createLink("", null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructingWithEmptyLinkShouldFail() {
-        JSONLink.createLink("foo", "");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructingWithEmptyLinkArrayShouldFail() {
-        JSONLink.createLink("foo", new String[]{});
-    }
-
-    @Test
-    public void constructingWithArrayShouldFailIfALinkIsEmptyOrNull() {
-        try {
-            JSONLink.createLink("foo", new String[]{""});
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
+    public static JSONLink createLink(String rel, Object link) {
+        if (!Utils.exists(rel)) {
+            throw new IllegalArgumentException("Must provide a valid relation. Was '" + rel + "'");
         }
 
-        try {
-            JSONLink.createLink("foo", new String[]{null});
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
+        if (link instanceof String) {
+            String linkAsString = (String) link;
+            if (linkAsString.isEmpty()) {
+                throw new IllegalArgumentException("Must provide a valid link. Was '" + link + "'");
+            }
+            return new SimpleJSONLink(rel, linkAsString);
+        } else {
+            if (link instanceof String[] && ((String[]) link).length > 0) {
+                String[] links = (String[]) link;
+
+                for (int i = 0; i < links.length; i++) {
+                    String s = links[i];
+                    if (!Utils.exists(s)) {
+                        throw new IllegalArgumentException("All links in the link array must be non-null and non-empty. Invalid link at index " + i);
+                    }
+                }
+                return new MultipleJSONLink(rel, links);
+            }
+
+            throw new IllegalArgumentException("Only String and String[] instances are currently supported as links. Was '" + link + "'");
         }
 
-        try {
-            JSONLink.createLink("foo", new String[]{"foo", null});
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
+    }
+
+    String getRel() {
+        return rel;
+    }
+
+    public abstract Object getURI();
+
+    public abstract String getURIAsString();
+
+    public boolean isMultiple() {
+        return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        JSONLink jsonLink = (JSONLink) o;
+
+        return rel.equals(jsonLink.rel) && getURI().equals(jsonLink.getURI());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = rel.hashCode();
+        result = 31 * result + getURI().hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "JSONLink{" +
+                "rel='" + rel + '\'' +
+                ", uri=" + getURIAsString() +
+                '}';
+    }
+
+    private static class SimpleJSONLink extends JSONLink {
+        private final String link;
+
+        private SimpleJSONLink(String rel, String link) {
+            super(rel);
+            this.link = link;
         }
 
-        try {
-            JSONLink.createLink("foo", new String[]{"foo", ""});
-            failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
-        } catch (IllegalArgumentException e) {
-            // expected
+        @Override
+        @XmlElement(name = "href")
+        public Object getURI() {
+            return link;
+        }
+
+        @Override
+        public String getURIAsString() {
+            return link;
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void constructingWithOtherThanStringOrStringArrayShouldFail() {
-        JSONLink.createLink("foo", new Object());
-    }
+    private static class MultipleJSONLink extends JSONLink {
+        private final String[] links;
 
-    @Test
-    public void checkAccessorsOnSimpleLink() {
-        final String rel = "rel";
-        final String link = "link";
-        final JSONLink jsonLink = JSONLink.createLink(rel, link);
-        assertThat(jsonLink).isNotNull();
-        assertThat(jsonLink.getRel()).isEqualTo(rel);
-        assertThat(jsonLink.getURI()).isEqualTo(link);
-        assertThat(jsonLink.getURIAsString()).isEqualTo(link);
-        assertThat(jsonLink.isMultiple()).isFalse();
-    }
+        public MultipleJSONLink(String rel, String[] link) {
+            super(rel);
+            this.links = link;
+        }
 
-    @Test
-    public void checkAccessorsOnArrayLink() {
-        final String rel = "rel";
-        final String[] links = new String[]{"link1", "link2"};
-        final JSONLink jsonLink = JSONLink.createLink(rel, links);
-        assertThat(jsonLink).isNotNull();
-        assertThat(jsonLink.getRel()).isEqualTo(rel);
-        assertThat(jsonLink.getURI()).isEqualTo(links);
-        assertThat(jsonLink.getURIAsString()).isEqualTo(Arrays.toString(links));
-        assertThat(jsonLink.isMultiple()).isTrue();
+        @Override
+        @XmlElement(name = "href")
+        public Object getURI() {
+            return links;
+        }
+
+        @Override
+        public String getURIAsString() {
+            return Arrays.toString(links);
+        }
+
+        @Override
+        public boolean isMultiple() {
+            return true;
+        }
     }
 }
