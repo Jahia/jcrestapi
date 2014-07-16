@@ -307,6 +307,7 @@
             <Jahia-Module-Type>system</Jahia-Module-Type>
             <Private-Package>
               org.jahia.modules.jcrestapi,
+              org.jahia.modules.jcrestapi.json,
               org.jahia.modules.jcrestapi.links,
               org.jahia.modules.jcrestapi.accessors
             </Private-Package>
