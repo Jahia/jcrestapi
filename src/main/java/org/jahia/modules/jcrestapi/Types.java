@@ -72,7 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.api.Constants;
-import org.jahia.modules.jcrestapi.model.JSONNode;
+import org.jahia.modules.jcrestapi.json.JSONNode;
 
 import javax.jcr.*;
 import javax.jcr.query.QueryResult;

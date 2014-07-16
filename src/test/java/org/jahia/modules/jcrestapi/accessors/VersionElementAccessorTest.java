@@ -74,10 +74,10 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.jcrestapi.json.JSONVersion;
+import org.jahia.modules.jcrestapi.json.JSONVersions;
 import org.jahia.modules.jcrestapi.model.JSONLink;
-import org.jahia.modules.jcrestapi.model.JSONNode;
-import org.jahia.modules.jcrestapi.model.JSONVersion;
-import org.jahia.modules.jcrestapi.model.JSONVersions;
 import org.junit.Test;
 
 import javax.jcr.Node;

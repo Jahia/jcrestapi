@@ -75,7 +75,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
-import org.jahia.modules.jcrestapi.model.JSONNode;
+import org.jahia.modules.jcrestapi.json.JSONNode;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;
@@ -135,7 +135,7 @@ public class Paths extends API {
     }
 
     private static int getNumberOfIgnoredSegments() {
-        if(IGNORE_SEGMENTS.get() == -1) {
+        if (IGNORE_SEGMENTS.get() == -1) {
             IGNORE_SEGMENTS.set(getSegmentsNbFrom(API.API_PATH) + 2 + getSegmentsNbFrom(MAPPING));
         }
 
@@ -147,7 +147,7 @@ public class Paths extends API {
         int segments = 0;
         for (String s : split) {
             // only include non-empty segments
-            if(!s.isEmpty()) {
+            if (!s.isEmpty()) {
                 segments++;
             }
         }

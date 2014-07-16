@@ -69,7 +69,7 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.json;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;

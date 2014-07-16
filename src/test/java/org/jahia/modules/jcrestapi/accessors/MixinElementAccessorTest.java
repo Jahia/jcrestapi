@@ -73,9 +73,9 @@ package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
-import org.jahia.modules.jcrestapi.model.JSONMixin;
-import org.jahia.modules.jcrestapi.model.JSONMixins;
-import org.jahia.modules.jcrestapi.model.JSONNode;
+import org.jahia.modules.jcrestapi.json.JSONMixin;
+import org.jahia.modules.jcrestapi.json.JSONMixins;
+import org.jahia.modules.jcrestapi.json.JSONNode;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;

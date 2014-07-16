@@ -74,9 +74,9 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.jcrestapi.json.JSONSubElementContainer;
 import org.jahia.modules.jcrestapi.model.JSONLink;
-import org.jahia.modules.jcrestapi.model.JSONNode;
-import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 import org.junit.Test;
 
 import javax.jcr.Node;
@@ -154,8 +154,8 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         assertThat(jsonNode.getName()).isEqualTo(node.getName());
         assertThat(jsonNode.getId()).isEqualTo(node.getIdentifier());
         final NodeIterator nodes = node.getNodes();
-        final String[] childNames = new String[(int)nodes.getSize()];
-        for(int i = 0; nodes.hasNext(); i++) {
+        final String[] childNames = new String[(int) nodes.getSize()];
+        for (int i = 0; nodes.hasNext(); i++) {
             final Node child = nodes.nextNode();
             childNames[i] = child.getName();
         }

@@ -69,53 +69,61 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.json;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.model.JSONLink;
 
+import javax.jcr.Item;
+import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.PropertyDefinition;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONMixin extends JSONNamed {
-    @XmlElement
-    private Map<String, String> properties;
-
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class JSONItem<T extends Item> extends JSONNamed {
     @XmlElement
     private String type;
 
-    public JSONMixin() {
+    public JSONItem() {
     }
 
-    public void initWith(Node parentNode, NodeType item) throws RepositoryException {
-        // todo: should we try to point to the actual mixin definition instead of pointing to the relative path to the mixin in the context of the parent node
-        // todo: should we add parent link?
-        super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true), item.getName());
+    public void initWith(T item) throws RepositoryException {
+        initWith(URIUtils.getURIFor(item), item.getName());
+        this.type = getUnescapedTypeName(item);
 
-        this.type = item.getName();
-
-        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(URIUtils.escape(this.type))));
-
-        final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
-        if (propertyDefinitions != null) {
-            properties = new HashMap<String, String>(propertyDefinitions.length);
-            for (PropertyDefinition property : propertyDefinitions) {
-                properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
-            }
+        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
+        Node parent;
+        try {
+            parent = item.getParent();
+        } catch (ItemNotFoundException e) {
+            // expected when the item is root node, specify that parent is itself
+            parent = (Node) item;
         }
+        addLink(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
+
+        addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(URIUtils.escape(item.getPath()), true)));
     }
 
-    public JSONMixin(Node nodeWithMixin, NodeType item) throws RepositoryException {
-        initWith(nodeWithMixin, item);
+    public JSONItem(T item) throws RepositoryException {
+        initWith(item);
     }
+
+    public String getTypeName() {
+        return type;
+    }
+
+    protected String getTypeChildPath(T item) throws RepositoryException {
+        return URIUtils.escape(type);
+    }
+
+    protected abstract String getUnescapedTypeName(T item) throws RepositoryException;
 }

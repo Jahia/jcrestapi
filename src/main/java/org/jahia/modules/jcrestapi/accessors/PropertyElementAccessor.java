@@ -72,10 +72,9 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.model.JSONProperties;
-import org.jahia.modules.jcrestapi.model.JSONProperty;
+import org.jahia.modules.jcrestapi.json.JSONProperties;
+import org.jahia.modules.jcrestapi.json.JSONProperty;
 import org.jahia.services.content.JCRNodeWrapper;
-import org.jahia.services.content.nodetypes.ExtendedPropertyDefinition;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -127,7 +126,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     public static PropertyDefinition getPropertyDefinitionFrom(String propName, PropertyDefinition[] propertyDefinitions) {
         PropertyDefinition propType = null;
         for (PropertyDefinition definition : propertyDefinitions) {
-            if(definition.getName().equals(propName)) {
+            if (definition.getName().equals(propName)) {
                 propType = definition;
                 break;
             }

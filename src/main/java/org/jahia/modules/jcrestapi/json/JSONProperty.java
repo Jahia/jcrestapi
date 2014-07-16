@@ -69,10 +69,11 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.json;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.model.JSONLink;
 
 import javax.jcr.Property;
 import javax.jcr.PropertyType;

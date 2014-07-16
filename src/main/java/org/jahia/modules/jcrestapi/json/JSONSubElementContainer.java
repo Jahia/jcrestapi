@@ -69,144 +69,38 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.json;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.model.JSONLink;
+import org.jahia.modules.jcrestapi.model.JSONLinkable;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Map;
 
 /**
- * A JSON representation of a JCR node. <p/>
- * <pre>
- * "name" : <the node's unescaped name>,
- * "type" : <the node's node type name>,
- * "properties" : <properties representation>,
- * "mixins" : <mixins representation>,
- * "children" : <children representation>,
- * "versions" : <versions representation>,
- * "links" : {
- * "self" : "<URI identifying the resource associated with this node>",
- * "type" : "<URI identifying the resource associated with this node's type>",
- * "properties" : "<URI identifying the resource associated with this node's properties>",
- * "mixins" : "<URI identifying the resource associated with this node's mixins>",
- * "children" : "<URI identifying the resource associated with this node's children>",
- * "versions" : "<URI identifying the resource associated with this node's versions>"
- * }
- * </pre>
- *
  * @author Christophe Laprun
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONNode extends JSONItem<Node> {
-    private JSONMixins mixins;
-    private JSONVersions versions;
-    protected JSONProperties properties;
-    protected JSONChildren children;
-    private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
+public class JSONSubElementContainer extends JSONLinkable {
+    protected JSONNode parent;
 
-    @XmlElement
-    protected String id;
-
-
-    public JSONNode() {
+    public JSONSubElementContainer() {
     }
 
-    public JSONNode(Node node, int depth) throws RepositoryException {
-        initWith(node, depth);
+    public JSONSubElementContainer(JSONNode parent, String name) {
+        initWith(parent, name);
     }
 
-    public String asJSONString() {
-        try {
-            return mapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new APIException(e, "asJSONString", null, id, null, null, null);
-        }
+    public void initWith(JSONNode parent, String name) {
+        super.initWith(URIUtils.getChildURI(parent.getURI(), name, false));
+        this.parent = parent;
+
+        addLink(JSONLink.createLink(API.PARENT, parent.getURI()));
     }
 
-    public void initWith(Node node, int depth) throws RepositoryException {
-        super.initWith(node);
-        id = node.getIdentifier();
 
-        if (depth > 0) {
-            properties = new JSONProperties(this, node);
-            addLink(JSONLink.createLink(API.PROPERTIES, properties.getURI()));
-
-            mixins = new JSONMixins(this, node);
-            addLink(JSONLink.createLink(API.MIXINS, mixins.getURI()));
-
-            children = new JSONChildren(this, node);
-            addLink(JSONLink.createLink(API.CHILDREN, children.getURI()));
-
-            versions = new JSONVersions(this, node);
-            addLink(JSONLink.createLink(API.VERSIONS, versions.getURI()));
-        } else {
-            properties = null;
-            mixins = null;
-            children = null;
-            versions = null;
-        }
-    }
-
-    @Override
-    protected String getUnescapedTypeName(Node item) throws RepositoryException {
-        return item.getPrimaryNodeType().getName();
-    }
-
-    public JSONChildren getJSONChildren() {
-        return children;
-    }
-
-    @XmlElement
-    public Map<String, JSONNode> getChildren() {
-        return children != null ? children.getChildren() : null;
-    }
-
-    public JSONProperties getJSONProperties() {
-        return properties;
-    }
-
-    @XmlElement
-    public Map<String, JSONProperty> getProperties() {
-        return properties != null ? properties.getProperties() : null;
-    }
-
-    public JSONProperty getProperty(String property) {
-        property = URIUtils.escape(property);
-        return getProperties().get(property);
-    }
-
-    public JSONMixins getJSONMixins() {
-        return mixins;
-    }
-
-    @XmlElement
-    public Map<String, JSONMixin> getMixins() {
-        return mixins != null ? mixins.getMixins() : null;
-    }
-
-    public JSONVersions getJSONVersions() {
-        return versions;
-    }
-
-    @XmlElement
-    public Map<String, JSONVersion> getVersions() {
-        return versions != null ? versions.getVersions() : null;
-    }
-
-    public String getId() {
-        return id;
-    }
 }

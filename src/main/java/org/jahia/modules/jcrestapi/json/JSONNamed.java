@@ -69,84 +69,27 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.json;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.model.JSONLinkable;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-@JsonDeserialize(using = JSONMixins.MixinsDeserializer.class)
-public class JSONMixins extends JSONSubElementContainer {
+public class JSONNamed extends JSONLinkable {
     @XmlElement
-    private Map<String, JSONMixin> mixins;
+    private String name;
 
-    public JSONMixins() {
+    protected void initWith(String uri, String name) {
+        super.initWith(uri);
+        this.name = name;
     }
 
-    public JSONMixins(JSONNode parent, Node node) throws RepositoryException {
-        super(parent, API.MIXINS);
-
-        final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
-        if (mixinNodeTypes != null) {
-            mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
-            for (NodeType mixinNodeType : mixinNodeTypes) {
-                final String name = mixinNodeType.getName();
-                mixins.put(URIUtils.escape(name), new JSONMixin(node, mixinNodeType));
-            }
-        }
-    }
-
-    public Map<String, JSONMixin> getMixins() {
-        return mixins;
-    }
-
-    public static class MixinsDeserializer extends JsonDeserializer<JSONMixins> {
-        @Override
-        public JSONMixins deserialize(JsonParser parser, DeserializationContext context) throws IOException {
-            ObjectCodec codec = parser.getCodec();
-            ObjectNode root = codec.readTree(parser);
-
-            final int size = root.size();
-            if (size > 0) {
-                final JSONMixins mixins = new JSONMixins();
-                final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
-                while (fields.hasNext()) {
-                    final Map.Entry<String, JsonNode> field = fields.next();
-                    mixins.addChild(field.getKey(), codec.treeToValue(field.getValue(), JSONMixin.class));
-                }
-
-                return mixins;
-            } else {
-                return null;
-            }
-        }
-    }
-
-    private void addChild(String name, JSONMixin mixin) {
-        if (mixins == null) {
-            mixins = new HashMap<String, JSONMixin>(7);
-        }
-
-        mixins.put(name, mixin);
+    public String getName() {
+        return name;
     }
 }

@@ -69,7 +69,7 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.json;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -82,9 +82,8 @@ import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
@@ -96,66 +95,58 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-@JsonDeserialize(using = JSONProperties.PropertiesDeserializer.class)
-public class JSONProperties extends JSONSubElementContainer {
+@JsonDeserialize(using = JSONMixins.MixinsDeserializer.class)
+public class JSONMixins extends JSONSubElementContainer {
     @XmlElement
-    private Map<String, JSONProperty> properties;
+    private Map<String, JSONMixin> mixins;
 
-    public JSONProperties() {
+    public JSONMixins() {
     }
 
-    public JSONProperties(JSONNode parent, Node node) throws RepositoryException {
-        initWith(parent, node);
-    }
+    public JSONMixins(JSONNode parent, Node node) throws RepositoryException {
+        super(parent, API.MIXINS);
 
-    public void initWith(JSONNode parent, Node node) throws RepositoryException {
-        super.initWith(parent, API.PROPERTIES);
-
-        final PropertyIterator props = node.getProperties();
-
-        // properties URI builder
-        if (props != null) {
-            properties = new HashMap<String, JSONProperty>((int) props.getSize());
-            while (props.hasNext()) {
-                Property property = props.nextProperty();
-                final String propertyName = property.getName();
-
-                // add property
-                this.properties.put(URIUtils.escape(propertyName), new JSONProperty(property));
+        final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
+        if (mixinNodeTypes != null) {
+            mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
+            for (NodeType mixinNodeType : mixinNodeTypes) {
+                final String name = mixinNodeType.getName();
+                mixins.put(URIUtils.escape(name), new JSONMixin(node, mixinNodeType));
             }
         }
     }
 
-    public Map<String, JSONProperty> getProperties() {
-        return properties;
+    public Map<String, JSONMixin> getMixins() {
+        return mixins;
     }
 
-    public void addProperty(String name, JSONProperty property) {
-        if (properties == null) {
-            properties = new HashMap<String, JSONProperty>(7);
-        }
-        properties.put(name, property);
-    }
-
-    public static class PropertiesDeserializer extends JsonDeserializer<JSONProperties> {
+    public static class MixinsDeserializer extends JsonDeserializer<JSONMixins> {
         @Override
-        public JSONProperties deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+        public JSONMixins deserialize(JsonParser parser, DeserializationContext context) throws IOException {
             ObjectCodec codec = parser.getCodec();
             ObjectNode root = codec.readTree(parser);
 
             final int size = root.size();
             if (size > 0) {
-                final JSONProperties properties = new JSONProperties();
+                final JSONMixins mixins = new JSONMixins();
                 final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
                 while (fields.hasNext()) {
                     final Map.Entry<String, JsonNode> field = fields.next();
-                    properties.addProperty(field.getKey(), codec.treeToValue(field.getValue(), JSONProperty.class));
+                    mixins.addChild(field.getKey(), codec.treeToValue(field.getValue(), JSONMixin.class));
                 }
 
-                return properties;
+                return mixins;
             } else {
                 return null;
             }
         }
+    }
+
+    private void addChild(String name, JSONMixin mixin) {
+        if (mixins == null) {
+            mixins = new HashMap<String, JSONMixin>(7);
+        }
+
+        mixins.put(name, mixin);
     }
 }

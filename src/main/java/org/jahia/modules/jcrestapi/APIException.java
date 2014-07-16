@@ -71,7 +71,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.model.JSONItem;
+import org.jahia.modules.jcrestapi.json.JSONItem;
 
 import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.annotation.XmlElement;
@@ -83,6 +83,7 @@ import java.util.List;
  */
 public class APIException extends WebApplicationException {
     private final JSONError error;
+
     public APIException(Throwable e) {
         this(e, null);
     }

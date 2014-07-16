@@ -69,36 +69,93 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.json;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.NONE)
-public class JSONSubElementContainer extends JSONLinkable {
-    protected JSONNode parent;
+@JsonDeserialize(using = JSONProperties.PropertiesDeserializer.class)
+public class JSONProperties extends JSONSubElementContainer {
+    @XmlElement
+    private Map<String, JSONProperty> properties;
 
-    public JSONSubElementContainer() {
+    public JSONProperties() {
     }
 
-    public JSONSubElementContainer(JSONNode parent, String name) {
-        initWith(parent, name);
+    public JSONProperties(JSONNode parent, Node node) throws RepositoryException {
+        initWith(parent, node);
     }
 
-    public void initWith(JSONNode parent, String name) {
-        super.initWith(URIUtils.getChildURI(parent.getURI(), name, false));
-        this.parent = parent;
+    public void initWith(JSONNode parent, Node node) throws RepositoryException {
+        super.initWith(parent, API.PROPERTIES);
 
-        addLink(JSONLink.createLink(API.PARENT, parent.getURI()));
+        final PropertyIterator props = node.getProperties();
+
+        // properties URI builder
+        if (props != null) {
+            properties = new HashMap<String, JSONProperty>((int) props.getSize());
+            while (props.hasNext()) {
+                Property property = props.nextProperty();
+                final String propertyName = property.getName();
+
+                // add property
+                this.properties.put(URIUtils.escape(propertyName), new JSONProperty(property));
+            }
+        }
     }
 
+    public Map<String, JSONProperty> getProperties() {
+        return properties;
+    }
 
+    public void addProperty(String name, JSONProperty property) {
+        if (properties == null) {
+            properties = new HashMap<String, JSONProperty>(7);
+        }
+        properties.put(name, property);
+    }
+
+    public static class PropertiesDeserializer extends JsonDeserializer<JSONProperties> {
+        @Override
+        public JSONProperties deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+            ObjectCodec codec = parser.getCodec();
+            ObjectNode root = codec.readTree(parser);
+
+            final int size = root.size();
+            if (size > 0) {
+                final JSONProperties properties = new JSONProperties();
+                final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
+                while (fields.hasNext()) {
+                    final Map.Entry<String, JsonNode> field = fields.next();
+                    properties.addProperty(field.getKey(), codec.treeToValue(field.getValue(), JSONProperty.class));
+                }
+
+                return properties;
+            } else {
+                return null;
+            }
+        }
+    }
 }

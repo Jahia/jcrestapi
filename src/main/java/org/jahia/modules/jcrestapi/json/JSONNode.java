@@ -69,74 +69,145 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.model;
+package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.api.Constants;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.APIExceptionMapper;
+import org.jahia.modules.jcrestapi.APIException;
+import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.model.JSONLink;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.version.Version;
-import javax.jcr.version.VersionHistory;
-import javax.jcr.version.VersionIterator;
-import javax.jcr.version.VersionManager;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * A JSON representation of a JCR node. <p/>
+ * <pre>
+ * "name" : <the node's unescaped name>,
+ * "type" : <the node's node type name>,
+ * "properties" : <properties representation>,
+ * "mixins" : <mixins representation>,
+ * "children" : <children representation>,
+ * "versions" : <versions representation>,
+ * "links" : {
+ * "self" : "<URI identifying the resource associated with this node>",
+ * "type" : "<URI identifying the resource associated with this node's type>",
+ * "properties" : "<URI identifying the resource associated with this node's properties>",
+ * "mixins" : "<URI identifying the resource associated with this node's mixins>",
+ * "children" : "<URI identifying the resource associated with this node's children>",
+ * "versions" : "<URI identifying the resource associated with this node's versions>"
+ * }
+ * </pre>
+ *
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONVersions extends JSONSubElementContainer {
+@XmlAccessorType(XmlAccessType.NONE)
+public class JSONNode extends JSONItem<Node> {
+    private JSONMixins mixins;
+    private JSONVersions versions;
+    protected JSONProperties properties;
+    protected JSONChildren children;
+    private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
     @XmlElement
-    private Map<String, JSONVersion> versions;
+    protected String id;
 
-    public JSONVersions(JSONNode parent, Node node) throws RepositoryException {
-        super(parent, API.VERSIONS);
 
-        final VersionHistory versionHistory = getVersionHistoryFor(node);
-        if (versionHistory != null) {
-            final VersionIterator allVersions = versionHistory.getAllVersions();
-            versions = new LinkedHashMap<String, JSONVersion>((int) allVersions.getSize());
-            while (allVersions.hasNext()) {
-                final Version version = allVersions.nextVersion();
-                versions.put(version.getName(), new JSONVersion(node, version));
-            }
+    public JSONNode() {
+    }
+
+    public JSONNode(Node node, int depth) throws RepositoryException {
+        initWith(node, depth);
+    }
+
+    public String asJSONString() {
+        try {
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new APIException(e, "asJSONString", null, id, null, null, null);
+        }
+    }
+
+    public void initWith(Node node, int depth) throws RepositoryException {
+        super.initWith(node);
+        id = node.getIdentifier();
+
+        if (depth > 0) {
+            properties = new JSONProperties(this, node);
+            addLink(JSONLink.createLink(API.PROPERTIES, properties.getURI()));
+
+            mixins = new JSONMixins(this, node);
+            addLink(JSONLink.createLink(API.MIXINS, mixins.getURI()));
+
+            children = new JSONChildren(this, node);
+            addLink(JSONLink.createLink(API.CHILDREN, children.getURI()));
+
+            versions = new JSONVersions(this, node);
+            addLink(JSONLink.createLink(API.VERSIONS, versions.getURI()));
         } else {
-            versions = Collections.emptyMap();
+            properties = null;
+            mixins = null;
+            children = null;
+            versions = null;
         }
     }
 
-    public static VersionHistory getVersionHistoryFor(Node node) throws RepositoryException {
-        if (isNodeVersionable(node)) {
-            final Session session = API.getCurrentSession().session;
-            if (session != null) {
-                final VersionManager versionManager = session.getWorkspace().getVersionManager();
-                final String path = node.getPath();
-
-                try {
-                    return versionManager.getVersionHistory(path);
-                } catch (RepositoryException e) {
-                    // can happen if the node is just created
-                    APIExceptionMapper.LOGGER.debug("Couldn't retrieve the version history for node " + path, e);
-                    return null;
-                }
-            }
-        }
-        return null;
+    @Override
+    protected String getUnescapedTypeName(Node item) throws RepositoryException {
+        return item.getPrimaryNodeType().getName();
     }
 
-    public static boolean isNodeVersionable(Node node) throws RepositoryException {
-        return node.isNodeType(Constants.MIX_VERSIONABLE) || node.isNodeType(Constants.MIX_SIMPLEVERSIONABLE);
+    public JSONChildren getJSONChildren() {
+        return children;
     }
 
-    public Map<String, JSONVersion> getVersions() {
+    @XmlElement
+    public Map<String, JSONNode> getChildren() {
+        return children != null ? children.getChildren() : null;
+    }
+
+    public JSONProperties getJSONProperties() {
+        return properties;
+    }
+
+    @XmlElement
+    public Map<String, JSONProperty> getProperties() {
+        return properties != null ? properties.getProperties() : null;
+    }
+
+    public JSONProperty getProperty(String property) {
+        property = URIUtils.escape(property);
+        return getProperties().get(property);
+    }
+
+    public JSONMixins getJSONMixins() {
+        return mixins;
+    }
+
+    @XmlElement
+    public Map<String, JSONMixin> getMixins() {
+        return mixins != null ? mixins.getMixins() : null;
+    }
+
+    public JSONVersions getJSONVersions() {
         return versions;
+    }
+
+    @XmlElement
+    public Map<String, JSONVersion> getVersions() {
+        return versions != null ? versions.getVersions() : null;
+    }
+
+    public String getId() {
+        return id;
     }
 }
