@@ -74,7 +74,10 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
-import org.jahia.modules.jcrestapi.model.*;
+import org.jahia.modules.jcrestapi.model.JSONItem;
+import org.jahia.modules.jcrestapi.model.JSONNamed;
+import org.jahia.modules.jcrestapi.model.JSONNode;
+import org.jahia.modules.jcrestapi.model.JSONSubElementContainer;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -171,7 +174,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
 
     protected abstract String getSeeOtherURIAsString(Node node);
 
-    protected static class CreateOrUpdateResult<T extends JSONLinkable> {
+    protected static class CreateOrUpdateResult<T extends JSONNamed> {
         final boolean isUpdate;
         final T item;
 
