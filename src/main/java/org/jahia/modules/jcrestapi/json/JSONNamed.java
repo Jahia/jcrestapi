@@ -71,6 +71,8 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import org.jahia.modules.jcrestapi.links.JSONLinkable;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -78,9 +80,13 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONNamed extends JSONBase {
+public class JSONNamed extends JSONBase<JSONLinkable> {
     @XmlElement
     private String name;
+
+    public JSONNamed() {
+        super(new JSONLinkable());
+    }
 
     protected void initWith(String uri, String name) {
         this.name = name;

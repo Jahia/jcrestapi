@@ -39,23 +39,8 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
-import javax.xml.bind.annotation.XmlElement;
-
 /**
  * @author Christophe Laprun
  */
-public abstract class JSONBase<T extends JSONDecorator> {
-    private T decorator;
-
-    protected JSONBase(T decorator) {
-        this.decorator = decorator;
-    }
-
-    @JsonUnwrapped
-    @XmlElement
-    public T getDecorator() {
-        return decorator;
-    }
+public interface JSONDecorator {
 }

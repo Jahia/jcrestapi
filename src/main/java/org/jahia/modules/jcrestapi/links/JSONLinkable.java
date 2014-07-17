@@ -93,7 +93,7 @@ import java.util.Map;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONLinkable {
+public class JSONLinkable implements JSONDecorator {
 
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
