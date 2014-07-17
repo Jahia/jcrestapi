@@ -71,10 +71,12 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -101,6 +103,8 @@ public abstract class JSONSubElementContainer {
 
     public abstract String getSubElementContainerName();
 
+    @JsonUnwrapped
+    @XmlElement
     public JSONLinkable getDecorator() {
         return linkable;
     }

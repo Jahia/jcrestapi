@@ -71,6 +71,7 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -93,6 +94,8 @@ public class JSONNamed {
         return name;
     }
 
+    @JsonUnwrapped
+    @XmlElement
     public JSONLinkable getDecorator() {
         return linkable;
     }
