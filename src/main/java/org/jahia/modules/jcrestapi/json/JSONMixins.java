@@ -116,6 +116,11 @@ public class JSONMixins extends JSONSubElementContainer {
         }
     }
 
+    @Override
+    public String getSubElementContainerName() {
+        return API.MIXINS;
+    }
+
     public Map<String, JSONMixin> getMixins() {
         return mixins;
     }

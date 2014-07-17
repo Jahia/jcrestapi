@@ -80,16 +80,20 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONNamed extends JSONLinkable {
+public class JSONNamed {
     @XmlElement
     private String name;
+    private final JSONLinkable linkable = new JSONLinkable();
 
     protected void initWith(String uri, String name) {
-        super.initWith(uri);
         this.name = name;
     }
 
     public String getName() {
         return name;
+    }
+
+    public JSONLinkable getDecorator() {
+        return linkable;
     }
 }

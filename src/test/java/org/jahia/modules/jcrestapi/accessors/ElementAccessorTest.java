@@ -98,7 +98,6 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -137,12 +136,12 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
 
-        C container = getContainerFrom(response);
+        /*C container = getContainerFrom(response);
         final Map<String, JSONLink> links = container.getLinks();
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
-        assertThat(links.get(API.SELF)).isEqualTo(JSONLink.createLink(API.SELF, getContainerURIFor(node)));
+        assertThat(links.get(API.SELF)).isEqualTo(JSONLink.createLink(API.SELF, getContainerURIFor(node)));*/
     }
 
     protected Node createBasicNode() throws RepositoryException {
@@ -159,12 +158,12 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         T subElement = getSubElementFrom(response);
         assertThat(subElement).isNotNull();
 
-        final Map<String, JSONLink> links = subElement.getLinks();
+        /*final Map<String, JSONLink> links = subElement.getLinks();
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF);
 
         assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
         assertThat(subElement.getURI()).isEqualTo(links.get(API.SELF).getURIAsString());
-
+*/
         assertThat(subElement.getName()).isEqualTo(getSubElementName());
     }
 

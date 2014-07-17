@@ -113,6 +113,11 @@ public class JSONVersions extends JSONSubElementContainer {
         }
     }
 
+    @Override
+    public String getSubElementContainerName() {
+        return API.VERSIONS;
+    }
+
     public static VersionHistory getVersionHistoryFor(Node node) throws RepositoryException {
         if (isNodeVersionable(node)) {
             final Session session = API.getCurrentSession().session;

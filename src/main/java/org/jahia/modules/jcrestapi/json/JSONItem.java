@@ -71,13 +71,9 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.links.JSONLink;
 
 import javax.jcr.Item;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -100,17 +96,7 @@ public abstract class JSONItem<T extends Item> extends JSONNamed {
         initWith(URIUtils.getURIFor(item), item.getName());
         this.type = getUnescapedTypeName(item);
 
-        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(item))));
-        Node parent;
-        try {
-            parent = item.getParent();
-        } catch (ItemNotFoundException e) {
-            // expected when the item is root node, specify that parent is itself
-            parent = (Node) item;
-        }
-        addLink(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
-
-        addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(URIUtils.escape(item.getPath()), true)));
+        getDecorator().initFrom(this, item);
     }
 
     public JSONItem(T item) throws RepositoryException {
@@ -121,9 +107,9 @@ public abstract class JSONItem<T extends Item> extends JSONNamed {
         return type;
     }
 
-    protected String getTypeChildPath(T item) throws RepositoryException {
+    public String getTypeChildPath(T item) throws RepositoryException {
         return URIUtils.escape(type);
     }
 
-    protected abstract String getUnescapedTypeName(T item) throws RepositoryException;
+    public abstract String getUnescapedTypeName(T item) throws RepositoryException;
 }

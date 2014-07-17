@@ -85,7 +85,6 @@ import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -122,12 +121,12 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         // check that the return JSONNode is the same as the one we called perform on
         assertThat(jsonNode.getId()).isEqualTo(node.getIdentifier());
 
-        final Map<String, JSONLink> links = jsonNode.getLinks();
+        /*final Map<String, JSONLink> links = jsonNode.getLinks();
 
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getParent().getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
-        assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
+        assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));*/
     }
 
     @Override

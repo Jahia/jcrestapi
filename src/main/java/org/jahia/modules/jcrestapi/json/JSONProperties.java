@@ -108,6 +108,11 @@ public class JSONProperties extends JSONSubElementContainer {
         initWith(parent, node);
     }
 
+    @Override
+    public String getSubElementContainerName() {
+        return API.PROPERTIES;
+    }
+
     public void initWith(JSONNode parent, Node node) throws RepositoryException {
         super.initWith(parent, API.PROPERTIES);
 

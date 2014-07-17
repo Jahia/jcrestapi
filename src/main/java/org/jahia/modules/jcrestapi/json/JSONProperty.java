@@ -71,9 +71,7 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.links.JSONLink;
 
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
@@ -100,6 +98,8 @@ public class JSONProperty extends JSONItem<Property> {
     @XmlElement
     private boolean reference;
 
+    private boolean path;
+
     public JSONProperty() {
     }
 
@@ -109,38 +109,23 @@ public class JSONProperty extends JSONItem<Property> {
         // check whether we need to add a target link
         final int type = property.getType();
         reference = type == PropertyType.PATH || type == PropertyType.REFERENCE || type == PropertyType.WEAKREFERENCE;
+        path = PropertyType.PATH == type;
 
         // retrieve value
         this.multiValued = property.isMultiple();
         if (multiValued) {
             final Value[] values = property.getValues();
             value = new Object[values.length];
-            String[] links = null;
-            if (reference) {
-                links = new String[values.length];
-            }
 
             for (int i = 0; i < values.length; i++) {
                 final Value val = values[i];
                 ((Object[]) value)[i] = convertValue(val);
-                if (reference) {
-                    links[i] = getTargetLink(val.getString(), type);
-                }
-            }
-
-            if (reference) {
-                addLink(JSONLink.createLink(API.TARGET, links));
             }
         } else {
             this.value = convertValue(property.getValue());
-            if (reference) {
-                addLink(JSONLink.createLink(API.TARGET, getTargetLink(property.getString(), type)));
-            }
         }
-    }
 
-    private String getTargetLink(String valueAsString, int type) throws RepositoryException {
-        return PropertyType.PATH == type ? URIUtils.getByPathURI(valueAsString) : URIUtils.getIdURI(valueAsString);
+        getDecorator().initFrom(this);
     }
 
     public JSONProperty(Property property) throws RepositoryException {
@@ -148,7 +133,7 @@ public class JSONProperty extends JSONItem<Property> {
     }
 
     @Override
-    protected String getUnescapedTypeName(Property item) throws RepositoryException {
+    public String getUnescapedTypeName(Property item) throws RepositoryException {
         return getHumanReadablePropertyType(item.getType());
     }
 
@@ -165,7 +150,7 @@ public class JSONProperty extends JSONItem<Property> {
      * @throws RepositoryException
      */
     @Override
-    protected String getTypeChildPath(Property item) throws RepositoryException {
+    public String getTypeChildPath(Property item) throws RepositoryException {
         // get declaring node type
         final NodeType declaringNodeType = item.getDefinition().getDeclaringNodeType();
 
@@ -289,5 +274,13 @@ public class JSONProperty extends JSONItem<Property> {
                 break;
         }
         return theValue;
+    }
+
+    public boolean isReference() {
+        return reference;
+    }
+
+    public boolean isPath() {
+        return path;
     }
 }

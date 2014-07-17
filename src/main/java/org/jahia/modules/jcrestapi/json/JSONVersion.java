@@ -72,7 +72,6 @@
 package org.jahia.modules.jcrestapi.json;
 
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.links.JSONLink;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -100,17 +99,6 @@ public class JSONVersion extends JSONNamed {
         super.initWith(URIUtils.getURIFor(version), version.getName());
 
         this.created = version.getCreated();
-        final Version linearPredecessor = version.getLinearPredecessor();
-        if (linearPredecessor != null) {
-            addLink(JSONLink.createLink("previous", URIUtils.getURIFor(linearPredecessor)));
-        }
-        final Version linearSuccessor = version.getLinearSuccessor();
-        if (linearSuccessor != null) {
-            addLink(JSONLink.createLink("next", URIUtils.getURIFor(linearSuccessor)));
-        }
-        final Node frozenNode = version.getFrozenNode();
-        if (frozenNode != null) {
-            addLink(JSONLink.createLink("nodeAtVersion", URIUtils.getURIFor(frozenNode)));
-        }
+        getDecorator().initFrom(this, version);
     }
 }

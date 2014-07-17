@@ -71,9 +71,7 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.links.JSONLink;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -105,8 +103,6 @@ public class JSONMixin extends JSONNamed {
 
         this.type = item.getName();
 
-        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(URIUtils.escape(this.type))));
-
         final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
         if (propertyDefinitions != null) {
             properties = new HashMap<String, String>(propertyDefinitions.length);
@@ -114,9 +110,15 @@ public class JSONMixin extends JSONNamed {
                 properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
             }
         }
+
+        getDecorator().initFrom(this);
     }
 
     public JSONMixin(Node nodeWithMixin, NodeType item) throws RepositoryException {
         initWith(nodeWithMixin, item);
+    }
+
+    public String getType() {
+        return type;
     }
 }

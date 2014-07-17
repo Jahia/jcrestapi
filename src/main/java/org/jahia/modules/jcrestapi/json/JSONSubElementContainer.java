@@ -71,9 +71,6 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.links.JSONLink;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -85,8 +82,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONSubElementContainer extends JSONLinkable {
+public abstract class JSONSubElementContainer {
     protected JSONNode parent;
+    private final JSONLinkable linkable = new JSONLinkable();
 
     public JSONSubElementContainer() {
     }
@@ -96,11 +94,18 @@ public class JSONSubElementContainer extends JSONLinkable {
     }
 
     public void initWith(JSONNode parent, String name) {
-        super.initWith(URIUtils.getChildURI(parent.getURI(), name, false));
         this.parent = parent;
 
-        addLink(JSONLink.createLink(API.PARENT, parent.getURI()));
+        getDecorator().initFrom(this);
     }
 
+    public abstract String getSubElementContainerName();
 
+    public JSONLinkable getDecorator() {
+        return linkable;
+    }
+
+    public JSONNode getParent() {
+        return parent;
+    }
 }

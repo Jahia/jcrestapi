@@ -73,7 +73,13 @@ package org.jahia.modules.jcrestapi.links;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.json.*;
 
+import javax.jcr.Item;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -111,7 +117,7 @@ public class JSONLinkable {
         addLink(JSONLink.createLink(API.SELF, uri));
     }
 
-    protected void addLink(JSONLink link) {
+    public void addLink(JSONLink link) {
         links.put(link.getRel(), link);
     }
 
@@ -121,5 +127,76 @@ public class JSONLinkable {
 
     public Map<String, JSONLink> getLinks() {
         return Collections.unmodifiableMap(links);
+    }
+
+    public void initFrom(JSONSubElementContainer container) {
+        final String uri = container.getParent().getDecorator().getURI();
+        initWith(URIUtils.getChildURI(uri, container.getSubElementContainerName(), false));
+        addLink(JSONLink.createLink(API.PARENT, uri));
+    }
+
+    public <T extends Item> void initFrom(JSONItem<T> jsonItem, T item) throws RepositoryException {
+        initWith(URIUtils.getURIFor(item));
+        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(jsonItem.getTypeChildPath(item))));
+
+        Node parent;
+        try {
+            parent = item.getParent();
+        } catch (ItemNotFoundException e) {
+            // expected when the item is root node, specify that parent is itself
+            parent = (Node) item;
+        }
+        addLink(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
+
+        addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(URIUtils.escape(item.getPath()), true)));
+    }
+
+    public void initFrom(JSONNode jsonNode) {
+        addLink(JSONLink.createLink(API.PROPERTIES, jsonNode.getJSONProperties().getDecorator().getURI()));
+        addLink(JSONLink.createLink(API.MIXINS, jsonNode.getJSONMixins().getDecorator().getURI()));
+        addLink(JSONLink.createLink(API.CHILDREN, jsonNode.getJSONChildren().getDecorator().getURI()));
+        addLink(JSONLink.createLink(API.VERSIONS, jsonNode.getJSONVersions().getDecorator().getURI()));
+    }
+
+    public void initFrom(JSONProperty jsonProperty) throws RepositoryException {
+        final boolean reference = jsonProperty.isReference();
+        if (reference) {
+            if (jsonProperty.isMultiValued()) {
+                final String[] values = jsonProperty.getValueAsStringArray();
+                final String[] links = new String[values.length];
+
+                for (int i = 0; i < values.length; i++) {
+                    final String val = values[i];
+                    links[i] = getTargetLink(val, jsonProperty.isPath());
+                }
+
+                addLink(JSONLink.createLink(API.TARGET, links));
+            } else {
+                addLink(JSONLink.createLink(API.TARGET, getTargetLink(jsonProperty.getValueAsString(), jsonProperty.isPath())));
+            }
+        }
+    }
+
+    private String getTargetLink(String valueAsString, boolean path) throws RepositoryException {
+        return path ? URIUtils.getByPathURI(valueAsString) : URIUtils.getIdURI(valueAsString);
+    }
+
+    public void initFrom(JSONMixin mixin) {
+        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(URIUtils.escape(mixin.getType()))));
+    }
+
+    public void initFrom(JSONVersion jsonVersion, Version version) throws RepositoryException {
+        final Version linearPredecessor = version.getLinearPredecessor();
+        if (linearPredecessor != null) {
+            addLink(JSONLink.createLink("previous", URIUtils.getURIFor(linearPredecessor)));
+        }
+        final Version linearSuccessor = version.getLinearSuccessor();
+        if (linearSuccessor != null) {
+            addLink(JSONLink.createLink("next", URIUtils.getURIFor(linearSuccessor)));
+        }
+        final Node frozenNode = version.getFrozenNode();
+        if (frozenNode != null) {
+            addLink(JSONLink.createLink("nodeAtVersion", URIUtils.getURIFor(frozenNode)));
+        }
     }
 }

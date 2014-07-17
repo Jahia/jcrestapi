@@ -107,6 +107,11 @@ public class JSONChildren extends JSONSubElementContainer {
         initWith(parent, node);
     }
 
+    @Override
+    public String getSubElementContainerName() {
+        return API.CHILDREN;
+    }
+
     private void initWith(JSONNode parent, Node node) throws RepositoryException {
         super.initWith(parent, API.CHILDREN);
 

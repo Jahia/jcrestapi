@@ -74,10 +74,8 @@ package org.jahia.modules.jcrestapi.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.links.JSONLink;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -143,16 +141,14 @@ public class JSONNode extends JSONItem<Node> {
 
         if (depth > 0) {
             properties = new JSONProperties(this, node);
-            addLink(JSONLink.createLink(API.PROPERTIES, properties.getURI()));
 
             mixins = new JSONMixins(this, node);
-            addLink(JSONLink.createLink(API.MIXINS, mixins.getURI()));
 
             children = new JSONChildren(this, node);
-            addLink(JSONLink.createLink(API.CHILDREN, children.getURI()));
 
             versions = new JSONVersions(this, node);
-            addLink(JSONLink.createLink(API.VERSIONS, versions.getURI()));
+
+            getDecorator().initFrom(this);
         } else {
             properties = null;
             mixins = null;
@@ -162,7 +158,7 @@ public class JSONNode extends JSONItem<Node> {
     }
 
     @Override
-    protected String getUnescapedTypeName(Node item) throws RepositoryException {
+    public String getUnescapedTypeName(Node item) throws RepositoryException {
         return item.getPrimaryNodeType().getName();
     }
 
