@@ -100,7 +100,7 @@ public class JSONProperty extends JSONItem<Property> {
 
     private boolean path;
 
-    public JSONProperty() {
+    protected JSONProperty() {
     }
 
     protected JSONProperty(Property property) throws RepositoryException {
