@@ -85,21 +85,23 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public abstract class JSONItem<T extends Item> extends JSONNamed {
+public abstract class JSONItem<T extends Item, D extends JSONDecorator<D>> extends JSONNamed<D> {
     @XmlElement
     private String type;
 
-    protected JSONItem() {
+    protected JSONItem(D decorator) {
+        super(decorator);
     }
 
     public void initWith(T item) throws RepositoryException {
         initWith(URIUtils.getURIFor(item), item.getName());
         this.type = getUnescapedTypeName(item);
 
-        getDecorator().initFrom(this, item);
+        getDecoratorOrNullOpIfNull().initFrom(this, item);
     }
 
-    protected JSONItem(T item) throws RepositoryException {
+    protected JSONItem(D decorator, T item) throws RepositoryException {
+        this(decorator);
         initWith(item);
     }
 

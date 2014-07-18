@@ -41,13 +41,17 @@ package org.jahia.modules.jcrestapi.json;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
+import javax.jcr.Item;
+import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
  * @author Christophe Laprun
  */
-public abstract class JSONBase<T extends JSONDecorator> {
+public abstract class JSONBase<T extends JSONDecorator<T>> {
     private T decorator;
+    private final JSONDecorator<T> nullOpDecorator = new NullDecorator();
 
     protected JSONBase(T decorator) {
         this.decorator = decorator;
@@ -57,5 +61,51 @@ public abstract class JSONBase<T extends JSONDecorator> {
     @XmlElement
     public T getDecorator() {
         return decorator;
+    }
+
+    protected JSONDecorator<T> getDecoratorOrNullOpIfNull() {
+        return decorator != null ? decorator : nullOpDecorator;
+    }
+
+    protected T getNewDecoratorOrNull() {
+        return decorator == null ? null : decorator.newInstance();
+    }
+
+    private class NullDecorator implements JSONDecorator<T> {
+
+        @Override
+        public void initFrom(JSONSubElementContainer<T> subElementContainer) {
+
+        }
+
+        @Override
+        public <I extends Item> void initFrom(JSONItem<I, T> jsonItem, I item) throws RepositoryException {
+
+        }
+
+        @Override
+        public void initFrom(JSONNode<T> jsonNode) {
+
+        }
+
+        @Override
+        public void initFrom(JSONProperty<T> jsonProperty) throws RepositoryException {
+
+        }
+
+        @Override
+        public T newInstance() {
+            return null;
+        }
+
+        @Override
+        public void initFrom(JSONVersion<T> jsonVersion, Version version) throws RepositoryException {
+
+        }
+
+        @Override
+        public void initFrom(JSONMixin<T> jsonMixin) {
+
+        }
     }
 }

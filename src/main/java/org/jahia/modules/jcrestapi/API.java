@@ -122,7 +122,12 @@ public class API {
 
     private static final ThreadLocal<SessionInfo> SESSION_HOLDER = new ThreadLocal<SessionInfo>();
 
-    protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>();
+    protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>() {
+        @Override
+        public JSONLinkable createDecorator() {
+            return new JSONLinkable();
+        }
+    };
 
     static {
         Properties props = new Properties();

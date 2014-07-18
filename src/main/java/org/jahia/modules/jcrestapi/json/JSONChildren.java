@@ -96,14 +96,16 @@ import java.util.Map;
  */
 @XmlRootElement
 @JsonDeserialize(using = JSONChildren.ChildrenDeserializer.class)
-public class JSONChildren extends JSONSubElementContainer {
+public class JSONChildren<D extends JSONDecorator<D>> extends JSONSubElementContainer<D> {
     @XmlElement
-    private Map<String, JSONNode> children;
+    private Map<String, JSONNode<D>> children;
 
-    protected JSONChildren() {
+    private JSONChildren() {
+        super(null);
     }
 
-    protected JSONChildren(JSONNode parent, Node node) throws RepositoryException {
+    protected JSONChildren(JSONNode<D> parent, Node node) throws RepositoryException {
+        super(parent);
         initWith(parent, node);
     }
 
@@ -112,21 +114,21 @@ public class JSONChildren extends JSONSubElementContainer {
         return API.CHILDREN;
     }
 
-    private void initWith(JSONNode parent, Node node) throws RepositoryException {
+    private void initWith(JSONNode<D> parent, Node node) throws RepositoryException {
         super.initWith(parent, API.CHILDREN);
 
         final NodeIterator nodes = node.getNodes();
-        children = new HashMap<String, JSONNode>((int) nodes.getSize());
+        children = new HashMap<String, JSONNode<D>>((int) nodes.getSize());
 
         while (nodes.hasNext()) {
             Node child = nodes.nextNode();
 
             // build child resource URI
-            children.put(URIUtils.escape(child.getName(), child.getIndex()), new JSONNode(child, 0));
+            children.put(URIUtils.escape(child.getName(), child.getIndex()), new JSONNode<D>(getNewDecoratorOrNull(), child, 0));
         }
     }
 
-    Map<String, JSONNode> getChildren() {
+    Map<String, JSONNode<D>> getChildren() {
         return children;
     }
 
@@ -152,9 +154,9 @@ public class JSONChildren extends JSONSubElementContainer {
         }
     }
 
-    private void addChild(String name, JSONNode child) {
+    private void addChild(String name, JSONNode<D> child) {
         if (children == null) {
-            children = new HashMap<String, JSONNode>(7);
+            children = new HashMap<String, JSONNode<D>>(7);
         }
 
         children.put(name, child);

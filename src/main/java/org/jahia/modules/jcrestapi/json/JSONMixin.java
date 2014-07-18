@@ -86,17 +86,19 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONMixin extends JSONNamed {
+public class JSONMixin<D extends JSONDecorator<D>> extends JSONNamed<D> {
     @XmlElement
     private Map<String, String> properties;
 
     @XmlElement
     private String type;
 
-    protected JSONMixin() {
+    protected JSONMixin(D decorator) {
+        super(decorator);
     }
 
-    protected JSONMixin(Node nodeWithMixin, NodeType item) throws RepositoryException {
+    protected JSONMixin(D decorator, Node nodeWithMixin, NodeType item) throws RepositoryException {
+        this(decorator);
         initWith(nodeWithMixin, item);
     }
 
@@ -115,7 +117,7 @@ public class JSONMixin extends JSONNamed {
             }
         }
 
-        getDecorator().initFrom(this);
+        getDecoratorOrNullOpIfNull().initFrom(this);
     }
 
     public String getType() {

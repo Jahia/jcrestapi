@@ -48,37 +48,39 @@ import javax.jcr.version.Version;
 /**
  * @author Christophe Laprun
  */
-public class JSONObjectFactory<T extends JSONDecorator> {
+public abstract class JSONObjectFactory<T extends JSONDecorator<T>> {
 
-    public JSONNode createNode(Node node, int depth) throws RepositoryException {
-        return new JSONNode(node, depth);
+    public abstract T createDecorator();
+
+    public JSONNode<T> createNode(Node node, int depth) throws RepositoryException {
+        return new JSONNode<T>(createDecorator(), node, depth);
     }
 
-    public JSONChildren createChildren(JSONNode parent, Node node) throws RepositoryException {
-        return new JSONChildren(parent, node);
+    public JSONChildren<T> createChildren(JSONNode<T> parent, Node node) throws RepositoryException {
+        return new JSONChildren<T>(parent, node);
     }
 
-    public JSONVersions createVersions(JSONNode parent, Node node) throws RepositoryException {
-        return new JSONVersions(parent, node);
+    public JSONVersions<T> createVersions(JSONNode<T> parent, Node node) throws RepositoryException {
+        return new JSONVersions<T>(parent, node);
     }
 
-    public JSONVersion createVersion(Node node, Version version) throws RepositoryException {
-        return new JSONVersion(node, version);
+    public JSONVersion<T> createVersion(Node node, Version version) throws RepositoryException {
+        return new JSONVersion<T>(createDecorator(), node, version);
     }
 
-    public JSONProperties createProperties(JSONNode parent, Node node) throws RepositoryException {
-        return new JSONProperties(parent, node);
+    public JSONProperties<T> createProperties(JSONNode parent, Node node) throws RepositoryException {
+        return new JSONProperties<T>(parent, node);
     }
 
-    public JSONMixin createMixin(Node node, NodeType mixin) throws RepositoryException {
-        return new JSONMixin(node, mixin);
+    public JSONMixin<T> createMixin(Node node, NodeType mixin) throws RepositoryException {
+        return new JSONMixin<T>(createDecorator(), node, mixin);
     }
 
-    public JSONMixins createMixins(JSONNode parent, Node node) throws RepositoryException {
+    public JSONMixins<T> createMixins(JSONNode parent, Node node) throws RepositoryException {
         return new JSONMixins(parent, node);
     }
 
-    public JSONProperty createProperty(Property property) throws RepositoryException {
-        return new JSONProperty(property);
+    public JSONProperty<T> createProperty(Property property) throws RepositoryException {
+        return new JSONProperty<T>(createDecorator(), property);
     }
 }

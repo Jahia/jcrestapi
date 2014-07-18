@@ -109,21 +109,26 @@ import java.util.Map;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONNode extends JSONItem<Node> {
-    private JSONMixins mixins;
-    private JSONVersions versions;
-    protected JSONProperties properties;
-    protected JSONChildren children;
+public class JSONNode<D extends JSONDecorator<D>> extends JSONItem<Node, D> {
+    private JSONMixins<D> mixins;
+    private JSONVersions<D> versions;
+    protected JSONProperties<D> properties;
+    protected JSONChildren<D> children;
     private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
     @XmlElement
     protected String id;
 
-
-    protected JSONNode() {
+    private JSONNode() {
+        this(null);
     }
 
-    protected JSONNode(Node node, int depth) throws RepositoryException {
+    protected JSONNode(D decorator) {
+        super(decorator);
+    }
+
+    protected JSONNode(D decorator, Node node, int depth) throws RepositoryException {
+        this(decorator);
         initWith(node, depth);
     }
 
@@ -140,15 +145,15 @@ public class JSONNode extends JSONItem<Node> {
         id = node.getIdentifier();
 
         if (depth > 0) {
-            properties = new JSONProperties(this, node);
+            properties = new JSONProperties<D>(this, node);
 
-            mixins = new JSONMixins(this, node);
+            mixins = new JSONMixins<D>(this, node);
 
-            children = new JSONChildren(this, node);
+            children = new JSONChildren<D>(this, node);
 
-            versions = new JSONVersions(this, node);
+            versions = new JSONVersions<D>(this, node);
 
-            getDecorator().initFrom(this);
+            getDecoratorOrNullOpIfNull().initFrom(this);
         } else {
             properties = null;
             mixins = null;
@@ -162,44 +167,44 @@ public class JSONNode extends JSONItem<Node> {
         return item.getPrimaryNodeType().getName();
     }
 
-    public JSONChildren getJSONChildren() {
+    public JSONChildren<D> getJSONChildren() {
         return children;
     }
 
     @XmlElement
-    public Map<String, JSONNode> getChildren() {
+    public Map<String, JSONNode<D>> getChildren() {
         return children != null ? children.getChildren() : null;
     }
 
-    public JSONProperties getJSONProperties() {
+    public JSONProperties<D> getJSONProperties() {
         return properties;
     }
 
     @XmlElement
-    public Map<String, JSONProperty> getProperties() {
+    public Map<String, JSONProperty<D>> getProperties() {
         return properties != null ? properties.getProperties() : null;
     }
 
-    public JSONProperty getProperty(String property) {
+    public JSONProperty<D> getProperty(String property) {
         property = URIUtils.escape(property);
         return getProperties().get(property);
     }
 
-    public JSONMixins getJSONMixins() {
+    public JSONMixins<D> getJSONMixins() {
         return mixins;
     }
 
     @XmlElement
-    public Map<String, JSONMixin> getMixins() {
+    public Map<String, JSONMixin<D>> getMixins() {
         return mixins != null ? mixins.getMixins() : null;
     }
 
-    public JSONVersions getJSONVersions() {
+    public JSONVersions<D> getJSONVersions() {
         return versions;
     }
 
     @XmlElement
-    public Map<String, JSONVersion> getVersions() {
+    public Map<String, JSONVersion<D>> getVersions() {
         return versions != null ? versions.getVersions() : null;
     }
 

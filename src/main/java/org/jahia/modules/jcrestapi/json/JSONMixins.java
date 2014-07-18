@@ -96,22 +96,23 @@ import java.util.Map;
  */
 @XmlRootElement
 @JsonDeserialize(using = JSONMixins.MixinsDeserializer.class)
-public class JSONMixins extends JSONSubElementContainer {
+public class JSONMixins<D extends JSONDecorator<D>> extends JSONSubElementContainer<D> {
     @XmlElement
-    private Map<String, JSONMixin> mixins;
+    private Map<String, JSONMixin<D>> mixins;
 
-    protected JSONMixins() {
+    private JSONMixins() {
+        super(null);
     }
 
-    protected JSONMixins(JSONNode parent, Node node) throws RepositoryException {
-        super(parent, API.MIXINS);
+    protected JSONMixins(JSONNode<D> parent, Node node) throws RepositoryException {
+        super(parent);
 
         final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();
         if (mixinNodeTypes != null) {
-            mixins = new HashMap<String, JSONMixin>(mixinNodeTypes.length);
+            mixins = new HashMap<String, JSONMixin<D>>(mixinNodeTypes.length);
             for (NodeType mixinNodeType : mixinNodeTypes) {
                 final String name = mixinNodeType.getName();
-                mixins.put(URIUtils.escape(name), new JSONMixin(node, mixinNodeType));
+                mixins.put(URIUtils.escape(name), new JSONMixin<D>(getNewDecoratorOrNull(), node, mixinNodeType));
             }
         }
     }
@@ -121,7 +122,7 @@ public class JSONMixins extends JSONSubElementContainer {
         return API.MIXINS;
     }
 
-    public Map<String, JSONMixin> getMixins() {
+    public Map<String, JSONMixin<D>> getMixins() {
         return mixins;
     }
 
@@ -147,9 +148,9 @@ public class JSONMixins extends JSONSubElementContainer {
         }
     }
 
-    private void addChild(String name, JSONMixin mixin) {
+    private void addChild(String name, JSONMixin<D> mixin) {
         if (mixins == null) {
-            mixins = new HashMap<String, JSONMixin>(7);
+            mixins = new HashMap<String, JSONMixin<D>>(7);
         }
 
         mixins.put(name, mixin);

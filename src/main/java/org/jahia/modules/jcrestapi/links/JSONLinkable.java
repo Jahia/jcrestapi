@@ -93,7 +93,7 @@ import java.util.Map;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONLinkable implements JSONDecorator {
+public class JSONLinkable implements JSONDecorator<JSONLinkable> {
 
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
@@ -129,13 +129,13 @@ public class JSONLinkable implements JSONDecorator {
         return Collections.unmodifiableMap(links);
     }
 
-    public void initFrom(JSONSubElementContainer container) {
+    public void initFrom(JSONSubElementContainer<JSONLinkable> container) {
         final String uri = container.getParent().getDecorator().getURI();
         initWith(URIUtils.getChildURI(uri, container.getSubElementContainerName(), false));
         addLink(JSONLink.createLink(API.PARENT, uri));
     }
 
-    public <T extends Item> void initFrom(JSONItem<T> jsonItem, T item) throws RepositoryException {
+    public <T extends Item> void initFrom(JSONItem<T, JSONLinkable> jsonItem, T item) throws RepositoryException {
         initWith(URIUtils.getURIFor(item));
         addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(jsonItem.getTypeChildPath(item))));
 
@@ -151,11 +151,16 @@ public class JSONLinkable implements JSONDecorator {
         addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(URIUtils.escape(item.getPath()), true)));
     }
 
-    public void initFrom(JSONNode jsonNode) {
+    public void initFrom(JSONNode<JSONLinkable> jsonNode) {
         addLink(JSONLink.createLink(API.PROPERTIES, jsonNode.getJSONProperties().getDecorator().getURI()));
         addLink(JSONLink.createLink(API.MIXINS, jsonNode.getJSONMixins().getDecorator().getURI()));
         addLink(JSONLink.createLink(API.CHILDREN, jsonNode.getJSONChildren().getDecorator().getURI()));
         addLink(JSONLink.createLink(API.VERSIONS, jsonNode.getJSONVersions().getDecorator().getURI()));
+    }
+
+    @Override
+    public JSONLinkable newInstance() {
+        return new JSONLinkable();
     }
 
     public void initFrom(JSONProperty jsonProperty) throws RepositoryException {

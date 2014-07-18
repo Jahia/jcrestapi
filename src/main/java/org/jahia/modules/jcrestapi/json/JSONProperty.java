@@ -87,7 +87,7 @@ import java.util.List;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONProperty extends JSONItem<Property> {
+public class JSONProperty<D extends JSONDecorator<D>> extends JSONItem<Property, D> {
     static final String JCR__PROPERTY_DEFINITION = "jcr__propertyDefinition";
     @XmlElement
     private boolean multiValued;
@@ -100,10 +100,16 @@ public class JSONProperty extends JSONItem<Property> {
 
     private boolean path;
 
-    protected JSONProperty() {
+    private JSONProperty() {
+        this(null);
     }
 
-    protected JSONProperty(Property property) throws RepositoryException {
+    protected JSONProperty(D decorator) {
+        super(decorator);
+    }
+
+    protected JSONProperty(D decorator, Property property) throws RepositoryException {
+        this(decorator);
         initWith(property);
     }
 
@@ -129,7 +135,7 @@ public class JSONProperty extends JSONItem<Property> {
             this.value = convertValue(property.getValue());
         }
 
-        getDecorator().initFrom(this);
+        getDecoratorOrNullOpIfNull().initFrom(this);
     }
 
     @Override

@@ -39,8 +39,25 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import javax.jcr.Item;
+import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
+
 /**
  * @author Christophe Laprun
  */
-public interface JSONDecorator {
+public interface JSONDecorator<T extends JSONDecorator<T>> extends Cloneable {
+    void initFrom(JSONSubElementContainer<T> subElementContainer);
+
+    <I extends Item> void initFrom(JSONItem<I, T> jsonItem, I item) throws RepositoryException;
+
+    void initFrom(JSONNode<T> jsonNode);
+
+    void initFrom(JSONProperty<T> jsonProperty) throws RepositoryException;
+
+    T newInstance();
+
+    void initFrom(JSONVersion<T> jsonVersion, Version version) throws RepositoryException;
+
+    void initFrom(JSONMixin<T> jsonMixin);
 }

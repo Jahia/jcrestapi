@@ -84,14 +84,12 @@ import java.util.Calendar;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONVersion extends JSONNamed {
+public class JSONVersion<D extends JSONDecorator<D>> extends JSONNamed<D> {
     @XmlElement
     private Calendar created;
 
-    protected JSONVersion() {
-    }
-
-    protected JSONVersion(Node parent, Version version) throws RepositoryException {
+    protected JSONVersion(D decorator, Node parent, Version version) throws RepositoryException {
+        super(decorator);
         initWith(parent, version);
     }
 
@@ -99,6 +97,6 @@ public class JSONVersion extends JSONNamed {
         super.initWith(URIUtils.getURIFor(version), version.getName());
 
         this.created = version.getCreated();
-        getDecorator().initFrom(this, version);
+        getDecoratorOrNullOpIfNull().initFrom(this, version);
     }
 }

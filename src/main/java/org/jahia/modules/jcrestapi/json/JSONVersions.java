@@ -92,21 +92,21 @@ import java.util.Map;
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONVersions extends JSONSubElementContainer {
+public class JSONVersions<D extends JSONDecorator<D>> extends JSONSubElementContainer<D> {
 
     @XmlElement
-    private Map<String, JSONVersion> versions;
+    private Map<String, JSONVersion<D>> versions;
 
-    protected JSONVersions(JSONNode parent, Node node) throws RepositoryException {
-        super(parent, API.VERSIONS);
+    protected JSONVersions(JSONNode<D> parent, Node node) throws RepositoryException {
+        super(parent);
 
         final VersionHistory versionHistory = getVersionHistoryFor(node);
         if (versionHistory != null) {
             final VersionIterator allVersions = versionHistory.getAllVersions();
-            versions = new LinkedHashMap<String, JSONVersion>((int) allVersions.getSize());
+            versions = new LinkedHashMap<String, JSONVersion<D>>((int) allVersions.getSize());
             while (allVersions.hasNext()) {
                 final Version version = allVersions.nextVersion();
-                versions.put(version.getName(), new JSONVersion(node, version));
+                versions.put(version.getName(), new JSONVersion<D>(getNewDecoratorOrNull(), node, version));
             }
         } else {
             versions = Collections.emptyMap();
@@ -141,7 +141,7 @@ public class JSONVersions extends JSONSubElementContainer {
         return node.isNodeType(Constants.MIX_VERSIONABLE) || node.isNodeType(Constants.MIX_SIMPLEVERSIONABLE);
     }
 
-    public Map<String, JSONVersion> getVersions() {
+    public Map<String, JSONVersion<D>> getVersions() {
         return versions;
     }
 }

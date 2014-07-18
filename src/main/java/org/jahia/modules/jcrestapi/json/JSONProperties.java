@@ -97,14 +97,16 @@ import java.util.Map;
  */
 @XmlRootElement
 @JsonDeserialize(using = JSONProperties.PropertiesDeserializer.class)
-public class JSONProperties extends JSONSubElementContainer {
+public class JSONProperties<D extends JSONDecorator<D>> extends JSONSubElementContainer<D> {
     @XmlElement
-    private Map<String, JSONProperty> properties;
+    private Map<String, JSONProperty<D>> properties;
 
-    protected JSONProperties() {
+    private JSONProperties() {
+        super(null);
     }
 
-    protected JSONProperties(JSONNode parent, Node node) throws RepositoryException {
+    protected JSONProperties(JSONNode<D> parent, Node node) throws RepositoryException {
+        super(parent);
         initWith(parent, node);
     }
 
@@ -113,31 +115,31 @@ public class JSONProperties extends JSONSubElementContainer {
         return API.PROPERTIES;
     }
 
-    public void initWith(JSONNode parent, Node node) throws RepositoryException {
+    public void initWith(JSONNode<D> parent, Node node) throws RepositoryException {
         super.initWith(parent, API.PROPERTIES);
 
         final PropertyIterator props = node.getProperties();
 
         // properties URI builder
         if (props != null) {
-            properties = new HashMap<String, JSONProperty>((int) props.getSize());
+            properties = new HashMap<String, JSONProperty<D>>((int) props.getSize());
             while (props.hasNext()) {
                 Property property = props.nextProperty();
                 final String propertyName = property.getName();
 
                 // add property
-                this.properties.put(URIUtils.escape(propertyName), new JSONProperty(property));
+                this.properties.put(URIUtils.escape(propertyName), new JSONProperty<D>(getNewDecoratorOrNull(), property));
             }
         }
     }
 
-    public Map<String, JSONProperty> getProperties() {
+    public Map<String, JSONProperty<D>> getProperties() {
         return properties;
     }
 
-    public void addProperty(String name, JSONProperty property) {
+    public void addProperty(String name, JSONProperty<D> property) {
         if (properties == null) {
-            properties = new HashMap<String, JSONProperty>(7);
+            properties = new HashMap<String, JSONProperty<D>>(7);
         }
         properties.put(name, property);
     }

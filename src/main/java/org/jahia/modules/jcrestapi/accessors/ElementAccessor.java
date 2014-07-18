@@ -91,7 +91,12 @@ import java.util.List;
  * @author Christophe Laprun
  */
 public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
-    protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>();
+    protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>() {
+        @Override
+        public JSONLinkable createDecorator() {
+            return new JSONLinkable();
+        }
+    };
 
     protected Object getElement(Node node, String subElement) throws RepositoryException {
         if (!Utils.exists(subElement)) {
