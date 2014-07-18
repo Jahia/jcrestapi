@@ -85,11 +85,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public abstract class JSONSubElementContainer extends JSONBase<JSONLinkable> {
     protected JSONNode parent;
 
-    public JSONSubElementContainer() {
+    protected JSONSubElementContainer() {
         super(new JSONLinkable());
     }
 
-    public JSONSubElementContainer(JSONNode parent, String name) {
+    protected JSONSubElementContainer(JSONNode parent, String name) {
         this();
         initWith(parent, name);
     }

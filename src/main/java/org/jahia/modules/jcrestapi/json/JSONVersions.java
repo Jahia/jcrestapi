@@ -97,7 +97,7 @@ public class JSONVersions extends JSONSubElementContainer {
     @XmlElement
     private Map<String, JSONVersion> versions;
 
-    public JSONVersions(JSONNode parent, Node node) throws RepositoryException {
+    protected JSONVersions(JSONNode parent, Node node) throws RepositoryException {
         super(parent, API.VERSIONS);
 
         final VersionHistory versionHistory = getVersionHistoryFor(node);

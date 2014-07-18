@@ -93,7 +93,11 @@ public class JSONMixin extends JSONNamed {
     @XmlElement
     private String type;
 
-    public JSONMixin() {
+    protected JSONMixin() {
+    }
+
+    protected JSONMixin(Node nodeWithMixin, NodeType item) throws RepositoryException {
+        initWith(nodeWithMixin, item);
     }
 
     public void initWith(Node parentNode, NodeType item) throws RepositoryException {
@@ -112,10 +116,6 @@ public class JSONMixin extends JSONNamed {
         }
 
         getDecorator().initFrom(this);
-    }
-
-    public JSONMixin(Node nodeWithMixin, NodeType item) throws RepositoryException {
-        initWith(nodeWithMixin, item);
     }
 
     public String getType() {

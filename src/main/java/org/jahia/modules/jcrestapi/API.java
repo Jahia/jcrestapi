@@ -73,6 +73,8 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.accessors.*;
 import org.jahia.modules.jcrestapi.json.JSONItem;
+import org.jahia.modules.jcrestapi.json.JSONObjectFactory;
+import org.jahia.modules.jcrestapi.links.JSONLinkable;
 import org.jahia.services.content.JCRSessionFactory;
 import org.jahia.utils.LanguageCodeConverters;
 import org.osgi.service.component.annotations.Component;
@@ -116,9 +118,11 @@ public class API {
     public static final String PARENT = "parent";
     public static final String PATH = "path";
 
-    protected final static Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
+    protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
     private static final ThreadLocal<SessionInfo> SESSION_HOLDER = new ThreadLocal<SessionInfo>();
+
+    protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>();
 
     static {
         Properties props = new Properties();

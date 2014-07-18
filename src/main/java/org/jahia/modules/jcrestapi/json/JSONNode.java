@@ -120,10 +120,10 @@ public class JSONNode extends JSONItem<Node> {
     protected String id;
 
 
-    public JSONNode() {
+    protected JSONNode() {
     }
 
-    public JSONNode(Node node, int depth) throws RepositoryException {
+    protected JSONNode(Node node, int depth) throws RepositoryException {
         initWith(node, depth);
     }
 

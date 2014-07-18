@@ -100,10 +100,10 @@ public class JSONChildren extends JSONSubElementContainer {
     @XmlElement
     private Map<String, JSONNode> children;
 
-    public JSONChildren() {
+    protected JSONChildren() {
     }
 
-    public JSONChildren(JSONNode parent, Node node) throws RepositoryException {
+    protected JSONChildren(JSONNode parent, Node node) throws RepositoryException {
         initWith(parent, node);
     }
 

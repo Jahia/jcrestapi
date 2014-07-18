@@ -103,6 +103,10 @@ public class JSONProperty extends JSONItem<Property> {
     public JSONProperty() {
     }
 
+    protected JSONProperty(Property property) throws RepositoryException {
+        initWith(property);
+    }
+
     public void initWith(Property property) throws RepositoryException {
         super.initWith(property);
 
@@ -126,10 +130,6 @@ public class JSONProperty extends JSONItem<Property> {
         }
 
         getDecorator().initFrom(this);
-    }
-
-    public JSONProperty(Property property) throws RepositoryException {
-        initWith(property);
     }
 
     @Override

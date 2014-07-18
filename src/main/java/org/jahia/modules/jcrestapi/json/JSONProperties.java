@@ -101,10 +101,10 @@ public class JSONProperties extends JSONSubElementContainer {
     @XmlElement
     private Map<String, JSONProperty> properties;
 
-    public JSONProperties() {
+    protected JSONProperties() {
     }
 
-    public JSONProperties(JSONNode parent, Node node) throws RepositoryException {
+    protected JSONProperties(JSONNode parent, Node node) throws RepositoryException {
         initWith(parent, node);
     }
 

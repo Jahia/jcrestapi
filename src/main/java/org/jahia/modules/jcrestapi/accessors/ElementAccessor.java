@@ -74,10 +74,8 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
-import org.jahia.modules.jcrestapi.json.JSONItem;
-import org.jahia.modules.jcrestapi.json.JSONNamed;
-import org.jahia.modules.jcrestapi.json.JSONNode;
-import org.jahia.modules.jcrestapi.json.JSONSubElementContainer;
+import org.jahia.modules.jcrestapi.json.*;
+import org.jahia.modules.jcrestapi.links.JSONLinkable;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -93,6 +91,7 @@ import java.util.List;
  * @author Christophe Laprun
  */
 public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
+    protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>();
 
     protected Object getElement(Node node, String subElement) throws RepositoryException {
         if (!Utils.exists(subElement)) {
@@ -103,7 +102,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
     }
 
     protected JSONNode getParentFrom(Node node) throws RepositoryException {
-        return new JSONNode(node, 0);
+        return factory.createNode(node, 0);
     }
 
     protected abstract C getSubElementContainer(Node node) throws RepositoryException;

@@ -84,12 +84,12 @@ import javax.jcr.RepositoryException;
 public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONNode, JSONNode> {
     @Override
     protected JSONChildren getSubElementContainer(Node node) throws RepositoryException {
-        return new JSONChildren(getParentFrom(node), node);
+        return factory.createChildren(getParentFrom(node), node);
     }
 
     @Override
     protected JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
-        return new JSONNode(node.getNode(subElement), 1);
+        return factory.createNode(node.getNode(subElement), 1);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONN
 
         NodeElementAccessor.initNodeFrom(newOrToUpdate, nodeData);
 
-        return new CreateOrUpdateResult<JSONNode>(isUpdate, new JSONNode(newOrToUpdate, 1));
+        return new CreateOrUpdateResult<JSONNode>(isUpdate, factory.createNode(newOrToUpdate, 1));
     }
 
     @Override

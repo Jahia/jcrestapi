@@ -100,10 +100,10 @@ public class JSONMixins extends JSONSubElementContainer {
     @XmlElement
     private Map<String, JSONMixin> mixins;
 
-    public JSONMixins() {
+    protected JSONMixins() {
     }
 
-    public JSONMixins(JSONNode parent, Node node) throws RepositoryException {
+    protected JSONMixins(JSONNode parent, Node node) throws RepositoryException {
         super(parent, API.MIXINS);
 
         final NodeType[] mixinNodeTypes = node.getMixinNodeTypes();

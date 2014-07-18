@@ -89,7 +89,7 @@ public abstract class JSONItem<T extends Item> extends JSONNamed {
     @XmlElement
     private String type;
 
-    public JSONItem() {
+    protected JSONItem() {
     }
 
     public void initWith(T item) throws RepositoryException {
@@ -99,7 +99,7 @@ public abstract class JSONItem<T extends Item> extends JSONNamed {
         getDecorator().initFrom(this, item);
     }
 
-    public JSONItem(T item) throws RepositoryException {
+    protected JSONItem(T item) throws RepositoryException {
         initWith(item);
     }
 

@@ -87,7 +87,7 @@ import javax.jcr.version.VersionHistory;
 public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVersion, JSONNode> {
     @Override
     protected JSONVersions getSubElementContainer(Node node) throws RepositoryException {
-        return new JSONVersions(getParentFrom(node), node);
+        return factory.createVersions(getParentFrom(node), node);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVe
         final VersionHistory versionHistory = JSONVersions.getVersionHistoryFor(node);
         if (versionHistory != null) {
             final Version version = versionHistory.getVersion(subElement);
-            return version != null ? new JSONVersion(node, version) : null;
+            return version != null ? factory.createVersion(node, version) : null;
         } else {
             return null;
         }

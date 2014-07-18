@@ -88,10 +88,10 @@ public class JSONVersion extends JSONNamed {
     @XmlElement
     private Calendar created;
 
-    public JSONVersion() {
+    protected JSONVersion() {
     }
 
-    public JSONVersion(Node parent, Version version) throws RepositoryException {
+    protected JSONVersion(Node parent, Version version) throws RepositoryException {
         initWith(parent, version);
     }
 

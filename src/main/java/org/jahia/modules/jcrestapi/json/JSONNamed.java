@@ -84,7 +84,7 @@ public class JSONNamed extends JSONBase<JSONLinkable> {
     @XmlElement
     private String name;
 
-    public JSONNamed() {
+    protected JSONNamed() {
         super(new JSONLinkable());
     }
 

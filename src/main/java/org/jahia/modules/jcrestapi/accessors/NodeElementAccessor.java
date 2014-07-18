@@ -88,7 +88,7 @@ import java.util.Set;
 public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer, JSONNode, JSONNode> {
     @Override
     protected Object getElement(Node node, String subElement) throws RepositoryException {
-        return new JSONNode(node, 1);
+        return factory.createNode(node, 1);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         initNodeFrom(node, nodeData);
 
         // update only scenario at the moment
-        return new CreateOrUpdateResult<JSONNode>(true, new JSONNode(node, 1));
+        return new CreateOrUpdateResult<JSONNode>(true, factory.createNode(node, 1));
     }
 
     @Override
