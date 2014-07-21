@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
+import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONProperty;
 
@@ -106,10 +107,10 @@ public class Nodes extends API {
     }
 
     @GET
-    @Path("/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
-            "|" + API.MIXINS +
-            "|" + API.PROPERTIES +
-            "|" + API.VERSIONS +
+    @Path("/{id: [^/]*}{subElementType: (/(" + JSONConstants.CHILDREN +
+            "|" + JSONConstants.MIXINS +
+            "|" + JSONConstants.PROPERTIES +
+            "|" + JSONConstants.VERSIONS +
             "))?}{subElement: .*}")
     public Object getNodeById(@PathParam("id") String id,
                               @PathParam("subElementType") String subElementType,
@@ -119,10 +120,10 @@ public class Nodes extends API {
     }
 
     @PUT
-    @Path("/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
-            "|" + API.MIXINS +
-            "|" + API.PROPERTIES +
-            "|" + API.VERSIONS +
+    @Path("/{id: [^/]*}{subElementType: (/(" + JSONConstants.CHILDREN +
+            "|" + JSONConstants.MIXINS +
+            "|" + JSONConstants.PROPERTIES +
+            "|" + JSONConstants.VERSIONS +
             "))?}{subElement: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object createOrUpdateChildNode(@PathParam("id") String id,
@@ -144,7 +145,7 @@ public class Nodes extends API {
                                          @PathParam("subElement") String subElement,
                                          JSONProperty childData,
                                          @Context UriInfo context) {
-        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
+        ElementsProcessor processor = new ElementsProcessor(id, JSONConstants.PROPERTIES, subElement);
         return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.BY_ID, processor);
     }
 
@@ -153,7 +154,7 @@ public class Nodes extends API {
     public Object getProperty(@PathParam("id") String id,
                               @PathParam("subElement") String subElement,
                               @Context UriInfo context) {
-        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
+        ElementsProcessor processor = new ElementsProcessor(id, JSONConstants.PROPERTIES, subElement);
         return perform(workspace, language, context, READ, null, NodeAccessor.BY_ID, processor);
     }
 
@@ -163,15 +164,15 @@ public class Nodes extends API {
     public Object deleteProperty(@PathParam("id") String id,
                                  @PathParam("subElement") String subElement,
                                  @Context UriInfo context) {
-        ElementsProcessor processor = new ElementsProcessor(id, PROPERTIES, subElement);
+        ElementsProcessor processor = new ElementsProcessor(id, JSONConstants.PROPERTIES, subElement);
         return perform(workspace, language, context, DELETE, null, NodeAccessor.BY_ID, processor);
     }
 
     @DELETE
-    @Path("/{id: [^/]*}{subElementType: (/(" + API.CHILDREN +
-            "|" + API.MIXINS +
-            "|" + API.PROPERTIES +
-            "|" + API.VERSIONS +
+    @Path("/{id: [^/]*}{subElementType: (/(" + JSONConstants.CHILDREN +
+            "|" + JSONConstants.MIXINS +
+            "|" + JSONConstants.PROPERTIES +
+            "|" + JSONConstants.VERSIONS +
             "))?}{subElement: .*}")
     public Object deleteNode(@PathParam("id") String id,
                              @PathParam("subElementType") String subElementType,

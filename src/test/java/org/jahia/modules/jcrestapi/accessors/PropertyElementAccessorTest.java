@@ -71,8 +71,8 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
+import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONProperties;
 import org.jahia.modules.json.JSONProperty;
 
@@ -102,7 +102,7 @@ public class PropertyElementAccessorTest extends ElementAccessorTest<JSONPropert
 
     @Override
     protected String getSubElementType() {
-        return API.PROPERTIES;
+        return JSONConstants.PROPERTIES;
     }
 
     @Override

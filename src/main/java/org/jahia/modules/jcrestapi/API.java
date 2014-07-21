@@ -73,6 +73,7 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.accessors.*;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
+import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONObjectFactory;
 import org.jahia.services.content.JCRSessionFactory;
@@ -109,10 +110,6 @@ public class API {
 
     static final String API_PATH = "/api/jcr/v1";
 
-    public static final String PROPERTIES = "properties";
-    public static final String MIXINS = "mixins";
-    public static final String CHILDREN = "children";
-    public static final String VERSIONS = "versions";
     public static final String TYPE = "type";
     public static final String TARGET = "target";
     public static final String PARENT = "parent";
@@ -139,10 +136,10 @@ public class API {
 
         VERSION = "API version: 1\nModule version:" + props.getProperty("jcrestapi.version");
 
-        ACCESSORS.put(PROPERTIES, new PropertyElementAccessor());
-        ACCESSORS.put(CHILDREN, new ChildrenElementAccessor());
-        ACCESSORS.put(MIXINS, new MixinElementAccessor());
-        ACCESSORS.put(VERSIONS, new VersionElementAccessor());
+        ACCESSORS.put(JSONConstants.PROPERTIES, new PropertyElementAccessor());
+        ACCESSORS.put(JSONConstants.CHILDREN, new ChildrenElementAccessor());
+        ACCESSORS.put(JSONConstants.MIXINS, new MixinElementAccessor());
+        ACCESSORS.put(JSONConstants.VERSIONS, new VersionElementAccessor());
         ACCESSORS.put("", new NodeElementAccessor());
     }
 

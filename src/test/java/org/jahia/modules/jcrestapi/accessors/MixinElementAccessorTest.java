@@ -71,8 +71,8 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
+import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONMixin;
 import org.jahia.modules.json.JSONMixins;
 import org.jahia.modules.json.JSONNode;
@@ -101,7 +101,7 @@ public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins, JS
 
     @Override
     protected String getSubElementType() {
-        return API.MIXINS;
+        return JSONConstants.MIXINS;
     }
 
     @Override

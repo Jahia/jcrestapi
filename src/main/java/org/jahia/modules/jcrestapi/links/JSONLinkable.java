@@ -152,10 +152,10 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
     }
 
     public void initFrom(JSONNode<JSONLinkable> jsonNode) {
-        addLink(JSONLink.createLink(API.PROPERTIES, jsonNode.getJSONProperties().getDecorator().getURI()));
-        addLink(JSONLink.createLink(API.MIXINS, jsonNode.getJSONMixins().getDecorator().getURI()));
-        addLink(JSONLink.createLink(API.CHILDREN, jsonNode.getJSONChildren().getDecorator().getURI()));
-        addLink(JSONLink.createLink(API.VERSIONS, jsonNode.getJSONVersions().getDecorator().getURI()));
+        addLink(JSONLink.createLink(JSONConstants.PROPERTIES, jsonNode.getJSONProperties().getDecorator().getURI()));
+        addLink(JSONLink.createLink(JSONConstants.MIXINS, jsonNode.getJSONMixins().getDecorator().getURI()));
+        addLink(JSONLink.createLink(JSONConstants.CHILDREN, jsonNode.getJSONChildren().getDecorator().getURI()));
+        addLink(JSONLink.createLink(JSONConstants.VERSIONS, jsonNode.getJSONVersions().getDecorator().getURI()));
     }
 
     @Override

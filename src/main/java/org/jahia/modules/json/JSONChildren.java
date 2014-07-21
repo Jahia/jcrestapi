@@ -78,7 +78,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
@@ -111,11 +110,11 @@ public class JSONChildren<D extends JSONDecorator<D>> extends JSONSubElementCont
 
     @Override
     public String getSubElementContainerName() {
-        return API.CHILDREN;
+        return JSONConstants.CHILDREN;
     }
 
     private void initWith(JSONNode<D> parent, Node node) throws RepositoryException {
-        super.initWith(parent, API.CHILDREN);
+        super.initWith(parent, JSONConstants.CHILDREN);
 
         final NodeIterator nodes = node.getNodes();
         children = new HashMap<String, JSONNode<D>>((int) nodes.getSize());

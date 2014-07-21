@@ -115,7 +115,7 @@ public class JSONVersions<D extends JSONDecorator<D>> extends JSONSubElementCont
 
     @Override
     public String getSubElementContainerName() {
-        return API.VERSIONS;
+        return JSONConstants.VERSIONS;
     }
 
     public static VersionHistory getVersionHistoryFor(Node node) throws RepositoryException {

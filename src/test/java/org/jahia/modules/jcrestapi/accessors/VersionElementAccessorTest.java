@@ -75,6 +75,7 @@ import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.links.JSONLink;
+import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONVersion;
 import org.jahia.modules.json.JSONVersions;
@@ -97,7 +98,7 @@ public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions
 
     @Override
     protected String getSubElementType() {
-        return API.VERSIONS;
+        return JSONConstants.VERSIONS;
     }
 
     @Override

@@ -78,7 +78,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
@@ -119,7 +118,7 @@ public class JSONMixins<D extends JSONDecorator<D>> extends JSONSubElementContai
 
     @Override
     public String getSubElementContainerName() {
-        return API.MIXINS;
+        return JSONConstants.MIXINS;
     }
 
     public Map<String, JSONMixin<D>> getMixins() {

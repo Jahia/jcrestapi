@@ -71,6 +71,8 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.jahia.modules.json.JSONConstants;
+
 import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -136,16 +138,19 @@ public final class URIUtils {
     }
 
     public static String getURIForChildren(Node node) {
-        return getChildURI(getURIFor(node), API.CHILDREN, false);
+        return getChildURI(getURIFor(node), JSONConstants.CHILDREN, false);
     }
+
     public static String getURIForProperties(Node node) {
-        return getChildURI(getURIFor(node), API.PROPERTIES, false);
+        return getChildURI(getURIFor(node), JSONConstants.PROPERTIES, false);
     }
+
     public static String getURIForMixins(Node node) {
-        return getChildURI(getURIFor(node), API.MIXINS, false);
+        return getChildURI(getURIFor(node), JSONConstants.MIXINS, false);
     }
+
     public static String getURIForVersions(Node node) {
-        return getChildURI(getURIFor(node), API.VERSIONS, false);
+        return getChildURI(getURIFor(node), JSONConstants.VERSIONS, false);
     }
 
     public static String escape(String value) {
@@ -189,7 +194,7 @@ public final class URIUtils {
     }
 
     public static String addModulesContextTo(String uriAsString, UriInfo context) {
-            return context.getBaseUri().toASCIIString() + uriAsString;
+        return context.getBaseUri().toASCIIString() + uriAsString;
     }
 
     public static void setBaseURI(String baseURI) {

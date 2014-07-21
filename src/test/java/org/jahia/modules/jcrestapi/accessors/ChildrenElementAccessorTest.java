@@ -76,6 +76,7 @@ import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.links.JSONLink;
 import org.jahia.modules.json.JSONChildren;
+import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONNode;
 
 import javax.jcr.Node;
@@ -91,7 +92,7 @@ public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildre
 
     @Override
     protected String getSubElementType() {
-        return API.CHILDREN;
+        return JSONConstants.CHILDREN;
     }
 
     @Override
