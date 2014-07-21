@@ -69,96 +69,146 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.json;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jahia.modules.jcrestapi.API;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
-import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
+ * A JSON representation of a JCR node. <p/>
+ * <pre>
+ * "name" : <the node's unescaped name>,
+ * "type" : <the node's node type name>,
+ * "properties" : <properties representation>,
+ * "mixins" : <mixins representation>,
+ * "children" : <children representation>,
+ * "versions" : <versions representation>,
+ * "links" : {
+ * "self" : "<URI identifying the resource associated with this node>",
+ * "type" : "<URI identifying the resource associated with this node's type>",
+ * "properties" : "<URI identifying the resource associated with this node's properties>",
+ * "mixins" : "<URI identifying the resource associated with this node's mixins>",
+ * "children" : "<URI identifying the resource associated with this node's children>",
+ * "versions" : "<URI identifying the resource associated with this node's versions>"
+ * }
+ * </pre>
+ *
  * @author Christophe Laprun
  */
 @XmlRootElement
-@JsonDeserialize(using = JSONChildren.ChildrenDeserializer.class)
-public class JSONChildren<D extends JSONDecorator<D>> extends JSONSubElementContainer<D> {
-    @XmlElement
-    private Map<String, JSONNode<D>> children;
+@XmlAccessorType(XmlAccessType.NONE)
+public class JSONNode<D extends JSONDecorator<D>> extends JSONItem<Node, D> {
+    private JSONMixins<D> mixins;
+    private JSONVersions<D> versions;
+    protected JSONProperties<D> properties;
+    protected JSONChildren<D> children;
+    private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
-    private JSONChildren() {
-        super(null);
+    @XmlElement
+    protected String id;
+
+    private JSONNode() {
+        this(null);
     }
 
-    protected JSONChildren(JSONNode<D> parent, Node node) throws RepositoryException {
-        super(parent);
-        initWith(parent, node);
+    protected JSONNode(D decorator) {
+        super(decorator);
+    }
+
+    protected JSONNode(D decorator, Node node, int depth) throws RepositoryException {
+        this(decorator);
+        initWith(node, depth);
+    }
+
+    public String asJSONString() {
+        try {
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new APIException(e, "asJSONString", null, id, null, null, null);
+        }
+    }
+
+    public void initWith(Node node, int depth) throws RepositoryException {
+        super.initWith(node);
+        id = node.getIdentifier();
+
+        if (depth > 0) {
+            properties = new JSONProperties<D>(this, node);
+
+            mixins = new JSONMixins<D>(this, node);
+
+            children = new JSONChildren<D>(this, node);
+
+            versions = new JSONVersions<D>(this, node);
+
+            getDecoratorOrNullOpIfNull().initFrom(this);
+        } else {
+            properties = null;
+            mixins = null;
+            children = null;
+            versions = null;
+        }
     }
 
     @Override
-    public String getSubElementContainerName() {
-        return API.CHILDREN;
+    public String getUnescapedTypeName(Node item) throws RepositoryException {
+        return item.getPrimaryNodeType().getName();
     }
 
-    private void initWith(JSONNode<D> parent, Node node) throws RepositoryException {
-        super.initWith(parent, API.CHILDREN);
-
-        final NodeIterator nodes = node.getNodes();
-        children = new HashMap<String, JSONNode<D>>((int) nodes.getSize());
-
-        while (nodes.hasNext()) {
-            Node child = nodes.nextNode();
-
-            // build child resource URI
-            children.put(URIUtils.escape(child.getName(), child.getIndex()), new JSONNode<D>(getNewDecoratorOrNull(), child, 0));
-        }
-    }
-
-    Map<String, JSONNode<D>> getChildren() {
+    public JSONChildren<D> getJSONChildren() {
         return children;
     }
 
-    public static class ChildrenDeserializer extends JsonDeserializer<JSONChildren> {
-        @Override
-        public JSONChildren deserialize(JsonParser parser, DeserializationContext context) throws IOException {
-            ObjectCodec codec = parser.getCodec();
-            ObjectNode root = codec.readTree(parser);
-
-            final int size = root.size();
-            if (size > 0) {
-                final JSONChildren children = new JSONChildren();
-                final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
-                while (fields.hasNext()) {
-                    final Map.Entry<String, JsonNode> field = fields.next();
-                    children.addChild(field.getKey(), codec.treeToValue(field.getValue(), JSONNode.class));
-                }
-
-                return children;
-            } else {
-                return null;
-            }
-        }
+    @XmlElement
+    public Map<String, JSONNode<D>> getChildren() {
+        return children != null ? children.getChildren() : null;
     }
 
-    private void addChild(String name, JSONNode<D> child) {
-        if (children == null) {
-            children = new HashMap<String, JSONNode<D>>(7);
-        }
+    public JSONProperties<D> getJSONProperties() {
+        return properties;
+    }
 
-        children.put(name, child);
+    @XmlElement
+    public Map<String, JSONProperty<D>> getProperties() {
+        return properties != null ? properties.getProperties() : null;
+    }
+
+    public JSONProperty<D> getProperty(String property) {
+        property = URIUtils.escape(property);
+        return getProperties().get(property);
+    }
+
+    public JSONMixins<D> getJSONMixins() {
+        return mixins;
+    }
+
+    @XmlElement
+    public Map<String, JSONMixin<D>> getMixins() {
+        return mixins != null ? mixins.getMixins() : null;
+    }
+
+    public JSONVersions<D> getJSONVersions() {
+        return versions;
+    }
+
+    @XmlElement
+    public Map<String, JSONVersion<D>> getVersions() {
+        return versions != null ? versions.getVersions() : null;
+    }
+
+    public String getId() {
+        return id;
     }
 }

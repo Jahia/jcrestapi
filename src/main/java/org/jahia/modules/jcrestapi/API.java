@@ -72,9 +72,9 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.accessors.*;
-import org.jahia.modules.jcrestapi.json.JSONItem;
-import org.jahia.modules.jcrestapi.json.JSONObjectFactory;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
+import org.jahia.modules.json.JSONItem;
+import org.jahia.modules.json.JSONObjectFactory;
 import org.jahia.services.content.JCRSessionFactory;
 import org.jahia.utils.LanguageCodeConverters;
 import org.osgi.service.component.annotations.Component;

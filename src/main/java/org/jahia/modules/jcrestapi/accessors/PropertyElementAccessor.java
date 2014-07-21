@@ -72,8 +72,8 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.json.JSONProperties;
-import org.jahia.modules.jcrestapi.json.JSONProperty;
+import org.jahia.modules.json.JSONProperties;
+import org.jahia.modules.json.JSONProperty;
 import org.jahia.services.content.JCRNodeWrapper;
 
 import javax.jcr.Node;

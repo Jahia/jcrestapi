@@ -72,9 +72,9 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.json.JSONMixin;
-import org.jahia.modules.jcrestapi.json.JSONMixins;
-import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.json.JSONMixin;
+import org.jahia.modules.json.JSONMixins;
+import org.jahia.modules.json.JSONNode;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;

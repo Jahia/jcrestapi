@@ -73,8 +73,8 @@ package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
-import org.jahia.modules.jcrestapi.json.JSONProperties;
-import org.jahia.modules.jcrestapi.json.JSONProperty;
+import org.jahia.modules.json.JSONProperties;
+import org.jahia.modules.json.JSONProperty;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;

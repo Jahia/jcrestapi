@@ -71,7 +71,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.json.JSONItem;
+import org.jahia.modules.json.JSONItem;
 
 import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.annotation.XmlElement;

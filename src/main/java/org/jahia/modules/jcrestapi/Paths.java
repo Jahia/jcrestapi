@@ -75,7 +75,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
-import org.jahia.modules.jcrestapi.json.JSONNode;
+import org.jahia.modules.json.JSONNode;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;

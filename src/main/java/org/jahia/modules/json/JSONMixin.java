@@ -69,28 +69,58 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.json;
 
+import org.jahia.modules.jcrestapi.URIUtils;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONNamed<T extends JSONDecorator<T>> extends JSONBase<T> {
+public class JSONMixin<D extends JSONDecorator<D>> extends JSONNamed<D> {
     @XmlElement
-    private String name;
+    private Map<String, String> properties;
 
-    protected JSONNamed(T decorator) {
+    @XmlElement
+    private String type;
+
+    protected JSONMixin(D decorator) {
         super(decorator);
     }
 
-    protected void initWith(String uri, String name) {
-        this.name = name;
+    protected JSONMixin(D decorator, Node nodeWithMixin, NodeType item) throws RepositoryException {
+        this(decorator);
+        initWith(nodeWithMixin, item);
     }
 
-    public String getName() {
-        return name;
+    public void initWith(Node parentNode, NodeType item) throws RepositoryException {
+        // todo: should we try to point to the actual mixin definition instead of pointing to the relative path to the mixin in the context of the parent node
+        // todo: should we add parent link?
+        super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true), item.getName());
+
+        this.type = item.getName();
+
+        final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
+        if (propertyDefinitions != null) {
+            properties = new HashMap<String, String>(propertyDefinitions.length);
+            for (PropertyDefinition property : propertyDefinitions) {
+                properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
+            }
+        }
+
+        getDecoratorOrNullOpIfNull().initFrom(this);
+    }
+
+    public String getType() {
+        return type;
     }
 }

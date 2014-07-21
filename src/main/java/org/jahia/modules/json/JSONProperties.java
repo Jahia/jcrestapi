@@ -69,49 +69,100 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.json;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
-import javax.jcr.Item;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.NONE)
-public abstract class JSONItem<T extends Item, D extends JSONDecorator<D>> extends JSONNamed<D> {
+@JsonDeserialize(using = JSONProperties.PropertiesDeserializer.class)
+public class JSONProperties<D extends JSONDecorator<D>> extends JSONSubElementContainer<D> {
     @XmlElement
-    private String type;
+    private Map<String, JSONProperty<D>> properties;
 
-    protected JSONItem(D decorator) {
-        super(decorator);
+    private JSONProperties() {
+        super(null);
     }
 
-    public void initWith(T item) throws RepositoryException {
-        initWith(URIUtils.getURIFor(item), item.getName());
-        this.type = getUnescapedTypeName(item);
-
-        getDecoratorOrNullOpIfNull().initFrom(this, item);
+    protected JSONProperties(JSONNode<D> parent, Node node) throws RepositoryException {
+        super(parent);
+        initWith(parent, node);
     }
 
-    protected JSONItem(D decorator, T item) throws RepositoryException {
-        this(decorator);
-        initWith(item);
+    @Override
+    public String getSubElementContainerName() {
+        return API.PROPERTIES;
     }
 
-    public String getTypeName() {
-        return type;
+    public void initWith(JSONNode<D> parent, Node node) throws RepositoryException {
+        super.initWith(parent, API.PROPERTIES);
+
+        final PropertyIterator props = node.getProperties();
+
+        // properties URI builder
+        if (props != null) {
+            properties = new HashMap<String, JSONProperty<D>>((int) props.getSize());
+            while (props.hasNext()) {
+                Property property = props.nextProperty();
+                final String propertyName = property.getName();
+
+                // add property
+                this.properties.put(URIUtils.escape(propertyName), new JSONProperty<D>(getNewDecoratorOrNull(), property));
+            }
+        }
     }
 
-    public String getTypeChildPath(T item) throws RepositoryException {
-        return URIUtils.escape(type);
+    public Map<String, JSONProperty<D>> getProperties() {
+        return properties;
     }
 
-    public abstract String getUnescapedTypeName(T item) throws RepositoryException;
+    public void addProperty(String name, JSONProperty<D> property) {
+        if (properties == null) {
+            properties = new HashMap<String, JSONProperty<D>>(7);
+        }
+        properties.put(name, property);
+    }
+
+    public static class PropertiesDeserializer extends JsonDeserializer<JSONProperties> {
+        @Override
+        public JSONProperties deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+            ObjectCodec codec = parser.getCodec();
+            ObjectNode root = codec.readTree(parser);
+
+            final int size = root.size();
+            if (size > 0) {
+                final JSONProperties properties = new JSONProperties();
+                final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
+                while (fields.hasNext()) {
+                    final Map.Entry<String, JsonNode> field = fields.next();
+                    properties.addProperty(field.getKey(), codec.treeToValue(field.getValue(), JSONProperty.class));
+                }
+
+                return properties;
+            } else {
+                return null;
+            }
+        }
+    }
 }

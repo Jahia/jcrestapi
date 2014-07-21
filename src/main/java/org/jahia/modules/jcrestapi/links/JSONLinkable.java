@@ -73,7 +73,7 @@ package org.jahia.modules.jcrestapi.links;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.json.*;
+import org.jahia.modules.json.*;
 
 import javax.jcr.Item;
 import javax.jcr.ItemNotFoundException;

@@ -69,79 +69,28 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.json;
 
-import org.jahia.api.Constants;
-import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.APIExceptionMapper;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.version.Version;
-import javax.jcr.version.VersionHistory;
-import javax.jcr.version.VersionIterator;
-import javax.jcr.version.VersionManager;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONVersions<D extends JSONDecorator<D>> extends JSONSubElementContainer<D> {
-
+public class JSONNamed<T extends JSONDecorator<T>> extends JSONBase<T> {
     @XmlElement
-    private Map<String, JSONVersion<D>> versions;
+    private String name;
 
-    protected JSONVersions(JSONNode<D> parent, Node node) throws RepositoryException {
-        super(parent);
-
-        final VersionHistory versionHistory = getVersionHistoryFor(node);
-        if (versionHistory != null) {
-            final VersionIterator allVersions = versionHistory.getAllVersions();
-            versions = new LinkedHashMap<String, JSONVersion<D>>((int) allVersions.getSize());
-            while (allVersions.hasNext()) {
-                final Version version = allVersions.nextVersion();
-                versions.put(version.getName(), new JSONVersion<D>(getNewDecoratorOrNull(), node, version));
-            }
-        } else {
-            versions = Collections.emptyMap();
-        }
+    protected JSONNamed(T decorator) {
+        super(decorator);
     }
 
-    @Override
-    public String getSubElementContainerName() {
-        return API.VERSIONS;
+    protected void initWith(String uri, String name) {
+        this.name = name;
     }
 
-    public static VersionHistory getVersionHistoryFor(Node node) throws RepositoryException {
-        if (isNodeVersionable(node)) {
-            final Session session = API.getCurrentSession().session;
-            if (session != null) {
-                final VersionManager versionManager = session.getWorkspace().getVersionManager();
-                final String path = node.getPath();
-
-                try {
-                    return versionManager.getVersionHistory(path);
-                } catch (RepositoryException e) {
-                    // can happen if the node is just created
-                    APIExceptionMapper.LOGGER.debug("Couldn't retrieve the version history for node " + path, e);
-                    return null;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static boolean isNodeVersionable(Node node) throws RepositoryException {
-        return node.isNodeType(Constants.MIX_VERSIONABLE) || node.isNodeType(Constants.MIX_SIMPLEVERSIONABLE);
-    }
-
-    public Map<String, JSONVersion<D>> getVersions() {
-        return versions;
+    public String getName() {
+        return name;
     }
 }

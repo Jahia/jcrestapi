@@ -69,58 +69,96 @@
  *
  *     For more information, please visit http://www.jahia.com
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.json;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * @author Christophe Laprun
  */
 @XmlRootElement
-public class JSONMixin<D extends JSONDecorator<D>> extends JSONNamed<D> {
+@JsonDeserialize(using = JSONChildren.ChildrenDeserializer.class)
+public class JSONChildren<D extends JSONDecorator<D>> extends JSONSubElementContainer<D> {
     @XmlElement
-    private Map<String, String> properties;
+    private Map<String, JSONNode<D>> children;
 
-    @XmlElement
-    private String type;
-
-    protected JSONMixin(D decorator) {
-        super(decorator);
+    private JSONChildren() {
+        super(null);
     }
 
-    protected JSONMixin(D decorator, Node nodeWithMixin, NodeType item) throws RepositoryException {
-        this(decorator);
-        initWith(nodeWithMixin, item);
+    protected JSONChildren(JSONNode<D> parent, Node node) throws RepositoryException {
+        super(parent);
+        initWith(parent, node);
     }
 
-    public void initWith(Node parentNode, NodeType item) throws RepositoryException {
-        // todo: should we try to point to the actual mixin definition instead of pointing to the relative path to the mixin in the context of the parent node
-        // todo: should we add parent link?
-        super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true), item.getName());
+    @Override
+    public String getSubElementContainerName() {
+        return API.CHILDREN;
+    }
 
-        this.type = item.getName();
+    private void initWith(JSONNode<D> parent, Node node) throws RepositoryException {
+        super.initWith(parent, API.CHILDREN);
 
-        final PropertyDefinition[] propertyDefinitions = item.getDeclaredPropertyDefinitions();
-        if (propertyDefinitions != null) {
-            properties = new HashMap<String, String>(propertyDefinitions.length);
-            for (PropertyDefinition property : propertyDefinitions) {
-                properties.put(property.getName(), JSONProperty.getHumanReadablePropertyType(property.getRequiredType()));
+        final NodeIterator nodes = node.getNodes();
+        children = new HashMap<String, JSONNode<D>>((int) nodes.getSize());
+
+        while (nodes.hasNext()) {
+            Node child = nodes.nextNode();
+
+            // build child resource URI
+            children.put(URIUtils.escape(child.getName(), child.getIndex()), new JSONNode<D>(getNewDecoratorOrNull(), child, 0));
+        }
+    }
+
+    Map<String, JSONNode<D>> getChildren() {
+        return children;
+    }
+
+    public static class ChildrenDeserializer extends JsonDeserializer<JSONChildren> {
+        @Override
+        public JSONChildren deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+            ObjectCodec codec = parser.getCodec();
+            ObjectNode root = codec.readTree(parser);
+
+            final int size = root.size();
+            if (size > 0) {
+                final JSONChildren children = new JSONChildren();
+                final Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
+                while (fields.hasNext()) {
+                    final Map.Entry<String, JsonNode> field = fields.next();
+                    children.addChild(field.getKey(), codec.treeToValue(field.getValue(), JSONNode.class));
+                }
+
+                return children;
+            } else {
+                return null;
             }
         }
-
-        getDecoratorOrNullOpIfNull().initFrom(this);
     }
 
-    public String getType() {
-        return type;
+    private void addChild(String name, JSONNode<D> child) {
+        if (children == null) {
+            children = new HashMap<String, JSONNode<D>>(7);
+        }
+
+        children.put(name, child);
     }
 }

@@ -37,27 +37,50 @@
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
-package org.jahia.modules.jcrestapi.json;
+package org.jahia.modules.json;
 
-import javax.jcr.Item;
+import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 import javax.jcr.version.Version;
 
 /**
  * @author Christophe Laprun
  */
-public interface JSONDecorator<T extends JSONDecorator<T>> extends Cloneable {
-    void initFrom(JSONSubElementContainer<T> subElementContainer);
+public abstract class JSONObjectFactory<T extends JSONDecorator<T>> {
 
-    <I extends Item> void initFrom(JSONItem<I, T> jsonItem, I item) throws RepositoryException;
+    public abstract T createDecorator();
 
-    void initFrom(JSONNode<T> jsonNode);
+    public JSONNode<T> createNode(Node node, int depth) throws RepositoryException {
+        return new JSONNode<T>(createDecorator(), node, depth);
+    }
 
-    void initFrom(JSONProperty<T> jsonProperty) throws RepositoryException;
+    public JSONChildren<T> createChildren(JSONNode<T> parent, Node node) throws RepositoryException {
+        return new JSONChildren<T>(parent, node);
+    }
 
-    T newInstance();
+    public JSONVersions<T> createVersions(JSONNode<T> parent, Node node) throws RepositoryException {
+        return new JSONVersions<T>(parent, node);
+    }
 
-    void initFrom(JSONVersion<T> jsonVersion, Version version) throws RepositoryException;
+    public JSONVersion<T> createVersion(Node node, Version version) throws RepositoryException {
+        return new JSONVersion<T>(createDecorator(), node, version);
+    }
 
-    void initFrom(JSONMixin<T> jsonMixin);
+    public JSONProperties<T> createProperties(JSONNode parent, Node node) throws RepositoryException {
+        return new JSONProperties<T>(parent, node);
+    }
+
+    public JSONMixin<T> createMixin(Node node, NodeType mixin) throws RepositoryException {
+        return new JSONMixin<T>(createDecorator(), node, mixin);
+    }
+
+    public JSONMixins<T> createMixins(JSONNode parent, Node node) throws RepositoryException {
+        return new JSONMixins(parent, node);
+    }
+
+    public JSONProperty<T> createProperty(Property property) throws RepositoryException {
+        return new JSONProperty<T>(createDecorator(), property);
+    }
 }
