@@ -73,6 +73,7 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.api.Constants;
 import org.jahia.modules.json.JSONNode;
+import org.jahia.modules.json.Names;
 
 import javax.jcr.*;
 import javax.jcr.query.QueryResult;
@@ -113,7 +114,7 @@ public class Types extends API {
             session = getSession(workspace, language);
             final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();
             final ValueFactory valueFactory = session.getValueFactory();
-            final Selector selector = qomFactory.selector(URIUtils.unescape(type), SELECTOR_NAME);
+            final Selector selector = qomFactory.selector(Names.unescape(type), SELECTOR_NAME);
 
             // hardcode constraint on language for now: either jcr:language doesn't exist or jcr:language is "en"
             Constraint constraint = qomFactory.or(

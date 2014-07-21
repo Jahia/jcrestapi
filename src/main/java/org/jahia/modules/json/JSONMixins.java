@@ -78,7 +78,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -111,7 +110,7 @@ public class JSONMixins<D extends JSONDecorator<D>> extends JSONSubElementContai
             mixins = new HashMap<String, JSONMixin<D>>(mixinNodeTypes.length);
             for (NodeType mixinNodeType : mixinNodeTypes) {
                 final String name = mixinNodeType.getName();
-                mixins.put(URIUtils.escape(name), new JSONMixin<D>(getNewDecoratorOrNull(), node, mixinNodeType));
+                mixins.put(Names.escape(name), new JSONMixin<D>(getNewDecoratorOrNull(), node, mixinNodeType));
             }
         }
     }

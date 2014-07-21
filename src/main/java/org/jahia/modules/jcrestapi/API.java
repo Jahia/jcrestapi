@@ -76,6 +76,7 @@ import org.jahia.modules.jcrestapi.links.JSONLinkable;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONObjectFactory;
+import org.jahia.modules.json.Names;
 import org.jahia.services.content.JCRSessionFactory;
 import org.jahia.utils.LanguageCodeConverters;
 import org.osgi.service.component.annotations.Component;
@@ -392,9 +393,9 @@ public class API {
                 subElement = subElement.substring(1);
             }
 
-            this.idOrPath = URIUtils.unescape(idOrPath);
+            this.idOrPath = Names.unescape(idOrPath);
             this.subElementType = subElementType;
-            this.subElement = URIUtils.unescape(subElement);
+            this.subElement = Names.unescape(subElement);
         }
 
         public String getIdOrPath() {

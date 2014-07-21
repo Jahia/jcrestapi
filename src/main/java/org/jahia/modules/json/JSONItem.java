@@ -71,8 +71,6 @@
  */
 package org.jahia.modules.json;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -110,7 +108,7 @@ public abstract class JSONItem<T extends Item, D extends JSONDecorator<D>> exten
     }
 
     public String getTypeChildPath(T item) throws RepositoryException {
-        return URIUtils.escape(type);
+        return Names.escape(type);
     }
 
     public abstract String getUnescapedTypeName(T item) throws RepositoryException;

@@ -78,7 +78,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -127,7 +126,7 @@ public class JSONProperties<D extends JSONDecorator<D>> extends JSONSubElementCo
                 final String propertyName = property.getName();
 
                 // add property
-                this.properties.put(URIUtils.escape(propertyName), new JSONProperty<D>(getNewDecoratorOrNull(), property));
+                this.properties.put(Names.escape(propertyName), new JSONProperty<D>(getNewDecoratorOrNull(), property));
             }
         }
     }

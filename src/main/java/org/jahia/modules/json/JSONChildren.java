@@ -78,7 +78,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -123,7 +122,7 @@ public class JSONChildren<D extends JSONDecorator<D>> extends JSONSubElementCont
             Node child = nodes.nextNode();
 
             // build child resource URI
-            children.put(URIUtils.escape(child.getName(), child.getIndex()), new JSONNode<D>(getNewDecoratorOrNull(), child, 0));
+            children.put(Names.escape(child.getName(), child.getIndex()), new JSONNode<D>(getNewDecoratorOrNull(), child, 0));
         }
     }
 

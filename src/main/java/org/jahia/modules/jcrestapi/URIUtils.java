@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.json.JSONConstants;
+import org.jahia.modules.json.Names;
 
 import javax.jcr.Item;
 import javax.jcr.Node;
@@ -153,37 +154,13 @@ public final class URIUtils {
         return getChildURI(getURIFor(node), JSONConstants.VERSIONS, false);
     }
 
-    public static String escape(String value) {
-        return escape(value, 1);
-    }
-
-    public static String escape(String value, int index) {
-        if (index > 1) {
-            value += "--" + index;
-        }
-        return value.replace(":", "__");
-    }
-
-    public static String unescape(String value) {
-        String replace = value.replace("__", ":");
-
-        final int indexMarker = replace.lastIndexOf("--");
-        if (indexMarker > 0) {
-            // we have an index marker that we need to replace
-            String index = replace.substring(indexMarker + 2);
-            replace = replace.substring(0, indexMarker) + "[" + index + "]";
-        }
-
-        return replace;
-    }
-
     public static String getChildURI(String parent, String childName, boolean escapeChildName) {
         if (childName.startsWith("/")) {
             childName = childName.substring(1);
         }
 
         if (escapeChildName) {
-            childName = escape(childName);
+            childName = Names.escape(childName);
         }
 
         if (parent.endsWith("/")) {

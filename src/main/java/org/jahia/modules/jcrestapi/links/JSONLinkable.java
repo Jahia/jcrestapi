@@ -148,7 +148,7 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
         }
         addLink(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
 
-        addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(URIUtils.escape(item.getPath()), true)));
+        addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(Names.escape(item.getPath()), true)));
     }
 
     public void initFrom(JSONNode<JSONLinkable> jsonNode) {
@@ -187,7 +187,7 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
     }
 
     public void initFrom(JSONMixin mixin) {
-        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(URIUtils.escape(mixin.getType()))));
+        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(Names.escape(mixin.getType()))));
     }
 
     public void initFrom(JSONVersion jsonVersion, Version version) throws RepositoryException {

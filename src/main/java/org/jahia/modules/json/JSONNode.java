@@ -75,7 +75,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.APIException;
-import org.jahia.modules.jcrestapi.URIUtils;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -186,7 +185,7 @@ public class JSONNode<D extends JSONDecorator<D>> extends JSONItem<Node, D> {
     }
 
     public JSONProperty<D> getProperty(String property) {
-        property = URIUtils.escape(property);
+        property = Names.escape(property);
         return getProperties().get(property);
     }
 

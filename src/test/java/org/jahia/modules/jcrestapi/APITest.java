@@ -73,6 +73,7 @@ package org.jahia.modules.jcrestapi;
 
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.test.JerseyTest;
+import org.jahia.modules.json.Names;
 import org.junit.Test;
 
 import javax.jcr.Node;
@@ -216,11 +217,11 @@ public class APITest extends JerseyTest {
     }
 
     private String getURIByPath(String path) {
-        return API_DEFAULT_EN_BY_PATH + URIUtils.escape(path);
+        return API_DEFAULT_EN_BY_PATH + Names.escape(path);
     }
 
     private String getTypeURIByPath(String typeName) {
-        return API_DEFAULT_EN_BY_PATH + "jcr__system/jcr__nodeTypes/" + URIUtils.escape(typeName);
+        return API_DEFAULT_EN_BY_PATH + "jcr__system/jcr__nodeTypes/" + Names.escape(typeName);
     }
 
     private String getChildURI(String rootId, String childName) {
@@ -263,6 +264,7 @@ public class APITest extends JerseyTest {
 
     private static class TestRepositoryFactory implements Factory<Repository> {
         static final Repository repository = new NoLoggingTransientRepository();
+
         @Override
         public Repository provide() {
             return repository;

@@ -74,6 +74,7 @@ package org.jahia.modules.jcrestapi.accessors;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.json.JSONProperties;
 import org.jahia.modules.json.JSONProperty;
+import org.jahia.modules.json.Names;
 import org.jahia.services.content.JCRNodeWrapper;
 
 import javax.jcr.Node;
@@ -89,7 +90,7 @@ import java.util.List;
  */
 public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSONProperty, JSONProperty> {
     static Property setPropertyOnNode(String escapedName, JSONProperty jsonProperty, Node node) throws RepositoryException {
-        final String propName = URIUtils.unescape(escapedName);
+        final String propName = Names.unescape(escapedName);
 
         final Integer type = getTypeOfPropertyOnNode(propName, node);
 

@@ -161,7 +161,7 @@ public class JSONProperty<D extends JSONDecorator<D>> extends JSONItem<Property,
         final NodeType declaringNodeType = item.getDefinition().getDeclaringNodeType();
 
         // get its name and escape it
-        final String parentName = URIUtils.escape(declaringNodeType.getName());
+        final String parentName = Names.escape(declaringNodeType.getName());
 
         // get its property definitions
         final PropertyDefinition[] parentPropDefs = declaringNodeType.getDeclaredPropertyDefinitions();
@@ -181,7 +181,7 @@ public class JSONProperty<D extends JSONDecorator<D>> extends JSONItem<Property,
                 }
             }
             // create the indexed escaped link, if index = 1, no need for an index
-            return URIUtils.getChildURI(parentName, URIUtils.escape(JCR__PROPERTY_DEFINITION, index), false);
+            return URIUtils.getChildURI(parentName, Names.escape(JCR__PROPERTY_DEFINITION, index), false);
         }
     }
 
