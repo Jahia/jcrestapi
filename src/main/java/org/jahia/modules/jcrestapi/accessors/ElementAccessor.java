@@ -75,8 +75,10 @@ import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
-import org.jahia.modules.jcrestapi.links.JSONLinkable;
-import org.jahia.modules.json.*;
+import org.jahia.modules.json.JSONItem;
+import org.jahia.modules.json.JSONNamed;
+import org.jahia.modules.json.JSONNode;
+import org.jahia.modules.json.JSONSubElementContainer;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -92,7 +94,7 @@ import java.util.List;
  * @author Christophe Laprun
  */
 public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
-    public static JSONObjectFactory<JSONLinkable> getFactory() {
+    public static APIObjectFactory getFactory() {
         return APIObjectFactory.getInstance();
     }
 
