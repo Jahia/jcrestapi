@@ -71,14 +71,8 @@
  */
 package org.jahia.modules.json;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.jahia.modules.jcrestapi.APIException;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -113,7 +107,6 @@ public class JSONNode<D extends JSONDecorator<D>> extends JSONItem<Node, D> {
     private JSONVersions<D> versions;
     protected JSONProperties<D> properties;
     protected JSONChildren<D> children;
-    private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
     @XmlElement
     protected String id;
@@ -129,14 +122,6 @@ public class JSONNode<D extends JSONDecorator<D>> extends JSONItem<Node, D> {
     protected JSONNode(D decorator, Node node, int depth) throws RepositoryException {
         this(decorator);
         initWith(node, depth);
-    }
-
-    public String asJSONString() {
-        try {
-            return mapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new APIException(e, "asJSONString", null, id, null, null, null);
-        }
     }
 
     public void initWith(Node node, int depth) throws RepositoryException {

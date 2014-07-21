@@ -39,36 +39,32 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
-import org.jahia.modules.json.JSONObjectFactory;
+import org.jahia.modules.json.JSONNode;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author Christophe Laprun
  */
-public class APIObjectFactory extends JSONObjectFactory<JSONLinkable> {
-    @Override
-    public JSONLinkable createDecorator() {
-        return new JSONLinkable();
+public class APINode extends JSONNode<JSONLinkable> {
+    private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
+
+    protected APINode(JSONLinkable decorator, Node node, int depth) throws RepositoryException {
+        super(decorator, node, depth);
     }
 
-    public APINode createAPINode(Node node, int depth) throws RepositoryException {
-        return new APINode(createDecorator(), node, depth);
-    }
-
-    // Initialization on demand holder idiom: thread-safe singleton initialization
-    private static class Holder {
-        static final APIObjectFactory INSTANCE = new APIObjectFactory();
-
-        private Holder() {
+    public String asJSONString() {
+        try {
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new APIException(e, "asJSONString", null, id, null, null, null);
         }
     }
-
-    public static APIObjectFactory getInstance() {
-        return Holder.INSTANCE;
-    }
-
-
 }

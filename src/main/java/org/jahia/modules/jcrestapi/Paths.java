@@ -75,7 +75,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
-import org.jahia.modules.json.JSONNode;
+import org.jahia.modules.jcrestapi.json.APINode;
 
 import javax.jcr.Binary;
 import javax.jcr.Node;
@@ -213,9 +213,9 @@ public class Paths extends API {
 
                 session.save();
 
-                final JSONNode jsonNode = getFactory().createNode(childNode, 0);
+                final APINode apiNode = getFactory().createAPINode(childNode, 0);
                 // since IE attempts to download the return JSON, we state that we produce plain/text and return a String representation of the JSONNode instead
-                final String jsonString = jsonNode.asJSONString();
+                final String jsonString = apiNode.asJSONString();
                 final Response.ResponseBuilder builder = isUpdate ? Response.ok(jsonString) : Response.created(context.getAbsolutePath()).entity(jsonString);
                 return builder.build();
             } else {
