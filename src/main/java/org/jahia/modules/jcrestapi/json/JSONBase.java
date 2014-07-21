@@ -40,11 +40,17 @@
 package org.jahia.modules.jcrestapi.json;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import javax.jcr.Item;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
 import javax.xml.bind.annotation.XmlElement;
+import java.io.IOException;
 
 /**
  * @author Christophe Laprun
@@ -58,6 +64,7 @@ public abstract class JSONBase<T extends JSONDecorator<T>> {
     }
 
     @JsonUnwrapped
+    @JsonDeserialize(using = DecoratorDeserializer.class)
     @XmlElement
     public T getDecorator() {
         return decorator;
@@ -106,6 +113,18 @@ public abstract class JSONBase<T extends JSONDecorator<T>> {
         @Override
         public void initFrom(JSONMixin<T> jsonMixin) {
 
+        }
+    }
+
+    public static class DecoratorDeserializer extends JsonDeserializer<Object> {
+
+        @Override
+        public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            // for now assume that decorator data is never passed to the API and therefore doesn't need to be deserialized
+            // if we ever need to deserialize, we should probably register decorators with this deserializer and use the tactics as described
+            // in http://programmerbruce.blogspot.fr/2011/05/deserialize-json-with-jackson-into.html section #6 where the decorator class
+            // would be selected based on the unique name of its root element
+            return null;
         }
     }
 }
