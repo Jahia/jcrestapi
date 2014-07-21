@@ -39,10 +39,14 @@
  */
 package org.jahia.modules.json;
 
+import org.slf4j.Logger;
+
 /**
  * @author Christophe Laprun
  */
 public final class JSONConstants {
+    public static final transient Logger LOGGER = org.slf4j.LoggerFactory.getLogger("JSON Generation");
+
     public static final String PROPERTIES = "properties";
     public static final String MIXINS = "mixins";
     public static final String CHILDREN = "children";

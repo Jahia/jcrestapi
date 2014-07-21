@@ -72,7 +72,6 @@
 package org.jahia.modules.json;
 
 import org.jahia.api.Constants;
-import org.jahia.modules.jcrestapi.APIExceptionMapper;
 import org.jahia.modules.json.jcr.SessionAccess;
 
 import javax.jcr.Node;
@@ -129,7 +128,7 @@ public class JSONVersions<D extends JSONDecorator<D>> extends JSONSubElementCont
                     return versionManager.getVersionHistory(path);
                 } catch (RepositoryException e) {
                     // can happen if the node is just created
-                    APIExceptionMapper.LOGGER.debug("Couldn't retrieve the version history for node " + path, e);
+                    JSONConstants.LOGGER.debug("Couldn't retrieve the version history for node " + path, e);
                     return null;
                 }
             }
