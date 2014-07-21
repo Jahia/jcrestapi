@@ -75,10 +75,9 @@ import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.json.*;
 
-import javax.jcr.Item;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
+import javax.jcr.*;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.Version;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -95,6 +94,7 @@ import java.util.Map;
 @XmlAccessorType(XmlAccessType.NONE)
 public class JSONLinkable implements JSONDecorator<JSONLinkable> {
 
+    public static final String JCR__PROPERTY_DEFINITION = "jcr__propertyDefinition";
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
 
@@ -137,7 +137,7 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
 
     public <T extends Item> void initFrom(JSONItem<T, JSONLinkable> jsonItem, T item) throws RepositoryException {
         initWith(URIUtils.getURIFor(item));
-        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(jsonItem.getTypeChildPath(item))));
+        addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(jsonItem, item))));
 
         Node parent;
         try {
@@ -149,6 +149,39 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
         addLink(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
 
         addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(Names.escape(item.getPath()), true)));
+    }
+
+    private <T extends Item> String getTypeChildPath(JSONItem<T, JSONLinkable> jsonItem, T item) throws RepositoryException {
+        if (item instanceof Node) {
+            return Names.escape(jsonItem.getUnescapedTypeName(item));
+        } else {
+            // get declaring node type
+            final NodeType declaringNodeType = ((Property) item).getDefinition().getDeclaringNodeType();
+
+            // get its name and escape it
+            final String parentName = Names.escape(declaringNodeType.getName());
+
+            // get its property definitions
+            final PropertyDefinition[] parentPropDefs = declaringNodeType.getDeclaredPropertyDefinitions();
+            final int numberOfPropertyDefinitions = parentPropDefs.length;
+
+            // if we only have one property definition, we're done
+            if (numberOfPropertyDefinitions == 1) {
+                return URIUtils.getChildURI(parentName, JCR__PROPERTY_DEFINITION, false);
+            } else {
+                // we need to figure out which property definition matches ours in the array
+                int index = 1; // JCR indexes start at 1
+                for (int i = 0; i < numberOfPropertyDefinitions; i++) {
+                    PropertyDefinition propDef = parentPropDefs[i];
+                    if (propDef.getName().equals(item.getName())) {
+                        index = i + 1; // adjust for start at 1 in JCR
+                        break;
+                    }
+                }
+                // create the indexed escaped link, if index = 1, no need for an index
+                return URIUtils.getChildURI(parentName, Names.escape(JCR__PROPERTY_DEFINITION, index), false);
+            }
+        }
     }
 
     public void initFrom(JSONNode<JSONLinkable> jsonNode) {

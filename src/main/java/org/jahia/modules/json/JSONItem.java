@@ -107,9 +107,5 @@ public abstract class JSONItem<T extends Item, D extends JSONDecorator<D>> exten
         return type;
     }
 
-    public String getTypeChildPath(T item) throws RepositoryException {
-        return Names.escape(type);
-    }
-
     public abstract String getUnescapedTypeName(T item) throws RepositoryException;
 }

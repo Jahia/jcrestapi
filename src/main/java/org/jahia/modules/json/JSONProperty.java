@@ -71,14 +71,10 @@
  */
 package org.jahia.modules.json;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.PropertyDefinition;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
@@ -88,7 +84,6 @@ import java.util.List;
  */
 @XmlRootElement
 public class JSONProperty<D extends JSONDecorator<D>> extends JSONItem<Property, D> {
-    static final String JCR__PROPERTY_DEFINITION = "jcr__propertyDefinition";
     @XmlElement
     private boolean multiValued;
 
@@ -145,44 +140,6 @@ public class JSONProperty<D extends JSONDecorator<D>> extends JSONItem<Property,
 
     static String getHumanReadablePropertyType(int type) throws RepositoryException {
         return PropertyType.nameFromValue(type);
-    }
-
-    /**
-     * Property types are a little bit more tricky: we need to get the declaring node type and figure out in its array of property definitions which one matches our property to be
-     * able to build the proper type link.
-     *
-     * @param item
-     * @return
-     * @throws RepositoryException
-     */
-    @Override
-    public String getTypeChildPath(Property item) throws RepositoryException {
-        // get declaring node type
-        final NodeType declaringNodeType = item.getDefinition().getDeclaringNodeType();
-
-        // get its name and escape it
-        final String parentName = Names.escape(declaringNodeType.getName());
-
-        // get its property definitions
-        final PropertyDefinition[] parentPropDefs = declaringNodeType.getDeclaredPropertyDefinitions();
-        final int numberOfPropertyDefinitions = parentPropDefs.length;
-
-        // if we only have one property definition, we're done
-        if (numberOfPropertyDefinitions == 1) {
-            return URIUtils.getChildURI(parentName, JCR__PROPERTY_DEFINITION, false);
-        } else {
-            // we need to figure out which property definition matches ours in the array
-            int index = 1; // JCR indexes start at 1
-            for (int i = 0; i < numberOfPropertyDefinitions; i++) {
-                PropertyDefinition propDef = parentPropDefs[i];
-                if (propDef.getName().equals(item.getName())) {
-                    index = i + 1; // adjust for start at 1 in JCR
-                    break;
-                }
-            }
-            // create the indexed escaped link, if index = 1, no need for an index
-            return URIUtils.getChildURI(parentName, Names.escape(JCR__PROPERTY_DEFINITION, index), false);
-        }
     }
 
     public Object getValue() {
