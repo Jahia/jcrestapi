@@ -71,8 +71,6 @@
  */
 package org.jahia.modules.json;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
@@ -105,7 +103,7 @@ public class JSONMixin<D extends JSONDecorator<D>> extends JSONNamed<D> {
     public void initWith(Node parentNode, NodeType item) throws RepositoryException {
         // todo: should we try to point to the actual mixin definition instead of pointing to the relative path to the mixin in the context of the parent node
         // todo: should we add parent link?
-        super.initWith(URIUtils.getChildURI(URIUtils.getURIForMixins(parentNode), item.getName(), true), item.getName());
+        super.initWith(item.getName());
 
         this.type = item.getName();
 

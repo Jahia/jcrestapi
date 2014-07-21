@@ -94,7 +94,7 @@ public abstract class JSONItem<T extends Item, D extends JSONDecorator<D>> exten
     }
 
     public void initWith(T item) throws RepositoryException {
-        initWith(URIUtils.getURIFor(item), item.getName());
+        initWith(item.getName());
         this.type = getUnescapedTypeName(item);
 
         getDecoratorOrNullOpIfNull().initFrom(this, item);

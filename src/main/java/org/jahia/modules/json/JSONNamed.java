@@ -86,7 +86,7 @@ public class JSONNamed<T extends JSONDecorator<T>> extends JSONBase<T> {
         super(decorator);
     }
 
-    protected void initWith(String uri, String name) {
+    protected void initWith(String name) {
         this.name = name;
     }
 

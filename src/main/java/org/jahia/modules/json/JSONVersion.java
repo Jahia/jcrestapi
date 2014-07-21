@@ -71,8 +71,6 @@
  */
 package org.jahia.modules.json;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
@@ -94,7 +92,7 @@ public class JSONVersion<D extends JSONDecorator<D>> extends JSONNamed<D> {
     }
 
     protected void initWith(Node parent, Version version) throws RepositoryException {
-        super.initWith(URIUtils.getURIFor(version), version.getName());
+        super.initWith(version.getName());
 
         this.created = version.getCreated();
         getDecoratorOrNullOpIfNull().initFrom(this, version);
