@@ -81,6 +81,7 @@ import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNamed;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONSubElementContainer;
+import org.jahia.modules.json.jcr.SessionAccess;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -105,7 +106,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Christophe Laprun
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(API.class)
+@PrepareForTest(SessionAccess.class)
 public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
 
     static final String WORKSPACE = "default";
@@ -121,8 +122,8 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
         // DANGER: must be careful with PowerMockito as it appears to replace ALL the static methods
         // so you might get default return values for methods you don't expect
-        PowerMockito.mockStatic(API.class);
-        PowerMockito.when(API.getCurrentSession()).thenReturn(new API.SessionInfo(mockSession, WORKSPACE, LANGUAGE));
+        PowerMockito.mockStatic(SessionAccess.class);
+        PowerMockito.when(SessionAccess.getCurrentSession()).thenReturn(new SessionAccess.SessionInfo(mockSession, WORKSPACE, LANGUAGE));
 
         // set base URI for absolute links
         context = Mocks.createMockUriInfo();

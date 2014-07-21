@@ -73,6 +73,7 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.Names;
+import org.jahia.modules.json.jcr.SessionAccess;
 
 import javax.jcr.Item;
 import javax.jcr.Node;
@@ -91,7 +92,7 @@ public final class URIUtils {
     }
 
     private static String getURIWithWorkspaceAndLanguage() {
-        final API.SessionInfo currentSession = API.getCurrentSession();
+        final SessionAccess.SessionInfo currentSession = SessionAccess.getCurrentSession();
         return API.API_PATH + "/" + currentSession.workspace + "/" + currentSession.language;
     }
 

@@ -72,8 +72,8 @@
 package org.jahia.modules.json;
 
 import org.jahia.api.Constants;
-import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.APIExceptionMapper;
+import org.jahia.modules.json.jcr.SessionAccess;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -120,7 +120,7 @@ public class JSONVersions<D extends JSONDecorator<D>> extends JSONSubElementCont
 
     public static VersionHistory getVersionHistoryFor(Node node) throws RepositoryException {
         if (isNodeVersionable(node)) {
-            final Session session = API.getCurrentSession().session;
+            final Session session = SessionAccess.getCurrentSession().session;
             if (session != null) {
                 final VersionManager versionManager = session.getWorkspace().getVersionManager();
                 final String path = node.getPath();

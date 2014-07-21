@@ -77,6 +77,7 @@ import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONObjectFactory;
 import org.jahia.modules.json.Names;
+import org.jahia.modules.json.jcr.SessionAccess;
 import org.jahia.services.content.JCRSessionFactory;
 import org.jahia.utils.LanguageCodeConverters;
 import org.osgi.service.component.annotations.Component;
@@ -118,8 +119,6 @@ public class API {
 
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
-    private static final ThreadLocal<SessionInfo> SESSION_HOLDER = new ThreadLocal<SessionInfo>();
-
     protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>() {
         @Override
         public JSONLinkable createDecorator() {
@@ -142,22 +141,6 @@ public class API {
         ACCESSORS.put(JSONConstants.MIXINS, new MixinElementAccessor());
         ACCESSORS.put(JSONConstants.VERSIONS, new VersionElementAccessor());
         ACCESSORS.put("", new NodeElementAccessor());
-    }
-
-    public static SessionInfo getCurrentSession() {
-        return SESSION_HOLDER.get();
-    }
-
-    public static class SessionInfo {
-        public final Session session;
-        public final String workspace;
-        public final String language;
-
-        public SessionInfo(Session session, String workspace, String language) {
-            this.session = session;
-            this.workspace = workspace;
-            this.language = language;
-        }
     }
 
     @Inject
@@ -325,7 +308,7 @@ public class API {
         }
 
         // put the session in the session holder so that other objects can access it if needed
-        SESSION_HOLDER.set(new SessionInfo(session, workspace, language));
+        SessionAccess.setCurrentSession(session, workspace, language);
 
         return session;
     }
@@ -336,7 +319,7 @@ public class API {
         }
 
         // reset session holder
-        SESSION_HOLDER.remove();
+        SessionAccess.closeCurrentSession();
     }
 
     protected static interface NodeAccessor {
