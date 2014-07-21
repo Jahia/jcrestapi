@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.APIObjectFactory;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
@@ -91,12 +92,9 @@ import java.util.List;
  * @author Christophe Laprun
  */
 public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
-    protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>() {
-        @Override
-        public JSONLinkable createDecorator() {
-            return new JSONLinkable();
-        }
-    };
+    public static JSONObjectFactory<JSONLinkable> getFactory() {
+        return APIObjectFactory.getInstance();
+    }
 
     protected Object getElement(Node node, String subElement) throws RepositoryException {
         if (!Utils.exists(subElement)) {
@@ -107,7 +105,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
     }
 
     protected JSONNode getParentFrom(Node node) throws RepositoryException {
-        return factory.createNode(node, 0);
+        return getFactory().createNode(node, 0);
     }
 
     protected abstract C getSubElementContainer(Node node) throws RepositoryException;

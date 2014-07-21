@@ -137,12 +137,12 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
 
     @Override
     protected JSONProperties getSubElementContainer(Node node) throws RepositoryException {
-        return factory.createProperties(getParentFrom(node), node);
+        return getFactory().createProperties(getParentFrom(node), node);
     }
 
     @Override
     protected JSONProperty getSubElement(Node node, String subElement) throws RepositoryException {
-        return factory.createProperty(node.getProperty(subElement));
+        return getFactory().createProperty(node.getProperty(subElement));
     }
 
     @Override
@@ -154,7 +154,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     protected CreateOrUpdateResult<JSONProperty> createOrUpdate(Node node, String subElement, JSONProperty childData) throws RepositoryException {
         final boolean isUpdate = node.hasProperty(subElement);
         final Property property = setPropertyOnNode(subElement, childData, node);
-        return new CreateOrUpdateResult<JSONProperty>(isUpdate, factory.createProperty(property));
+        return new CreateOrUpdateResult<JSONProperty>(isUpdate, getFactory().createProperty(property));
     }
 
     @Override

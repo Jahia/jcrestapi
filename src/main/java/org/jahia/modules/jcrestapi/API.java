@@ -119,13 +119,6 @@ public class API {
 
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
-    protected static final JSONObjectFactory<JSONLinkable> factory = new JSONObjectFactory<JSONLinkable>() {
-        @Override
-        public JSONLinkable createDecorator() {
-            return new JSONLinkable();
-        }
-    };
-
     static {
         Properties props = new Properties();
         try {
@@ -158,6 +151,10 @@ public class API {
         if (context != null) {
             URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
         }
+    }
+
+    public static JSONObjectFactory<JSONLinkable> getFactory() {
+        return APIObjectFactory.getInstance();
     }
 
     /**

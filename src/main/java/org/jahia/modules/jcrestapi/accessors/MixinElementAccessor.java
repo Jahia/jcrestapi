@@ -86,7 +86,7 @@ import javax.jcr.nodetype.NodeType;
 public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin, JSONNode> {
     @Override
     protected JSONMixins getSubElementContainer(Node node) throws RepositoryException {
-        return factory.createMixins(getParentFrom(node), node);
+        return getFactory().createMixins(getParentFrom(node), node);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
             return null;
         }
 
-        return factory.createMixin(node, mixin);
+        return getFactory().createMixin(node, mixin);
     }
 
     @Override
@@ -118,7 +118,7 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
         // we now need to use the rest of the given child data to add / update the parent node content
         NodeElementAccessor.initNodeFrom(node, childData);
 
-        return new CreateOrUpdateResult<JSONMixin>(!isCreation, factory.createMixin(node, mixin));
+        return new CreateOrUpdateResult<JSONMixin>(!isCreation, getFactory().createMixin(node, mixin));
     }
 
     @Override
