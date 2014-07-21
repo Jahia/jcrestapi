@@ -72,9 +72,9 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.APIObjectFactory;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
+import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
 import org.jahia.modules.json.*;
 

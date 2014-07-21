@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.accessors.*;
+import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.jcrestapi.links.JSONLinkable;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
