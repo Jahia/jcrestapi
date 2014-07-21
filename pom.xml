@@ -127,7 +127,14 @@
     </dependency>
 
     <dependency>
-      <groupId>org.slf4j</groupId>
+      <groupId>org.jahia.modules</groupId>
+      <artifactId>json-generation</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+    <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
       <scope>provided</scope>
@@ -307,12 +314,12 @@
             <Jahia-Module-Type>system</Jahia-Module-Type>
             <Private-Package>
               org.jahia.modules.jcrestapi,
-              org.jahia.modules.json,
               org.jahia.modules.jcrestapi.links,
               org.jahia.modules.jcrestapi.accessors
             </Private-Package>
             <Import-Package>
               javax.jcr.*,
+              org.jahia.modules.json,
               javax.xml.bind.annotation,
               javax.xml.bind.annotation.adapters,
               javax.ws.rs.*,
