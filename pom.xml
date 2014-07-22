@@ -313,13 +313,11 @@
             <Jahia-Depends>default,jaxrs-osgi-extender</Jahia-Depends>
             <Jahia-Module-Type>system</Jahia-Module-Type>
             <Private-Package>
-              org.jahia.modules.jcrestapi,
-              org.jahia.modules.jcrestapi.links,
-              org.jahia.modules.jcrestapi.accessors
+              org.jahia.modules.jcrestapi.*
             </Private-Package>
             <Import-Package>
               javax.jcr.*,
-              org.jahia.modules.json,
+              org.jahia.modules.json.*,
               javax.xml.bind.annotation,
               javax.xml.bind.annotation.adapters,
               javax.ws.rs.*,
