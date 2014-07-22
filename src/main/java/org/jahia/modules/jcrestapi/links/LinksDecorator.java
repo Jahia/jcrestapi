@@ -92,17 +92,17 @@ import java.util.Map;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class JSONLinkable implements JSONDecorator<JSONLinkable> {
+public class LinksDecorator implements JSONDecorator<LinksDecorator> {
 
     public static final String JCR__PROPERTY_DEFINITION = "jcr__propertyDefinition";
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
 
-    public JSONLinkable() {
+    public LinksDecorator() {
         links = new HashMap<String, JSONLink>(7);
     }
 
-    public JSONLinkable(String uri) {
+    public LinksDecorator(String uri) {
         this();
 
         initWith(uri);
@@ -129,13 +129,13 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
         return Collections.unmodifiableMap(links);
     }
 
-    public void initFrom(JSONSubElementContainer<JSONLinkable> container) {
+    public void initFrom(JSONSubElementContainer<LinksDecorator> container) {
         final String uri = container.getParent().getDecorator().getURI();
         initWith(URIUtils.getChildURI(uri, container.getSubElementContainerName(), false));
         addLink(JSONLink.createLink(API.PARENT, uri));
     }
 
-    public <T extends Item> void initFrom(JSONItem<T, JSONLinkable> jsonItem, T item) throws RepositoryException {
+    public <T extends Item> void initFrom(JSONItem<T, LinksDecorator> jsonItem, T item) throws RepositoryException {
         initWith(URIUtils.getURIFor(item));
         addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(jsonItem, item))));
 
@@ -151,7 +151,7 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
         addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(Names.escape(item.getPath()), true)));
     }
 
-    private <T extends Item> String getTypeChildPath(JSONItem<T, JSONLinkable> jsonItem, T item) throws RepositoryException {
+    private <T extends Item> String getTypeChildPath(JSONItem<T, LinksDecorator> jsonItem, T item) throws RepositoryException {
         if (item instanceof Node) {
             return Names.escape(jsonItem.getUnescapedTypeName(item));
         } else {
@@ -184,7 +184,7 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
         }
     }
 
-    public void initFrom(JSONNode<JSONLinkable> jsonNode) {
+    public void initFrom(JSONNode<LinksDecorator> jsonNode) {
         addLink(JSONLink.createLink(JSONConstants.PROPERTIES, jsonNode.getJSONProperties().getDecorator().getURI()));
         addLink(JSONLink.createLink(JSONConstants.MIXINS, jsonNode.getJSONMixins().getDecorator().getURI()));
         addLink(JSONLink.createLink(JSONConstants.CHILDREN, jsonNode.getJSONChildren().getDecorator().getURI()));
@@ -192,8 +192,8 @@ public class JSONLinkable implements JSONDecorator<JSONLinkable> {
     }
 
     @Override
-    public JSONLinkable newInstance() {
-        return new JSONLinkable();
+    public LinksDecorator newInstance() {
+        return new LinksDecorator();
     }
 
     public void initFrom(JSONProperty jsonProperty) throws RepositoryException {

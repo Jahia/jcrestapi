@@ -39,7 +39,7 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.links.JSONLinkable;
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONObjectFactory;
 
 import javax.jcr.Node;
@@ -48,10 +48,10 @@ import javax.jcr.RepositoryException;
 /**
  * @author Christophe Laprun
  */
-public class APIObjectFactory extends JSONObjectFactory<JSONLinkable> {
+public class APIObjectFactory extends JSONObjectFactory<LinksDecorator> {
     @Override
-    public JSONLinkable createDecorator() {
-        return new JSONLinkable();
+    public LinksDecorator createDecorator() {
+        return new LinksDecorator();
     }
 
     public APINode createAPINode(Node node, int depth) throws RepositoryException {

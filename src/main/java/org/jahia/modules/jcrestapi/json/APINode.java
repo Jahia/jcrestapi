@@ -43,7 +43,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.APIException;
-import org.jahia.modules.jcrestapi.links.JSONLinkable;
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONNode;
 
 import javax.jcr.Node;
@@ -53,10 +53,10 @@ import javax.ws.rs.core.MediaType;
 /**
  * @author Christophe Laprun
  */
-public class APINode extends JSONNode<JSONLinkable> {
+public class APINode extends JSONNode<LinksDecorator> {
     private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
-    protected APINode(JSONLinkable decorator, Node node, int depth) throws RepositoryException {
+    protected APINode(LinksDecorator decorator, Node node, int depth) throws RepositoryException {
         super(decorator, node, depth);
     }
 
