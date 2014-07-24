@@ -39,22 +39,18 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.json.DefaultJSONObjectFactory;
 import org.jahia.modules.json.JSONNode;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.ws.rs.core.MediaType;
 
 /**
  * @author Christophe Laprun
  */
 public class APINode extends JSONNode<LinksDecorator> {
-    private static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
     protected APINode(LinksDecorator decorator, Node node, int depth) throws RepositoryException {
         super(decorator, node, depth);
@@ -62,8 +58,8 @@ public class APINode extends JSONNode<LinksDecorator> {
 
     public String asJSONString() {
         try {
-            return mapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
+            return DefaultJSONObjectFactory.getAsString(this);
+        } catch (Exception e) {
             throw new APIException(e, "asJSONString", null, id, null, null, null);
         }
     }
