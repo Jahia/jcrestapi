@@ -109,7 +109,8 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
     }
 
     public String getURI() {
-        return getLink(API.SELF).getURIAsString();
+        final JSONLink link = getLink(API.SELF);
+        return link != null ? link.getURIAsString() : null;
     }
 
     public void initWith(String uri) {
