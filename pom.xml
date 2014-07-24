@@ -140,6 +140,13 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.jahia.modules</groupId>
+      <artifactId>json-generation</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Jersey -->
     <dependency>
       <groupId>org.glassfish.jersey.bundles</groupId>
@@ -155,11 +162,6 @@
     </dependency>
 
     <!-- Jackson -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.jaxrs</groupId>
-      <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
@@ -181,9 +183,19 @@
       <version>${jackson.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
+      <groupId>com.fasterxml.jackson.jaxrs</groupId>
+      <artifactId>jackson-jaxrs-json-provider</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+    <groupId>com.fasterxml.jackson.module</groupId>
       <artifactId>jackson-module-jaxb-annotations</artifactId>
       <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jahia.modules</groupId>
+      <artifactId>json-generation</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
     </dependency>
 
     <!-- Test dependencies -->
@@ -317,7 +329,6 @@
             </Private-Package>
             <Import-Package>
               javax.jcr.*,
-              org.jahia.modules.json.*,
               javax.xml.bind.annotation,
               javax.xml.bind.annotation.adapters,
               javax.ws.rs.*,
