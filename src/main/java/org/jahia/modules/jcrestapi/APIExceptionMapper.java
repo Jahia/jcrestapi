@@ -103,7 +103,7 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
     public Response toResponse(APIException exception) {
         final Throwable cause = exception.getCause();
 
-        LOGGER.info("An error occurred in the RESTful API", cause);
+        LOGGER.debug("An error occurred in the RESTful API", cause);
 
         Response.ResponseBuilder builder;
         if (cause instanceof RepositoryException) {
