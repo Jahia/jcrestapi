@@ -130,7 +130,6 @@
       <groupId>org.jahia.modules</groupId>
       <artifactId>json-generation</artifactId>
       <version>1.0.0-SNAPSHOT</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
