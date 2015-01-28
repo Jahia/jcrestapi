@@ -39,21 +39,22 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.DefaultJSONObjectFactory;
+import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONNode;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 /**
  * @author Christophe Laprun
  */
 public class APINode extends JSONNode<LinksDecorator> {
 
-    protected APINode(LinksDecorator decorator, Node node, int depth) throws RepositoryException {
-        super(decorator, node, depth);
+    protected APINode(LinksDecorator decorator, Node node, Filter filter, int depth) throws RepositoryException {
+        super(decorator, node, filter, depth);
     }
 
     public String asJSONString() {

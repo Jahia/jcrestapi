@@ -71,6 +71,10 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import java.util.List;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
+
 /**
  * Utilities class.
  *
@@ -85,5 +89,21 @@ public class Utils {
      */
     public static boolean exists(String string) {
         return string != null && !string.isEmpty();
+    }
+
+    public static int getDepthFrom(UriInfo context, int defaultDepth) {
+        int depth = defaultDepth;
+        if (context != null) {
+            final MultivaluedMap<String, String> queryParameters = context.getQueryParameters();
+            if (queryParameters != null) {
+                final List<String> includeFullChildren = queryParameters.get("includeFullChildren");
+                if (includeFullChildren != null) {
+                    if (includeFullChildren.isEmpty() || !"false".equals(includeFullChildren.get(0))) {
+                        depth += 1;
+                    }
+                }
+            }
+        }
+        return depth;
     }
 }

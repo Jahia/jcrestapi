@@ -71,19 +71,20 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.json.JSONProperties;
-import org.jahia.modules.json.JSONProperty;
-import org.jahia.modules.json.Names;
-import org.jahia.services.content.JCRNodeWrapper;
-
+import java.util.List;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
-import java.util.List;
+import javax.ws.rs.core.UriInfo;
+
+import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.json.JSONProperties;
+import org.jahia.modules.json.JSONProperty;
+import org.jahia.modules.json.Names;
+import org.jahia.services.content.JCRNodeWrapper;
 
 /**
  * @author Christophe Laprun
@@ -136,12 +137,12 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     }
 
     @Override
-    protected JSONProperties getSubElementContainer(Node node) throws RepositoryException {
+    protected JSONProperties getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         return getFactory().createProperties(getParentFrom(node), node);
     }
 
     @Override
-    protected JSONProperty getSubElement(Node node, String subElement) throws RepositoryException {
+    protected JSONProperty getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         return getFactory().createProperty(node.getProperty(subElement));
     }
 

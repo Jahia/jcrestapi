@@ -71,27 +71,28 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.json.JSONNode;
-import org.jahia.modules.json.JSONVersion;
-import org.jahia.modules.json.JSONVersions;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
+import javax.ws.rs.core.UriInfo;
+
+import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.json.JSONNode;
+import org.jahia.modules.json.JSONVersion;
+import org.jahia.modules.json.JSONVersions;
 
 /**
  * @author Christophe Laprun
  */
 public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVersion, JSONNode> {
     @Override
-    protected JSONVersions getSubElementContainer(Node node) throws RepositoryException {
+    protected JSONVersions getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         return getFactory().createVersions(getParentFrom(node), node);
     }
 
     @Override
-    protected JSONVersion getSubElement(Node node, String subElement) throws RepositoryException {
+    protected JSONVersion getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         final VersionHistory versionHistory = JSONVersions.getVersionHistoryFor(node);
         if (versionHistory != null) {
             final Version version = versionHistory.getVersion(subElement);

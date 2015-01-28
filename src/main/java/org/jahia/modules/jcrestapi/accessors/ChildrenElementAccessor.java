@@ -71,24 +71,29 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.json.JSONChildren;
-import org.jahia.modules.json.JSONNode;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.UriInfo;
+
+import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.Utils;
+import org.jahia.modules.json.Filter;
+import org.jahia.modules.json.JSONChildren;
+import org.jahia.modules.json.JSONNode;
 
 /**
  * @author Christophe Laprun
  */
 public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONNode, JSONNode> {
     @Override
-    protected JSONChildren getSubElementContainer(Node node) throws RepositoryException {
-        return getFactory().createChildren(getParentFrom(node), node);
+    protected JSONChildren getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
+        int depth = Utils.getDepthFrom(context, 0);
+
+        return getFactory().createChildren(getParentFrom(node), node, Filter.OUTPUT_ALL, depth);
     }
 
     @Override
-    protected JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
+    protected JSONNode getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         return getFactory().createNode(node.getNode(subElement), 1);
     }
 

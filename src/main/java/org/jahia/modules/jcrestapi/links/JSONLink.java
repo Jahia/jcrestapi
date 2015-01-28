@@ -71,13 +71,13 @@
  */
 package org.jahia.modules.jcrestapi.links;
 
-import org.jahia.modules.jcrestapi.Utils;
-
+import java.util.Arrays;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Arrays;
+
+import org.jahia.modules.jcrestapi.Utils;
 
 /**
  * @author Christophe Laprun

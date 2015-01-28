@@ -71,23 +71,33 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.jahia.api.Constants;
-import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
-import org.jahia.modules.jcrestapi.json.APINode;
-
-import javax.jcr.Binary;
-import javax.jcr.Node;
-import javax.jcr.Repository;
-import javax.jcr.Session;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.jcr.Binary;
+import javax.jcr.Node;
+import javax.jcr.Repository;
+import javax.jcr.Session;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.jahia.api.Constants;
+import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
+import org.jahia.modules.jcrestapi.json.APINode;
+import org.jahia.modules.json.Filter;
 
 /**
  * @author Christophe Laprun
@@ -213,7 +223,7 @@ public class Paths extends API {
 
                 session.save();
 
-                final APINode apiNode = getFactory().createAPINode(childNode, 0);
+                final APINode apiNode = getFactory().createAPINode(childNode, Filter.OUTPUT_ALL, 0);
                 // since IE attempts to download the return JSON, we state that we produce plain/text and return a String representation of the JSONNode instead
                 final String jsonString = apiNode.asJSONString();
                 final Response.ResponseBuilder builder = isUpdate ? Response.ok(jsonString) : Response.created(context.getAbsolutePath()).entity(jsonString);

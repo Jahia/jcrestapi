@@ -39,11 +39,12 @@
  */
 package org.jahia.modules.jcrestapi.json;
 
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
-import org.jahia.modules.json.JSONObjectFactory;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.json.Filter;
+import org.jahia.modules.json.JSONObjectFactory;
 
 /**
  * @author Christophe Laprun
@@ -54,8 +55,8 @@ public class APIObjectFactory extends JSONObjectFactory<LinksDecorator> {
         return new LinksDecorator();
     }
 
-    public APINode createAPINode(Node node, int depth) throws RepositoryException {
-        return new APINode(createDecorator(), node, depth);
+    public APINode createAPINode(Node node, Filter filter, int depth) throws RepositoryException {
+        return new APINode(createDecorator(), node, filter, depth);
     }
 
     // Initialization on demand holder idiom: thread-safe singleton initialization

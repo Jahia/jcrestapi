@@ -71,26 +71,27 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
+import javax.ws.rs.core.UriInfo;
+
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.json.JSONMixin;
 import org.jahia.modules.json.JSONMixins;
 import org.jahia.modules.json.JSONNode;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
 
 /**
  * @author Christophe Laprun
  */
 public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin, JSONNode> {
     @Override
-    protected JSONMixins getSubElementContainer(Node node) throws RepositoryException {
+    protected JSONMixins getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         return getFactory().createMixins(getParentFrom(node), node);
     }
 
     @Override
-    protected JSONMixin getSubElement(Node node, String subElement) throws RepositoryException {
+    protected JSONMixin getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         final NodeType mixin = getMixin(node, subElement);
         if (mixin == null) {
             return null;

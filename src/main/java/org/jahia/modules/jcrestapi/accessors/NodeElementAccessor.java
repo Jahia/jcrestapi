@@ -71,29 +71,35 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.json.*;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 import java.util.Map;
 import java.util.Set;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.ws.rs.core.UriInfo;
+
+import org.jahia.modules.jcrestapi.Utils;
+import org.jahia.modules.json.JSONMixin;
+import org.jahia.modules.json.JSONNode;
+import org.jahia.modules.json.JSONProperty;
+import org.jahia.modules.json.JSONSubElementContainer;
+import org.jahia.modules.json.Names;
 
 /**
  * @author Christophe Laprun
  */
 public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer, JSONNode, JSONNode> {
     @Override
-    protected Object getElement(Node node, String subElement) throws RepositoryException {
-        return getFactory().createNode(node, 1);
+    protected Object getElement(Node node, String subElement, UriInfo context) throws RepositoryException {
+        return getFactory().createNode(node, Utils.getDepthFrom(context, 1));
     }
 
     @Override
-    protected JSONSubElementContainer getSubElementContainer(Node node) throws RepositoryException {
+    protected JSONSubElementContainer getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         throw new UnsupportedOperationException("Cannot call getSubElementContainer on NodeElementAccessor");
     }
 
     @Override
-    protected JSONNode getSubElement(Node node, String subElement) throws RepositoryException {
+    protected JSONNode getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         throw new UnsupportedOperationException("Cannot call getSubElement on NodeElementAccessor");
     }
 

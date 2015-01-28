@@ -71,6 +71,15 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
@@ -79,15 +88,6 @@ import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNamed;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONSubElementContainer;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -98,11 +98,11 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
         return APIObjectFactory.getInstance();
     }
 
-    protected Object getElement(Node node, String subElement) throws RepositoryException {
+    protected Object getElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         if (!Utils.exists(subElement)) {
-            return getSubElementContainer(node);
+            return getSubElementContainer(node, context);
         } else {
-            return getSubElement(node, subElement);
+            return getSubElement(node, subElement, context);
         }
     }
 
@@ -110,9 +110,9 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
         return getFactory().createNode(node, 0);
     }
 
-    protected abstract C getSubElementContainer(Node node) throws RepositoryException;
+    protected abstract C getSubElementContainer(Node node, UriInfo context) throws RepositoryException;
 
-    protected abstract T getSubElement(Node node, String subElement) throws RepositoryException;
+    protected abstract T getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException;
 
     protected abstract void delete(Node node, String subElement) throws RepositoryException;
 
@@ -131,7 +131,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
                 return Response.created(context.getAbsolutePath()).entity(entity).build();
             }
         } else if (API.READ.equals(operation)) {
-            final Object element = getElement(node, subElement);
+            final Object element = getElement(node, subElement, context);
             return element == null ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(element).build();
         }
 
@@ -152,7 +152,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
         } else if (API.READ.equals(operation)) {
             List<T> result = new ArrayList<T>(subElements.size());
             for (String subElement : subElements) {
-                final T element = getSubElement(node, subElement);
+                final T element = getSubElement(node, subElement, context);
                 if (element != null) {
                     result.add(element);
                 }
