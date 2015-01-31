@@ -786,6 +786,14 @@ identified by the `subElement` path element for the node identified by the speci
 - `DELETE`: to delete the identified resource
 - `POST`: to rename a resource but leave it at the same spot in the hierarchy
 
+#### Accepted data
+
+`PUT` operations accept JSON representations of the objects that the method intends to update or create, meaning a `PUT` to create a property must provide
+a valid JSON representation of a property, a `PUT` to update a node must provide in the body of the request a valid JSON representation of a node.
+As mentioned before, this representation only needs to be partial, containing only the information that is required to complete the operation.
+
+`DELETE` operations accept a JSON array of String identifiers of elements to be batch-deleted. This way several elements can be deleted in one single call.
+
 #### Examples
 
 `GET <basecontext>/default/en/nodes/` will retrieve the root node of the `default` workspace using its English version when internationalized
@@ -804,8 +812,13 @@ and sets its value to `bar`.
 Once that `jmix:rating` is added to the node, you can then modify its properties as you would do with "normal" properties.
 For example, `PUT <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties/j__sumOfVotes` with the `{"value": "3000"}` JSON body data will update the `j:sumOfVotes`
 property to `3000`.
+
 `DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/mixins/jmix__rating` will remove the mixin from the node, while
+
 `DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties/j__sumOfVotes` will just remove the `j:sumOfVotes` property.
+
+`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties` with the `["j__sumOfVotes", "j__nbOfVotes"]` will delete both `j:sumOfVotes` and
+`j:nbOfVotes` properties.
 
 `POST <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/moveto/newName` will rename the `eae598a3-8a41-4003-9c6b-f31018ee0e46` node to `newName`,
 leaving it at the same spot in the JCR tree.
