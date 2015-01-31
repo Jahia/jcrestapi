@@ -71,6 +71,16 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
@@ -89,16 +99,6 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -126,7 +126,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         PowerMockito.when(SessionAccess.getCurrentSession()).thenReturn(new SessionAccess.SessionInfo(mockSession, WORKSPACE, LANGUAGE));
 
         // set base URI for absolute links
-        context = Mocks.createMockUriInfo();
+        context = Mocks.createMockUriInfo(false);
         URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
     }
 

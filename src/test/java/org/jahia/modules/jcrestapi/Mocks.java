@@ -71,29 +71,39 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.apache.jackrabbit.value.StringValue;
-import org.jahia.api.Constants;
-import org.jahia.modules.jcrestapi.accessors.PropertyElementAccessor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import javax.jcr.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.Workspace;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionIterator;
 import javax.jcr.version.VersionManager;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
+
+import org.apache.jackrabbit.value.StringValue;
+import org.jahia.api.Constants;
+import org.jahia.modules.jcrestapi.accessors.PropertyElementAccessor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Christophe Laprun
@@ -135,10 +145,17 @@ public class Mocks {
         }
 
         // mock children
-        for (int i = 0; i < numberOfChildren; i++) {
-            final String childName = CHILD + i;
-            final Node child = createMockNode(childName, CHILD_ID + i, pathToNode + "/" + childName, 0, 0, 0);
-            when(node.getNode(childName)).thenReturn(child);
+        final List<Node> children;
+        if (numberOfChildren > 0) {
+            children = new ArrayList<Node>(numberOfChildren);
+            for (int i = 0; i < numberOfChildren; i++) {
+                final String childName = CHILD + i;
+                final Node child = createMockNode(childName, CHILD_ID + i, pathToNode + "/" + childName, numberOfChildren - 1, numberOfProperties - 1, numberOfMixins - 1);
+                children.add(child);
+                when(node.getNode(childName)).thenReturn(child);
+            }
+        } else {
+            children = Collections.emptyList();
         }
 
         // mock mixins
@@ -156,7 +173,14 @@ public class Mocks {
         when(node.getIdentifier()).thenReturn(id);
         when(node.getParent()).thenReturn(parent);
         when(node.getPath()).thenReturn(pathToNode);
-        when(node.getNodes()).thenReturn(new EmptyNodeIterator());
+        // use an Answer to make sure that we always return a new iterator
+        // (otherwise, it iterates through its elements and then won't work for subsequent calls).
+        when(node.getNodes()).then(new Answer<NodeIterator>() {
+            @Override
+            public NodeIterator answer(InvocationOnMock invocation) throws Throwable {
+                return new ListBackedNodeIterator(children);
+            }
+        });
         when(node.isNodeType(Constants.MIX_VERSIONABLE)).thenReturn(true);
         when(node.getName()).thenReturn(name);
         when(node.getMixinNodeTypes()).thenReturn(finalMixins);
@@ -166,7 +190,7 @@ public class Mocks {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 NodeType[] newMixins;
                 final NodeType mixin = createNodeType(invocation.getArguments()[0].toString());
-                if(finalMixins != null) {
+                if (finalMixins != null) {
                     newMixins = Arrays.copyOf(finalMixins, finalMixins.length + 1);
                     newMixins[finalMixins.length] = mixin;
                 } else {
@@ -184,7 +208,7 @@ public class Mocks {
                 final PropertyDefinition[] definitions = nodeType.getPropertyDefinitions();
                 final String propertyName = invocation.getArguments()[0].toString();
                 final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionFrom(propertyName, definitions);
-                if(definition != null && definition.getRequiredType() == ((Integer) invocation.getArguments()[2])) {
+                if (definition != null && definition.getRequiredType() == ((Integer) invocation.getArguments()[2])) {
                     final Property property = createMockProperty(node, propertyName, nodeType, false);
                     when(property.getValue()).thenReturn(new StringValue(invocation.getArguments()[1].toString()));
                     return property;
@@ -252,10 +276,16 @@ public class Mocks {
         return propertyDefinition;
     }
 
-    public static UriInfo createMockUriInfo() {
+    public static UriInfo createMockUriInfo(boolean fullChildren) {
         final UriInfo info = mock(UriInfo.class);
         try {
             when(info.getBaseUri()).thenReturn(new URI(BASE_URI));
+            MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<String, String>();
+            if (fullChildren) {
+                queryParams.putSingle(API.INCLUDE_FULL_CHILDREN, "");
+            }
+
+            when(info.getQueryParameters()).thenReturn(queryParams);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -318,6 +348,53 @@ public class Mocks {
         @Override
         public Object next() {
             return null;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class ListBackedNodeIterator implements NodeIterator {
+        private Iterator<Node> iterator;
+        private int size;
+        private int index;
+
+        public ListBackedNodeIterator(Collection<Node> nodes) {
+            this.iterator = nodes.iterator();
+            this.size = nodes.size();
+        }
+
+        @Override
+        public Node nextNode() {
+            index++;
+            return iterator.next();
+        }
+
+        @Override
+        public void skip(long skipNum) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long getSize() {
+            return size;
+        }
+
+        @Override
+        public long getPosition() {
+            return index;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public Object next() {
+            return nextNode();
         }
 
         @Override

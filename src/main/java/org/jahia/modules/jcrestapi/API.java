@@ -71,18 +71,18 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.accessors.*;
-import org.jahia.modules.jcrestapi.json.APIObjectFactory;
-import org.jahia.modules.json.JSONConstants;
-import org.jahia.modules.json.JSONItem;
-import org.jahia.modules.json.Names;
-import org.jahia.modules.json.jcr.SessionAccess;
-import org.jahia.services.content.JCRSessionFactory;
-import org.jahia.utils.LanguageCodeConverters;
-import org.osgi.service.component.annotations.Component;
-
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import javax.inject.Inject;
-import javax.jcr.*;
+import javax.jcr.Node;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -91,7 +91,21 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.*;
+
+import org.jahia.modules.jcrestapi.accessors.ChildrenElementAccessor;
+import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
+import org.jahia.modules.jcrestapi.accessors.MixinElementAccessor;
+import org.jahia.modules.jcrestapi.accessors.NodeElementAccessor;
+import org.jahia.modules.jcrestapi.accessors.PropertyElementAccessor;
+import org.jahia.modules.jcrestapi.accessors.VersionElementAccessor;
+import org.jahia.modules.jcrestapi.json.APIObjectFactory;
+import org.jahia.modules.json.JSONConstants;
+import org.jahia.modules.json.JSONItem;
+import org.jahia.modules.json.Names;
+import org.jahia.modules.json.jcr.SessionAccess;
+import org.jahia.services.content.JCRSessionFactory;
+import org.jahia.utils.LanguageCodeConverters;
+import org.osgi.service.component.annotations.Component;
 
 /**
  * The main entry point to the JCR RESTful API.
@@ -116,6 +130,7 @@ public class API {
     public static final String PARENT = "parent";
     public static final String PATH = "path";
 
+
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
     static {
@@ -134,6 +149,8 @@ public class API {
         ACCESSORS.put(JSONConstants.VERSIONS, new VersionElementAccessor());
         ACCESSORS.put("", new NodeElementAccessor());
     }
+
+    public static final String INCLUDE_FULL_CHILDREN = "includeFullChildren";
 
     @Inject
     private Repository repository;

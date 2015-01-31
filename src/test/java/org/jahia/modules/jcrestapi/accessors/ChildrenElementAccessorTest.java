@@ -71,6 +71,12 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import java.io.IOException;
+import java.util.Map;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.ws.rs.core.Response;
+
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
@@ -78,11 +84,9 @@ import org.jahia.modules.jcrestapi.links.JSONLink;
 import org.jahia.modules.json.JSONChildren;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONNode;
+import org.junit.Test;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Christophe Laprun
@@ -131,5 +135,23 @@ public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildre
     @Override
     protected JSONLink getSelfLinkForChild(Node node) throws RepositoryException {
         return JSONLink.createLink(API.SELF, URIUtils.getIdURI(Mocks.CHILD_ID + 0));
+    }
+
+    @Test
+    public void usingFullChildrenShouldIncludeCompleteChildren() throws RepositoryException {
+        context = Mocks.createMockUriInfo(true);
+
+        final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE, 2, 2, 2);
+        final Response response = accessor.perform(node, (String) null, API.READ, null, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+
+        final JSONChildren children = getContainerFrom(response);
+        assertThat(children).isNotNull();
+
+        final JSONNode child = (JSONNode) children.getChildren().get(Mocks.CHILD + '0');
+        final Map greatChildren = child.getChildren();
+        assertThat(greatChildren).isNotNull();
+        assertThat(greatChildren.size()).isEqualTo(1);
     }
 }

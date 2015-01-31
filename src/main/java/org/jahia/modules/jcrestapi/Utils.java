@@ -81,6 +81,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Christophe Laprun
  */
 public class Utils {
+
     /**
      * Retrieves whether or not the specified String is not null and not empty.
      *
@@ -96,7 +97,7 @@ public class Utils {
         if (context != null) {
             final MultivaluedMap<String, String> queryParameters = context.getQueryParameters();
             if (queryParameters != null) {
-                final List<String> includeFullChildren = queryParameters.get("includeFullChildren");
+                final List<String> includeFullChildren = queryParameters.get(API.INCLUDE_FULL_CHILDREN);
                 if (includeFullChildren != null) {
                     if (includeFullChildren.isEmpty() || !"false".equals(includeFullChildren.get(0))) {
                         depth += 1;

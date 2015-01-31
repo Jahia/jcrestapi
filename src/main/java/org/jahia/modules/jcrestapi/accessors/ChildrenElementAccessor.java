@@ -87,7 +87,7 @@ import org.jahia.modules.json.JSONNode;
 public class ChildrenElementAccessor extends ElementAccessor<JSONChildren, JSONNode, JSONNode> {
     @Override
     protected JSONChildren getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
-        int depth = Utils.getDepthFrom(context, 0);
+        int depth = Utils.getDepthFrom(context, 1);
 
         return getFactory().createChildren(getParentFrom(node), node, Filter.OUTPUT_ALL, depth);
     }
