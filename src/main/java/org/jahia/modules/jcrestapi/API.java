@@ -119,9 +119,12 @@ public class API {
     public static final String SELF = "self";
     public static final String ABSOLUTE = "absolute";
     private static final String VERSION;
+
     public static final String DELETE = "delete";
     public static final String CREATE_OR_UPDATE = "createOrUpdate";
     public static final String READ = "read";
+    public static final String UPLOAD = "upload";
+    public static final String AS_JSON_STRING = "asJSONString";
 
     static final String API_PATH = "/api/jcr/v1";
 
@@ -129,6 +132,7 @@ public class API {
     public static final String TARGET = "target";
     public static final String PARENT = "parent";
     public static final String PATH = "path";
+    public static final String INCLUDE_FULL_CHILDREN = "includeFullChildren";
 
 
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
@@ -149,8 +153,6 @@ public class API {
         ACCESSORS.put(JSONConstants.VERSIONS, new VersionElementAccessor());
         ACCESSORS.put("", new NodeElementAccessor());
     }
-
-    public static final String INCLUDE_FULL_CHILDREN = "includeFullChildren";
 
     @Inject
     private Repository repository;

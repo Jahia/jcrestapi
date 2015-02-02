@@ -42,6 +42,7 @@ package org.jahia.modules.jcrestapi.json;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.DefaultJSONObjectFactory;
@@ -61,7 +62,7 @@ public class APINode extends JSONNode<LinksDecorator> {
         try {
             return DefaultJSONObjectFactory.getAsString(this);
         } catch (Exception e) {
-            throw new APIException(e, "asJSONString", null, id, null, null, null);
+            throw new APIException(e, API.AS_JSON_STRING, null, id, null, null, null);
         }
     }
 }

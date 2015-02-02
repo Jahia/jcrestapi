@@ -232,7 +232,7 @@ public class Paths extends API {
                 return null;
             }
         } catch (Exception e) {
-            throw new APIException(e, "upload", NodeAccessor.BY_PATH.getType(), idOrPath, null, Collections.singletonList(fileName), null);
+            throw new APIException(e, UPLOAD, NodeAccessor.BY_PATH.getType(), idOrPath, null, Collections.singletonList(fileName), null);
         } finally {
             closeSession(session);
         }
