@@ -116,10 +116,10 @@ public class Types extends API {
             final ValueFactory valueFactory = session.getValueFactory();
             final Selector selector = qomFactory.selector(Names.unescape(type), SELECTOR_NAME);
 
-            // hardcode constraint on language for now: either jcr:language doesn't exist or jcr:language is "en"
+            // language constraint: either jcr:language doesn't exist or jcr:language is current language
             Constraint constraint = qomFactory.or(
                     qomFactory.not(qomFactory.propertyExistence(SELECTOR_NAME, Constants.JCR_LANGUAGE)),
-                    stringComparisonConstraint(qomFactory.propertyValue(SELECTOR_NAME, Constants.JCR_LANGUAGE), "en", qomFactory, valueFactory)
+                    stringComparisonConstraint(qomFactory.propertyValue(SELECTOR_NAME, Constants.JCR_LANGUAGE), language, qomFactory, valueFactory)
             );
 
             // if we have passed "nameContains" query parameters, only return nodes which name contains the specified terms
