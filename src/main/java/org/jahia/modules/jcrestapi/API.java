@@ -88,12 +88,12 @@ import javax.jcr.SimpleCredentials;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -106,6 +106,7 @@ import org.jahia.modules.jcrestapi.accessors.NodeElementAccessor;
 import org.jahia.modules.jcrestapi.accessors.PropertyElementAccessor;
 import org.jahia.modules.jcrestapi.accessors.VersionElementAccessor;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
+import org.jahia.modules.jcrestapi.json.JSONQuery;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNode;
@@ -195,36 +196,40 @@ public class API {
 
     @POST
     @Path("/{workspace}/{language}/query")
-    public Object query(@PathParam("workspace") String workspace, @PathParam("language") String language, String queryString, @QueryParam("limit") int limit,
-                        @QueryParam("offset") int offset, @Context UriInfo context) {
-        Session session = null;
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object query(@PathParam("workspace") String workspace, @PathParam("language") String language, JSONQuery jsonQuery, @Context UriInfo context) {
+        if (jsonQuery != null) {
+            Session session = null;
 
-        try {
-            session = getSession(workspace, language);
-            final QueryManager queryManager = session.getWorkspace().getQueryManager();
-            final Query query = queryManager.createQuery(queryString, Query.JCR_SQL2);
-            if (limit > 0) {
-                query.setLimit(limit);
+            try {
+                session = getSession(workspace, language);
+                final QueryManager queryManager = session.getWorkspace().getQueryManager();
+                final Query query = queryManager.createQuery(jsonQuery.getQuery(), Query.JCR_SQL2);
+                if (jsonQuery.getLimit() > 0) {
+                    query.setLimit(jsonQuery.getLimit());
+                }
+
+                if (jsonQuery.getOffset() > 0) {
+                    query.setOffset(jsonQuery.getOffset());
+                }
+
+                final QueryResult queryResult = query.execute();
+
+                final NodeIterator nodes = queryResult.getNodes();
+                final List<JSONNode> result = new LinkedList<JSONNode>();
+                while (nodes.hasNext()) {
+                    JSONNode node = getFactory().createNode(nodes.nextNode(), 1);
+                    result.add(node);
+                }
+
+                return Response.ok(result).build();
+            } catch (Exception e) {
+                throw new APIException(e);
+            } finally {
+                closeSession(session);
             }
-
-            if (offset >= 0) {
-                query.setOffset(offset);
-            }
-
-            final QueryResult queryResult = query.execute();
-
-            final NodeIterator nodes = queryResult.getNodes();
-            final List<JSONNode> result = new LinkedList<JSONNode>();
-            while (nodes.hasNext()) {
-                JSONNode node = getFactory().createNode(nodes.nextNode(), 1);
-                result.add(node);
-            }
-
-            return Response.ok(result).build();
-        } catch (Exception e) {
-            throw new APIException(e);
-        } finally {
-            closeSession(session);
+        } else {
+            return Response.ok().build();
         }
     }
 
