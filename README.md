@@ -757,6 +757,25 @@ indifferently to represent place holders in the different URIs. Each section wil
 of the URI template, specify the expected result, define which options if any are available and, finally, which HTTP operations can
 be used on these URIs. Since we already talked about the workspace and language path elements, we won't address them in the following.
 
+### Error reporting
+
+Should an error occur during the processing of an API call, a response using an appropriate HTTP error code should be returned with a JSON body providing some context and
+details about what went wrong in the form of a JSON object with the following format:
+
+      {
+         "exception": <type of the exception that occurred as a fully qualified Java exception name if available>,
+         "message": <associated message if any>,
+         "operation": <type of operation that triggered the error>,
+         "nodeAccess": <how the node on which the error was triggered was accessed: 'byId' if using the nodes entry point or 'byPath' if the paths entry point was used>,
+         "idOrPath": <identifier if nodeAccess is byId or path if nodeAccess is byPath of the node that caused the issue>,
+         "subElementType": <type of sub-element requested if any>,
+         "subElements": <list of requested sub-elements if any>,
+         "data": <JSON data that was provided in the request>
+       }
+
+Currently the following types of operations exist: `read`, `createOrUpdate`, `delete` which map to `GET`, `PUT` and `DELETE` requests respectively and `upload` which corresponds
+ to the `POST`-performed upload method.
+
 ### Operating on nodes using their identifier
 
 #### URI template
@@ -800,6 +819,33 @@ As mentioned before, this representation only needs to be partial, containing on
 exists.
 
 `GET <basecontext>/live/fr/nodes/children` will retrieve only the children of the root node in the `live` workspace using the French version.
+
+`PUT <basecontext>/default/en/nodes/27d671f6-9c75-4604-8f81-0d1861c5e302/children/foo` with the `{"type" : "jnt:bigText", "properties" : {"text" : {"value" : "FOO!"}}}` JSON body
+ data will create a new node of type `jnt:bigText` named `foo` with a `text` property set to `FOO!` and add it to the children of the node identified with the
+ `27d671f6-9c75-4604-8f81-0d1861c5e302` identifier. Note that this assumes that such a child can be added on that particular node. For example, sending the same request to a
+ node that doesn't accept `jnt:bigText` children will result in a `500` error response with a body similar to the following one:
+
+      {
+        "exception": "javax.jcr.nodetype.ConstraintViolationException",
+        "message": "No child node definition for foo found in node /sites/ACMESPACE/home/slider-1/acme-space-demo-carousel",
+        "operation": "createOrUpdate",
+        "nodeAccess": "byId",
+        "idOrPath": "9aa720a1-23d4-454e-ac9c-8bfdf83a8351",
+        "subElementType": "children",
+        "subElements": ["foo"],
+        "data": {
+          "type": "jnt:bigText",
+          "properties": {
+            "text": {
+              "multiValued": false,
+              "value": "FOO BAR!",
+              "reference": false
+            }
+          }
+        }
+      }
+
+This body response provides some details as to why this particular operation failed.
 
 `PUT <basecontext>/default/en/nodes/27d671f6-9c75-4604-8f81-0d1861c5e302/properties/foo` with the `{"value" : "bar"}` JSON body data will
 create (or update if it already exists) the `foo` property of the node identified by the `27d671f6-9c75-4604-8f81-0d1861c5e302` identifier
