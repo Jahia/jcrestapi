@@ -73,20 +73,27 @@ package org.jahia.modules.jcrestapi;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import javax.inject.Inject;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -101,6 +108,7 @@ import org.jahia.modules.jcrestapi.accessors.VersionElementAccessor;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
+import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.Names;
 import org.jahia.modules.json.jcr.SessionAccess;
 import org.jahia.services.content.JCRSessionFactory;
@@ -183,6 +191,41 @@ public class API {
     @Produces(MediaType.TEXT_PLAIN)
     public String version() {
         return VERSION;
+    }
+
+    @POST
+    @Path("/{workspace}/{language}/query")
+    public Object query(@PathParam("workspace") String workspace, @PathParam("language") String language, String queryString, @QueryParam("limit") int limit,
+                        @QueryParam("offset") int offset, @Context UriInfo context) {
+        Session session = null;
+
+        try {
+            session = getSession(workspace, language);
+            final QueryManager queryManager = session.getWorkspace().getQueryManager();
+            final Query query = queryManager.createQuery(queryString, Query.JCR_SQL2);
+            if (limit > 0) {
+                query.setLimit(limit);
+            }
+
+            if (offset >= 0) {
+                query.setOffset(offset);
+            }
+
+            final QueryResult queryResult = query.execute();
+
+            final NodeIterator nodes = queryResult.getNodes();
+            final List<JSONNode> result = new LinkedList<JSONNode>();
+            while (nodes.hasNext()) {
+                JSONNode node = getFactory().createNode(nodes.nextNode(), 1);
+                result.add(node);
+            }
+
+            return Response.ok(result).build();
+        } catch (Exception e) {
+            throw new APIException(e);
+        } finally {
+            closeSession(session);
+        }
     }
 
     /**
