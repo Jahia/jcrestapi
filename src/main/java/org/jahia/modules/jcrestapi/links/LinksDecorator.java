@@ -71,11 +71,14 @@
  */
 package org.jahia.modules.jcrestapi.links;
 
-import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.json.*;
-
-import javax.jcr.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import javax.jcr.Item;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.Version;
@@ -83,9 +86,18 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.json.JSONConstants;
+import org.jahia.modules.json.JSONDecorator;
+import org.jahia.modules.json.JSONItem;
+import org.jahia.modules.json.JSONMixin;
+import org.jahia.modules.json.JSONNode;
+import org.jahia.modules.json.JSONProperty;
+import org.jahia.modules.json.JSONSubElementContainer;
+import org.jahia.modules.json.JSONVersion;
+import org.jahia.modules.json.Names;
 
 /**
  * @author Christophe Laprun
@@ -149,7 +161,7 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
         }
         addLink(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(parent.getIdentifier())));
 
-        addLink(JSONLink.createLink(API.PATH, URIUtils.getByPathURI(Names.escape(item.getPath()), true)));
+        addLink(JSONLink.createLink(API.PATH, URIUtils.getURIFor(item, true)));
     }
 
     private <T extends Item> String getTypeChildPath(JSONItem<T, LinksDecorator> jsonItem, T item) throws RepositoryException {

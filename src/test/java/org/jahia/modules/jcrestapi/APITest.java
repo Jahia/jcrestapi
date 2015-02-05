@@ -71,19 +71,19 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.glassfish.hk2.api.Factory;
-import org.glassfish.jersey.test.JerseyTest;
-import org.jahia.modules.json.Names;
-import org.junit.Test;
-
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.LogRecord;
 import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.core.Application;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.LogRecord;
+
+import org.glassfish.hk2.api.Factory;
+import org.glassfish.jersey.test.JerseyTest;
+import org.jahia.modules.json.Names;
+import org.junit.Test;
 
 import static com.jayway.restassured.RestAssured.expect;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -156,15 +156,14 @@ public class APITest extends JerseyTest {
                         "properties.jcr__primaryType.name", equalTo("jcr:primaryType"),
                         "properties.jcr__primaryType.value", equalTo("rep:root"),
                         "properties.jcr__primaryType._links.self.href", equalTo(getChildURI(rootId, "properties/jcr__primaryType")),
-                        "properties.jcr__primaryType._links.type.href",
-                        equalTo(getTypeURIByPath("nt__base/jcr__propertyDefinition--2")),
+                        "properties.jcr__primaryType._links.type.href", equalTo(getTypeURIByPath("nt__base/jcr__propertyDefinition--2")),
+                        "properties.jcr__primaryType._links.path.href", equalTo(getURIByPath("properties/jcr__primaryType")),
 
                         // check jcr:mixinTypes property
                         "properties.jcr__mixinTypes.name", equalTo("jcr:mixinTypes"),
                         "properties.jcr__mixinTypes.value", hasItem("rep:AccessControllable"),
                         "properties.jcr__mixinTypes._links.self.href", equalTo(getChildURI(rootId, "properties/jcr__mixinTypes")),
-                        "properties.jcr__mixinTypes._links.type.href",
-                        equalTo(getTypeURIByPath("nt__base/jcr__propertyDefinition")),
+                        "properties.jcr__mixinTypes._links.type.href", equalTo(getTypeURIByPath("nt__base/jcr__propertyDefinition")),
 
                         // check that children don't have children (only 1 level deep hierarchy)
                         "children.jcr__system.children", is(nullValue())

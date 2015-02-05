@@ -71,16 +71,16 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.json.JSONConstants;
-import org.jahia.modules.json.Names;
-import org.jahia.modules.json.jcr.SessionAccess;
-
+import java.util.concurrent.atomic.AtomicReference;
 import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriInfo;
-import java.util.concurrent.atomic.AtomicReference;
+
+import org.jahia.modules.json.JSONConstants;
+import org.jahia.modules.json.Names;
+import org.jahia.modules.json.jcr.SessionAccess;
 
 /**
  * @author Christophe Laprun
@@ -113,26 +113,37 @@ public final class URIUtils {
     }
 
     public static String getURIFor(Item item) {
+        return getURIFor(item, false);
+    }
+
+    public static String getURIFor(Item item, boolean byPath) {
         if (item instanceof Node) {
-            Node node = (Node) item;
-            return getURIFor(node);
+            return getURIFor((Node) item, byPath);
         } else {
-            return getURIFor((Property) item);
+            return getURIFor((Property) item, byPath);
         }
     }
 
     public static String getURIFor(Node node) {
+        return getURIFor(node, false);
+    }
+
+    public static String getURIFor(Node node, boolean byPath) {
         try {
-            return getIdURI(node.getIdentifier());
+            return byPath ? getByPathURI(node.getPath(), true) : getIdURI(node.getIdentifier());
         } catch (RepositoryException e) {
             throw new APIException(e);
         }
     }
 
     public static String getURIFor(Property property) {
+        return getURIFor(property, false);
+    }
+
+    public static String getURIFor(Property property, boolean byPath) {
         final String properties;
         try {
-            properties = getURIForProperties(property.getParent());
+            properties = getChildURI(getURIFor(property.getParent(), byPath), JSONConstants.PROPERTIES, false);
             return getChildURI(properties, property.getName(), true);
         } catch (RepositoryException e) {
             throw new APIException(e);
