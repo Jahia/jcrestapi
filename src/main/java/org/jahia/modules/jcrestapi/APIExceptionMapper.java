@@ -71,14 +71,14 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.slf4j.Logger;
-
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+
+import org.slf4j.Logger;
 
 /**
  * @author Christophe Laprun
@@ -95,8 +95,7 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
     }
 
     private Response.ResponseBuilder defaultResponse(Throwable exception) {
-        final String localizedMessage = exception.getLocalizedMessage();
-        return localizedMessage != null ? Response.serverError().entity(new APIException.JSONError(localizedMessage)) : Response.serverError();
+        return Response.serverError().entity(new APIException.JSONError(exception));
     }
 
     @Override

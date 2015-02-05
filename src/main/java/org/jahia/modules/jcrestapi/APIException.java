@@ -71,12 +71,12 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.json.JSONItem;
-
+import java.util.List;
 import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.List;
+
+import org.jahia.modules.json.JSONItem;
 
 /**
  * @author Christophe Laprun
@@ -122,7 +122,8 @@ public class APIException extends WebApplicationException {
 
         public JSONError(Throwable throwable, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, JSONItem data) {
             this.exception = throwable.getClass().getName();
-            this.message = throwable.getLocalizedMessage();
+            final String localizedMessage = throwable.getLocalizedMessage();
+            this.message = localizedMessage != null ? localizedMessage : this.exception;
             this.operation = operation;
             this.nodeAccess = nodeAccess;
             this.idOrPath = idOrPath;
@@ -131,15 +132,8 @@ public class APIException extends WebApplicationException {
             this.data = data;
         }
 
-        public JSONError(String message) {
-            this.exception = null;
-            this.message = message;
-            this.operation = null;
-            this.nodeAccess = null;
-            this.idOrPath = null;
-            this.subElementType = null;
-            this.subElements = null;
-            this.data = null;
+        public JSONError(Throwable throwable) {
+            this(throwable, null, null, null, null, null, null);
         }
     }
 }
