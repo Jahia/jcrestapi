@@ -93,18 +93,19 @@ public class Utils {
     }
 
     public static int getDepthFrom(UriInfo context, int defaultDepth) {
-        int depth = defaultDepth;
-        if (context != null) {
-            final MultivaluedMap<String, String> queryParameters = context.getQueryParameters();
-            if (queryParameters != null) {
-                final List<String> includeFullChildren = queryParameters.get(API.INCLUDE_FULL_CHILDREN);
-                if (includeFullChildren != null) {
-                    if (includeFullChildren.isEmpty() || !"false".equals(includeFullChildren.get(0))) {
-                        depth += 1;
-                    }
+        return getFlagValueFrom(context, API.INCLUDE_FULL_CHILDREN) ? defaultDepth + 1 : defaultDepth;
+    }
+
+    public static boolean getFlagValueFrom(UriInfo context, String flagName) {
+        final MultivaluedMap<String, String> queryParameters = context.getQueryParameters();
+        if (queryParameters != null) {
+            final List<String> includeFullChildren = queryParameters.get(flagName);
+            if (includeFullChildren != null) {
+                if (includeFullChildren.isEmpty() || !"false".equals(includeFullChildren.get(0))) {
+                    return true;
                 }
             }
         }
-        return depth;
+        return false;
     }
 }
