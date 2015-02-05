@@ -75,7 +75,6 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.Repository;
@@ -110,7 +109,7 @@ public class Paths extends API {
     /**
      * Records how many segments in API.API_PATH/{workspace}/{language}/Paths.MAPPING must be ignored to get actual path
      */
-    private static final AtomicInteger IGNORE_SEGMENTS = new AtomicInteger(-1);
+    private static final int IGNORE_SEGMENTS = getSegmentsNbFrom(API.API_PATH) + 2 + getSegmentsNbFrom(MAPPING);
 
     public Paths(String workspace, String language, Repository repository, UriInfo context) {
         super(workspace, language, repository, context);
@@ -141,15 +140,19 @@ public class Paths extends API {
 
     private List<PathSegment> getUsefulSegments(UriInfo context) {
         final List<PathSegment> pathSegments = context.getPathSegments();
-        return pathSegments.subList(getNumberOfIgnoredSegments(), pathSegments.size());
-    }
 
-    private static int getNumberOfIgnoredSegments() {
-        if (IGNORE_SEGMENTS.get() == -1) {
-            IGNORE_SEGMENTS.set(getSegmentsNbFrom(API.API_PATH) + 2 + getSegmentsNbFrom(MAPPING));
+        // skip all empty segments
+        int nbOfEmptySegments = 0;
+        while (pathSegments.get(nbOfEmptySegments).getPath().isEmpty()) {
+            nbOfEmptySegments++;
         }
 
-        return IGNORE_SEGMENTS.get();
+        int fromIndex = IGNORE_SEGMENTS + nbOfEmptySegments;
+        if (MAPPING.equals(pathSegments.get(fromIndex).getPath())) {
+            fromIndex++;
+        }
+
+        return pathSegments.subList(fromIndex, pathSegments.size());
     }
 
     private static int getSegmentsNbFrom(String path) {
