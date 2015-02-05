@@ -142,7 +142,14 @@ public class API {
     public static final String PARENT = "parent";
     public static final String PATH = "path";
     public static final String INCLUDE_FULL_CHILDREN = "includeFullChildren";
+    public static final String RESOLVE_REFERENCES = "resolveReferences";
 
+    private static final ThreadLocal<Boolean> resolveReferences = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
 
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
@@ -327,6 +334,8 @@ public class API {
     protected Response perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
         Session session = null;
 
+        resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
+
         final String idOrPath = processor.getIdOrPath();
         final String subElementType = processor.getSubElementType();
         final String subElement = processor.getSubElement();
@@ -349,6 +358,7 @@ public class API {
         } catch (Exception e) {
             throw new APIException(e, operation, nodeAccessor.getType(), idOrPath, subElementType, Collections.singletonList(subElement), data);
         } finally {
+            resolveReferences.set(false);
             closeSession(session);
         }
     }
@@ -383,6 +393,10 @@ public class API {
 
         // reset session holder
         SessionAccess.closeCurrentSession();
+    }
+
+    public static boolean shouldResolveReferences() {
+        return resolveReferences.get();
     }
 
     protected static interface NodeAccessor {

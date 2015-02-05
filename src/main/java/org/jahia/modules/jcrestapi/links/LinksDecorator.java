@@ -79,6 +79,7 @@ import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.Version;
@@ -89,6 +90,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONDecorator;
 import org.jahia.modules.json.JSONItem;
@@ -98,6 +100,7 @@ import org.jahia.modules.json.JSONProperty;
 import org.jahia.modules.json.JSONSubElementContainer;
 import org.jahia.modules.json.JSONVersion;
 import org.jahia.modules.json.Names;
+import org.jahia.modules.json.jcr.SessionAccess;
 
 /**
  * @author Christophe Laprun
@@ -110,6 +113,8 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
 
+    private Map<String, JSONItem<? extends Item, LinksDecorator>> references;
+
     public LinksDecorator() {
         links = new HashMap<String, JSONLink>(7);
     }
@@ -118,6 +123,11 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
         this();
 
         initWith(uri);
+    }
+
+    @XmlElement
+    public Map<String, JSONItem<? extends Item, LinksDecorator>> getReferences() {
+        return references != null ? Collections.unmodifiableMap(references) : null;
     }
 
     public String getURI() {
@@ -219,12 +229,29 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
                 for (int i = 0; i < values.length; i++) {
                     final String val = values[i];
                     links[i] = getTargetLink(val, jsonProperty.isPath());
+                    addReferencesIfNeeded(val);
                 }
 
                 addLink(JSONLink.createLink(API.TARGET, links));
             } else {
-                addLink(JSONLink.createLink(API.TARGET, getTargetLink(jsonProperty.getValueAsString(), jsonProperty.isPath())));
+                final String value = jsonProperty.getValueAsString();
+                addLink(JSONLink.createLink(API.TARGET, getTargetLink(value, jsonProperty.isPath())));
+                addReferencesIfNeeded(value);
             }
+
+        }
+    }
+
+    private void addReferencesIfNeeded(String value) throws RepositoryException {
+        if (API.shouldResolveReferences()) {
+            final Session session = SessionAccess.getCurrentSession().session;
+            final Node node = session.getNodeByIdentifier(value);
+
+            if (references == null) {
+                references = new HashMap<String, JSONItem<? extends Item, LinksDecorator>>(7);
+            }
+
+            references.put(node.getName(), APIObjectFactory.getInstance().createNode(node, 1));
         }
     }
 
