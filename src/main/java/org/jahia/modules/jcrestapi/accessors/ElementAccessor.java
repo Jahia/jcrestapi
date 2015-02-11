@@ -123,6 +123,9 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
             delete(node, subElement);
             return Response.noContent().build();
         } else if (API.CREATE_OR_UPDATE.equals(operation)) {
+            if (childData == null) {
+                return Response.status(Response.Status.BAD_REQUEST).entity("Missing body").build();
+            }
             final CreateOrUpdateResult<T> result = createOrUpdate(node, subElement, childData);
             final T entity = result.item;
             if (result.isUpdate) {
