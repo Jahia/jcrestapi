@@ -139,7 +139,7 @@ public class Nodes extends API {
     }
 
     @PUT
-    @Path("/{id: [^/]*}/properties/{subElement}")
+    @Path("/{id: [^/]*}/" + JSONConstants.PROPERTIES + "/{subElement}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object createOrUpdateProperty(@PathParam("id") String id,
                                          @PathParam("subElement") String subElement,
@@ -150,7 +150,7 @@ public class Nodes extends API {
     }
 
     @GET
-    @Path("/{id: [^/]*}/properties/{subElement}")
+    @Path("/{id: [^/]*}/" + JSONConstants.PROPERTIES + "/{subElement}")
     public Object getProperty(@PathParam("id") String id,
                               @PathParam("subElement") String subElement,
                               @Context UriInfo context) {
@@ -159,7 +159,7 @@ public class Nodes extends API {
     }
 
     @DELETE
-    @Path("/{id: [^/]*}/properties/{subElement}")
+    @Path("/{id: [^/]*}/" + JSONConstants.PROPERTIES + "/{subElement}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object deleteProperty(@PathParam("id") String id,
                                  @PathParam("subElement") String subElement,
