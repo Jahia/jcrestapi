@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -80,8 +81,10 @@ import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -97,6 +100,7 @@ import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.jcrestapi.json.APINode;
 import org.jahia.modules.json.Filter;
+import org.jahia.modules.json.JSONItem;
 
 /**
  * @author Christophe Laprun
@@ -115,11 +119,7 @@ public class Paths extends API {
         super(workspace, language, repository, context);
     }
 
-    @GET
-    @Path("/{path: .*}")
-    public Object getByPath(@PathParam("path") String path,
-                            @Context UriInfo context) {
-
+    private Object performByPath(UriInfo context, String operation, String data) {
         // only consider useful segments
         final List<PathSegment> usefulSegments = getUsefulSegments(context);
         int index = 0;
@@ -130,13 +130,42 @@ public class Paths extends API {
             if (accessor != null) {
                 String nodePath = computePathUpTo(usefulSegments, index);
                 String subElement = getSubElement(usefulSegments, index);
-                return perform(workspace, language, nodePath, subElementType, subElement, context, READ, null, NodeAccessor.BY_PATH);
+                JSONItem converted;
+                try {
+                    converted = accessor.convertFrom(data);
+                } catch (IOException e) {
+                    throw new APIException(e, operation, NodeAccessor.BY_PATH.getType(), nodePath, subElementType, Collections.singletonList(subElement), data);
+                }
+                return perform(workspace, language, nodePath, subElementType, subElement, context, operation, converted, NodeAccessor.BY_PATH);
             }
             index++;
         }
 
-        return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, READ, null, NodeAccessor.BY_PATH);
+        // todo: check
+        return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, operation, null, NodeAccessor.BY_PATH);
     }
+
+    @GET
+    @Path("/{path: .*}")
+    public Object get(@PathParam("path") String path,
+                      @Context UriInfo context) {
+        return performByPath(context, READ, null);
+    }
+
+    @PUT
+    @Path("/{path: .*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object createOrUpdate(String childDataAsJSON,
+                                 @Context UriInfo context) {
+        return performByPath(context, CREATE_OR_UPDATE, childDataAsJSON);
+    }
+
+    @DELETE
+    @Path("/{path: .*}")
+    public Object delete(@Context UriInfo context) {
+        return performByPath(context, CREATE_OR_UPDATE, null);
+    }
+
 
     private List<PathSegment> getUsefulSegments(UriInfo context) {
         final List<PathSegment> pathSegments = context.getPathSegments();

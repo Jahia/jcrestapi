@@ -77,19 +77,15 @@ import java.net.URISyntaxException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.links.JSONLink;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNamed;
-import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONSubElementContainer;
 import org.jahia.modules.json.jcr.SessionAccess;
 import org.junit.Before;
@@ -111,7 +107,6 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     static final String WORKSPACE = "default";
     static final String LANGUAGE = "en";
-    static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
     protected UriInfo context;
 

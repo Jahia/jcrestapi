@@ -76,8 +76,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.jahia.modules.json.JSONItem;
-
 /**
  * @author Christophe Laprun
  */
@@ -88,7 +86,7 @@ public class APIException extends WebApplicationException {
         this(e, null);
     }
 
-    public APIException(Throwable e, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, JSONItem data) {
+    public APIException(Throwable e, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, Object data) {
         this(e, new JSONError(e, operation, nodeAccess, idOrPath, subElementType, subElements, data));
     }
 
@@ -118,9 +116,9 @@ public class APIException extends WebApplicationException {
         @XmlElement
         private final List<String> subElements;
         @XmlElement
-        private final JSONItem data;
+        private final Object data;
 
-        public JSONError(Throwable throwable, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, JSONItem data) {
+        public JSONError(Throwable throwable, String operation, String nodeAccess, String idOrPath, String subElementType, List<String> subElements, Object data) {
             this.exception = throwable.getClass().getName();
             final String localizedMessage = throwable.getLocalizedMessage();
             this.message = localizedMessage != null ? localizedMessage : this.exception;

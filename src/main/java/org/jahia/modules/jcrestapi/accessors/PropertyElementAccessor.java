@@ -71,6 +71,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import java.io.IOException;
 import java.util.List;
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -81,6 +82,7 @@ import javax.jcr.nodetype.PropertyDefinition;
 import javax.ws.rs.core.UriInfo;
 
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONProperties;
 import org.jahia.modules.json.JSONProperty;
 import org.jahia.modules.json.Names;
@@ -161,5 +163,10 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     @Override
     protected String getSeeOtherURIAsString(Node node) {
         return URIUtils.getURIForProperties(node);
+    }
+
+    @Override
+    public JSONItem convertFrom(String rawJSONData) throws IOException {
+        return mapper.readValue(rawJSONData, JSONProperty.class);
     }
 }

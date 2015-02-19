@@ -71,15 +71,19 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
@@ -94,6 +98,8 @@ import org.jahia.modules.json.JSONSubElementContainer;
  * @author Christophe Laprun
  */
 public abstract class ElementAccessor<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
+    static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
+
     public static APIObjectFactory getFactory() {
         return APIObjectFactory.getInstance();
     }
@@ -117,6 +123,10 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
     protected abstract void delete(Node node, String subElement) throws RepositoryException;
 
     protected abstract CreateOrUpdateResult<T> createOrUpdate(Node node, String subElement, U childData) throws RepositoryException;
+
+    public JSONItem convertFrom(String rawJSONData) throws IOException {
+        return mapper.readValue(rawJSONData, JSONNode.class);
+    }
 
     public Response perform(Node node, String subElement, String operation, U childData, UriInfo context) throws RepositoryException {
         if (API.DELETE.equals(operation)) {

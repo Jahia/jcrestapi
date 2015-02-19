@@ -71,16 +71,16 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import org.jahia.modules.jcrestapi.Mocks;
-import org.jahia.modules.json.JSONConstants;
-import org.jahia.modules.json.JSONProperties;
-import org.jahia.modules.json.JSONProperty;
-
+import java.io.IOException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
+
+import org.jahia.modules.jcrestapi.Mocks;
+import org.jahia.modules.json.JSONConstants;
+import org.jahia.modules.json.JSONProperties;
+import org.jahia.modules.json.JSONProperty;
 
 /**
  * @author Christophe Laprun
@@ -97,7 +97,7 @@ public class PropertyElementAccessorTest extends ElementAccessorTest<JSONPropert
 
     @Override
     protected JSONProperty getDataForNewChild(String name) throws IOException {
-        return mapper.readValue("{\"name\":\"" + name + "\",\"value\": \"value\"}", JSONProperty.class);
+        return ElementAccessor.mapper.readValue("{\"name\":\"" + name + "\",\"value\": \"value\"}", JSONProperty.class);
     }
 
     @Override

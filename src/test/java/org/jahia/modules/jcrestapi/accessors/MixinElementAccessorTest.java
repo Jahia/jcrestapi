@@ -71,14 +71,14 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import java.io.IOException;
+import javax.ws.rs.core.Response;
+
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONMixin;
 import org.jahia.modules.json.JSONMixins;
 import org.jahia.modules.json.JSONNode;
-
-import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 /**
  * @author Christophe Laprun
@@ -88,7 +88,7 @@ public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins, JS
 
     @Override
     protected JSONNode getDataForNewChild(String name) throws IOException {
-        return mapper.readValue(
+        return ElementAccessor.mapper.readValue(
                 "{" +
                         "   \"properties\" : {" +
                         "       \"j__lastVote\": {\"value\": \"-1\"}," +

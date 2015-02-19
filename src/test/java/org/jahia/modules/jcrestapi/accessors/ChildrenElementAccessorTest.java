@@ -121,7 +121,7 @@ public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildre
 
     @Override
     protected JSONNode getDataForNewChild(String name) throws IOException {
-        return mapper.readValue("{\"name\":\"" + name + "\"}", JSONNode.class
+        return ElementAccessor.mapper.readValue("{\"name\":\"" + name + "\"}", JSONNode.class
         );
     }
 
