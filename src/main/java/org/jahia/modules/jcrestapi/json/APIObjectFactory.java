@@ -42,17 +42,17 @@ package org.jahia.modules.jcrestapi.json;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONObjectFactory;
 
 /**
  * @author Christophe Laprun
  */
-public class APIObjectFactory extends JSONObjectFactory<LinksDecorator> {
+public class APIObjectFactory extends JSONObjectFactory<APIDecorator> {
     @Override
-    public LinksDecorator createDecorator() {
-        return new LinksDecorator();
+    public APIDecorator createDecorator() {
+        return new APIDecorator();
     }
 
     public APINode createAPINode(Node node, Filter filter, int depth) throws RepositoryException {

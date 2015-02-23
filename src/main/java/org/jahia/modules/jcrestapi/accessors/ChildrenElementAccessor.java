@@ -77,7 +77,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONChildren;
 import org.jahia.modules.json.JSONNode;
@@ -85,16 +85,16 @@ import org.jahia.modules.json.JSONNode;
 /**
  * @author Christophe Laprun
  */
-public class ChildrenElementAccessor extends ElementAccessor<JSONChildren<LinksDecorator>, JSONNode<LinksDecorator>, JSONNode> {
+public class ChildrenElementAccessor extends ElementAccessor<JSONChildren<APIDecorator>, JSONNode<APIDecorator>, JSONNode> {
     @Override
-    protected JSONChildren<LinksDecorator> getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
+    protected JSONChildren<APIDecorator> getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         int depth = Utils.getDepthFrom(context, 1);
 
         return getFactory().createChildren(getParentFrom(node), node, Filter.OUTPUT_ALL, depth);
     }
 
     @Override
-    protected JSONNode<LinksDecorator> getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
+    protected JSONNode<APIDecorator> getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         return getFactory().createNode(node.getNode(subElement), 1);
     }
 
@@ -105,7 +105,7 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren<LinksD
     }
 
     @Override
-    protected CreateOrUpdateResult<JSONNode<LinksDecorator>> createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
+    protected CreateOrUpdateResult<JSONNode<APIDecorator>> createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
         final Node newOrToUpdate;
 
         // is the child already existing? // todo: deal with same name siblings
@@ -125,7 +125,7 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren<LinksD
 
         NodeElementAccessor.initNodeFrom(newOrToUpdate, nodeData);
 
-        return new CreateOrUpdateResult<JSONNode<LinksDecorator>>(isUpdate, getFactory().createNode(newOrToUpdate, 1));
+        return new CreateOrUpdateResult<JSONNode<APIDecorator>>(isUpdate, getFactory().createNode(newOrToUpdate, 1));
     }
 
     @Override

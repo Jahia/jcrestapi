@@ -81,7 +81,7 @@ import javax.jcr.nodetype.PropertyDefinition;
 import javax.ws.rs.core.UriInfo;
 
 import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONProperties;
 import org.jahia.modules.json.JSONProperty;
@@ -91,7 +91,7 @@ import org.jahia.services.content.JCRNodeWrapper;
 /**
  * @author Christophe Laprun
  */
-public class PropertyElementAccessor extends ElementAccessor<JSONProperties<LinksDecorator>, JSONProperty<LinksDecorator>, JSONProperty> {
+public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APIDecorator>, JSONProperty<APIDecorator>, JSONProperty> {
     static Property setPropertyOnNode(String escapedName, JSONProperty jsonProperty, Node node) throws RepositoryException {
         final String propName = Names.unescape(escapedName);
 
@@ -139,12 +139,12 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<Link
     }
 
     @Override
-    protected JSONProperties<LinksDecorator> getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
+    protected JSONProperties<APIDecorator> getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         return getFactory().createProperties(getParentFrom(node), node);
     }
 
     @Override
-    protected JSONProperty<LinksDecorator> getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
+    protected JSONProperty<APIDecorator> getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         return getFactory().createProperty(node.getProperty(subElement));
     }
 
@@ -154,10 +154,10 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<Link
     }
 
     @Override
-    protected CreateOrUpdateResult<JSONProperty<LinksDecorator>> createOrUpdate(Node node, String subElement, JSONProperty childData) throws RepositoryException {
+    protected CreateOrUpdateResult<JSONProperty<APIDecorator>> createOrUpdate(Node node, String subElement, JSONProperty childData) throws RepositoryException {
         final boolean isUpdate = node.hasProperty(subElement);
         final Property property = setPropertyOnNode(subElement, childData, node);
-        return new CreateOrUpdateResult<JSONProperty<LinksDecorator>>(isUpdate, getFactory().createProperty(property));
+        return new CreateOrUpdateResult<JSONProperty<APIDecorator>>(isUpdate, getFactory().createProperty(property));
     }
 
     @Override

@@ -81,8 +81,8 @@ import javax.ws.rs.core.Response;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.jcrestapi.links.JSONLink;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONVersion;
@@ -95,7 +95,7 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 /**
  * @author Christophe Laprun
  */
-public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions<LinksDecorator>, JSONVersion<LinksDecorator>, JSONNode> {
+public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions<APIDecorator>, JSONVersion<APIDecorator>, JSONNode> {
     private final VersionElementAccessor accessor = new VersionElementAccessor();
 
     @Override
@@ -109,17 +109,17 @@ public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions
     }
 
     @Override
-    protected JSONVersion<LinksDecorator> getSubElementFrom(Response response) {
-        return (JSONVersion<LinksDecorator>) response.getEntity();
+    protected JSONVersion<APIDecorator> getSubElementFrom(Response response) {
+        return (JSONVersion<APIDecorator>) response.getEntity();
     }
 
     @Override
-    protected JSONVersions<LinksDecorator> getContainerFrom(Response response) {
-        return (JSONVersions<LinksDecorator>) response.getEntity();
+    protected JSONVersions<APIDecorator> getContainerFrom(Response response) {
+        return (JSONVersions<APIDecorator>) response.getEntity();
     }
 
     @Override
-    public ElementAccessor<JSONVersions<LinksDecorator>, JSONVersion<LinksDecorator>, JSONNode> getAccessor() {
+    public ElementAccessor<JSONVersions<APIDecorator>, JSONVersion<APIDecorator>, JSONNode> getAccessor() {
         return accessor;
     }
 
@@ -130,7 +130,7 @@ public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions
 
 
     @Override
-    protected void checkLinksIfNeeded(Node node, JSONVersion<LinksDecorator> subElement, Map<String, JSONLink> links) throws RepositoryException {
+    protected void checkLinksIfNeeded(Node node, JSONVersion<APIDecorator> subElement, Map<String, JSONLink> links) throws RepositoryException {
         // nothing to do here
     }
 

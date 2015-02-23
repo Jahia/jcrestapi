@@ -44,7 +44,7 @@ import javax.jcr.RepositoryException;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.APIException;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.json.DefaultJSONObjectFactory;
 import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONNode;
@@ -52,9 +52,9 @@ import org.jahia.modules.json.JSONNode;
 /**
  * @author Christophe Laprun
  */
-public class APINode extends JSONNode<LinksDecorator> {
+public class APINode extends JSONNode<APIDecorator> {
 
-    protected APINode(LinksDecorator decorator, Node node, Filter filter, int depth) throws RepositoryException {
+    protected APINode(APIDecorator decorator, Node node, Filter filter, int depth) throws RepositoryException {
         super(decorator, node, filter, depth);
     }
 

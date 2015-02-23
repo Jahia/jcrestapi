@@ -78,7 +78,7 @@ import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriInfo;
 
 import org.jahia.modules.jcrestapi.Utils;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.json.JSONMixin;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONProperty;
@@ -88,19 +88,19 @@ import org.jahia.modules.json.Names;
 /**
  * @author Christophe Laprun
  */
-public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer<LinksDecorator>, JSONNode<LinksDecorator>, JSONNode> {
+public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer<APIDecorator>, JSONNode<APIDecorator>, JSONNode> {
     @Override
     protected Object getElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         return getFactory().createNode(node, Utils.getDepthFrom(context, 1));
     }
 
     @Override
-    protected JSONSubElementContainer<LinksDecorator> getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
+    protected JSONSubElementContainer<APIDecorator> getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         throw new UnsupportedOperationException("Cannot call getSubElementContainer on NodeElementAccessor");
     }
 
     @Override
-    protected JSONNode<LinksDecorator> getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
+    protected JSONNode<APIDecorator> getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         throw new UnsupportedOperationException("Cannot call getSubElement on NodeElementAccessor");
     }
 
@@ -110,11 +110,11 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
     }
 
     @Override
-    protected CreateOrUpdateResult<JSONNode<LinksDecorator>> createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
+    protected CreateOrUpdateResult<JSONNode<APIDecorator>> createOrUpdate(Node node, String subElement, JSONNode nodeData) throws RepositoryException {
         initNodeFrom(node, nodeData);
 
         // update only scenario at the moment
-        return new CreateOrUpdateResult<JSONNode<LinksDecorator>>(true, getFactory().createNode(node, 1));
+        return new CreateOrUpdateResult<JSONNode<APIDecorator>>(true, getFactory().createNode(node, 1));
     }
 
     @Override
@@ -122,10 +122,10 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         throw new UnsupportedOperationException("Cannot call getSeeOtherURIAsString on NodeElementAccessor");
     }
 
-    public static void initNodeFrom(Node node, JSONNode<LinksDecorator> jsonNode) throws RepositoryException {
+    public static void initNodeFrom(Node node, JSONNode<APIDecorator> jsonNode) throws RepositoryException {
         if (jsonNode != null) {
             // mixins
-            final Map<String, JSONMixin<LinksDecorator>> mixins = jsonNode.getMixins();
+            final Map<String, JSONMixin<APIDecorator>> mixins = jsonNode.getMixins();
             if (mixins != null) {
                 for (String mixinName : mixins.keySet()) {
                     mixinName = Names.unescape(mixinName);
@@ -134,20 +134,20 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
             }
 
             // properties
-            final Map<String, JSONProperty<LinksDecorator>> jsonProperties = jsonNode.getProperties();
+            final Map<String, JSONProperty<APIDecorator>> jsonProperties = jsonNode.getProperties();
             if (jsonProperties != null) {
-                final Set<Map.Entry<String, JSONProperty<LinksDecorator>>> properties = jsonProperties.entrySet();
+                final Set<Map.Entry<String, JSONProperty<APIDecorator>>> properties = jsonProperties.entrySet();
 
                 // set the properties
-                for (Map.Entry<String, JSONProperty<LinksDecorator>> entry : properties) {
+                for (Map.Entry<String, JSONProperty<APIDecorator>> entry : properties) {
                     PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
                 }
             }
 
             // children
-            final Map<String, JSONNode<LinksDecorator>> children = jsonNode.getChildren();
+            final Map<String, JSONNode<APIDecorator>> children = jsonNode.getChildren();
             if (children != null) {
-                for (JSONNode<LinksDecorator> jsonChild : children.values()) {
+                for (JSONNode<APIDecorator> jsonChild : children.values()) {
                     final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
                     initNodeFrom(child, jsonChild);
                 }

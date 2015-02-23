@@ -87,7 +87,7 @@ import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNamed;
 import org.jahia.modules.json.JSONNode;
@@ -97,7 +97,7 @@ import org.jahia.modules.json.JSONSubElementContainer;
 /**
  * @author Christophe Laprun
  */
-public abstract class ElementAccessor<C extends JSONSubElementContainer<LinksDecorator>, T extends JSONNamed<LinksDecorator>, U extends JSONItem> {
+public abstract class ElementAccessor<C extends JSONSubElementContainer<APIDecorator>, T extends JSONNamed<APIDecorator>, U extends JSONItem> {
     static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
 
     public static APIObjectFactory getFactory() {
@@ -112,7 +112,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer<LinksDec
         }
     }
 
-    protected JSONNode<LinksDecorator> getParentFrom(Node node) throws RepositoryException {
+    protected JSONNode<APIDecorator> getParentFrom(Node node) throws RepositoryException {
         return getFactory().createNode(node, 0);
     }
 

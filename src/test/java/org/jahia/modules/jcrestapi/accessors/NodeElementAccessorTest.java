@@ -80,8 +80,8 @@ import javax.ws.rs.core.Response;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.jcrestapi.links.JSONLink;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONSubElementContainer;
 import org.junit.Test;
@@ -91,7 +91,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Christophe Laprun
  */
-public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementContainer<LinksDecorator>, JSONNode<LinksDecorator>, JSONNode> {
+public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementContainer<APIDecorator>, JSONNode<APIDecorator>, JSONNode> {
     private final NodeElementAccessor accessor = new NodeElementAccessor();
 
     @Override
@@ -100,7 +100,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
     }
 
     @Override
-    public ElementAccessor<JSONSubElementContainer<LinksDecorator>, JSONNode<LinksDecorator>, JSONNode> getAccessor() {
+    public ElementAccessor<JSONSubElementContainer<APIDecorator>, JSONNode<APIDecorator>, JSONNode> getAccessor() {
         return accessor;
     }
 

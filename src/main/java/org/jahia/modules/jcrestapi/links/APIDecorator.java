@@ -107,26 +107,26 @@ import org.jahia.modules.json.jcr.SessionAccess;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class LinksDecorator implements JSONDecorator<LinksDecorator> {
+public class APIDecorator implements JSONDecorator<APIDecorator> {
 
     public static final String JCR__PROPERTY_DEFINITION = "jcr__propertyDefinition";
     @XmlElement(name = "_links")
     private final Map<String, JSONLink> links;
 
-    private Map<String, JSONItem<? extends Item, LinksDecorator>> references;
+    private Map<String, JSONItem<? extends Item, APIDecorator>> references;
 
-    public LinksDecorator() {
+    public APIDecorator() {
         links = new HashMap<String, JSONLink>(7);
     }
 
-    public LinksDecorator(String uri) {
+    public APIDecorator(String uri) {
         this();
 
         initWith(uri);
     }
 
     @XmlElement
-    public Map<String, JSONItem<? extends Item, LinksDecorator>> getReferences() {
+    public Map<String, JSONItem<? extends Item, APIDecorator>> getReferences() {
         return references != null ? Collections.unmodifiableMap(references) : null;
     }
 
@@ -152,13 +152,13 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
         return Collections.unmodifiableMap(links);
     }
 
-    public void initFrom(JSONSubElementContainer<LinksDecorator> container) {
+    public void initFrom(JSONSubElementContainer<APIDecorator> container) {
         final String uri = container.getParent().getDecorator().getURI();
         initWith(URIUtils.getChildURI(uri, container.getSubElementContainerName(), false));
         addLink(JSONLink.createLink(API.PARENT, uri));
     }
 
-    public <T extends Item> void initFrom(JSONItem<T, LinksDecorator> jsonItem, T item) throws RepositoryException {
+    public <T extends Item> void initFrom(JSONItem<T, APIDecorator> jsonItem, T item) throws RepositoryException {
         initWith(URIUtils.getURIFor(item));
         addLink(JSONLink.createLink(API.TYPE, URIUtils.getTypeURI(getTypeChildPath(jsonItem, item))));
 
@@ -174,7 +174,7 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
         addLink(JSONLink.createLink(API.PATH, URIUtils.getURIFor(item, true)));
     }
 
-    private <T extends Item> String getTypeChildPath(JSONItem<T, LinksDecorator> jsonItem, T item) throws RepositoryException {
+    private <T extends Item> String getTypeChildPath(JSONItem<T, APIDecorator> jsonItem, T item) throws RepositoryException {
         if (item instanceof Node) {
             return Names.escape(jsonItem.getUnescapedTypeName(item));
         } else {
@@ -207,7 +207,7 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
         }
     }
 
-    public void initFrom(JSONNode<LinksDecorator> jsonNode) {
+    public void initFrom(JSONNode<APIDecorator> jsonNode) {
         addLink(JSONLink.createLink(JSONConstants.PROPERTIES, jsonNode.getJSONProperties().getDecorator().getURI()));
         addLink(JSONLink.createLink(JSONConstants.MIXINS, jsonNode.getJSONMixins().getDecorator().getURI()));
         addLink(JSONLink.createLink(JSONConstants.CHILDREN, jsonNode.getJSONChildren().getDecorator().getURI()));
@@ -215,8 +215,8 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
     }
 
     @Override
-    public LinksDecorator newInstance() {
-        return new LinksDecorator();
+    public APIDecorator newInstance() {
+        return new APIDecorator();
     }
 
     public void initFrom(JSONProperty jsonProperty) throws RepositoryException {
@@ -248,7 +248,7 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
             final Node node = session.getNodeByIdentifier(value);
 
             if (references == null) {
-                references = new HashMap<String, JSONItem<? extends Item, LinksDecorator>>(7);
+                references = new HashMap<String, JSONItem<? extends Item, APIDecorator>>(7);
             }
 
             references.put(node.getName(), APIObjectFactory.getInstance().createNode(node, 0));

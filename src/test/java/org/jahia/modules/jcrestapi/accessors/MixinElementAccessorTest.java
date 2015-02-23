@@ -79,8 +79,8 @@ import javax.ws.rs.core.Response;
 
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.jcrestapi.links.JSONLink;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONMixin;
 import org.jahia.modules.json.JSONMixins;
@@ -89,7 +89,7 @@ import org.jahia.modules.json.JSONNode;
 /**
  * @author Christophe Laprun
  */
-public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins<LinksDecorator>, JSONMixin<LinksDecorator>, JSONNode> {
+public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins<APIDecorator>, JSONMixin<APIDecorator>, JSONNode> {
     private final MixinElementAccessor accessor = new MixinElementAccessor();
 
     @Override
@@ -116,22 +116,22 @@ public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins<Lin
     }
 
     @Override
-    protected JSONMixin<LinksDecorator> getSubElementFrom(Response response) {
-        return (JSONMixin<LinksDecorator>) response.getEntity();
+    protected JSONMixin<APIDecorator> getSubElementFrom(Response response) {
+        return (JSONMixin<APIDecorator>) response.getEntity();
     }
 
     @Override
-    protected JSONMixins<LinksDecorator> getContainerFrom(Response response) {
-        return (JSONMixins<LinksDecorator>) response.getEntity();
+    protected JSONMixins<APIDecorator> getContainerFrom(Response response) {
+        return (JSONMixins<APIDecorator>) response.getEntity();
     }
 
     @Override
-    public ElementAccessor<JSONMixins<LinksDecorator>, JSONMixin<LinksDecorator>, JSONNode> getAccessor() {
+    public ElementAccessor<JSONMixins<APIDecorator>, JSONMixin<APIDecorator>, JSONNode> getAccessor() {
         return accessor;
     }
 
     @Override
-    protected void checkLinksIfNeeded(Node node, JSONMixin<LinksDecorator> subElement, Map<String, JSONLink> links) throws RepositoryException {
+    protected void checkLinksIfNeeded(Node node, JSONMixin<APIDecorator> subElement, Map<String, JSONLink> links) throws RepositoryException {
         // nothing to do for now
     }
 

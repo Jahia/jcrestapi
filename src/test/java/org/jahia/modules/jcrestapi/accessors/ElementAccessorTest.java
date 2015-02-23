@@ -84,8 +84,8 @@ import javax.ws.rs.core.UriInfo;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.jcrestapi.links.JSONLink;
-import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNamed;
@@ -106,7 +106,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(SessionAccess.class)
-public abstract class ElementAccessorTest<C extends JSONSubElementContainer<LinksDecorator>, T extends JSONNamed<LinksDecorator>, U extends JSONItem> {
+public abstract class ElementAccessorTest<C extends JSONSubElementContainer<APIDecorator>, T extends JSONNamed<APIDecorator>, U extends JSONItem> {
 
     static final String WORKSPACE = "default";
     static final String LANGUAGE = "en";
