@@ -186,6 +186,14 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
     }
 
+    @Test
+    public void attemptingCreationOrUpdateWithoutPassingDataShouldFail() throws RepositoryException, URISyntaxException, IOException {
+        final Node node = createBasicNode();
+        final Response response = getAccessor().perform(node, "foo", API.CREATE_OR_UPDATE, null, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.BAD_REQUEST);
+    }
+
     protected void prepareNodeIfNeeded(Node node, String newChildName) throws RepositoryException {
         // do nothing by default
     }
