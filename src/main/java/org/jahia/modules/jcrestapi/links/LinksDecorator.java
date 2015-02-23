@@ -274,7 +274,7 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
         }
         final Node frozenNode = version.getFrozenNode();
         if (frozenNode != null) {
-            addLink(JSONLink.createLink("nodeAtVersion", URIUtils.getURIFor(frozenNode)));
+            addLink(JSONLink.createLink(API.NODE_AT_VERSION, URIUtils.getURIFor(frozenNode)));
         }
     }
 }

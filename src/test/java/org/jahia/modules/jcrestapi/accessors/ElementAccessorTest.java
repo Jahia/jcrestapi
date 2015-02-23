@@ -74,6 +74,7 @@ package org.jahia.modules.jcrestapi.accessors;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -84,6 +85,8 @@ import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.links.JSONLink;
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
+import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNamed;
 import org.jahia.modules.json.JSONSubElementContainer;
@@ -103,7 +106,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(SessionAccess.class)
-public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T extends JSONNamed, U extends JSONItem> {
+public abstract class ElementAccessorTest<C extends JSONSubElementContainer<LinksDecorator>, T extends JSONNamed<LinksDecorator>, U extends JSONItem> {
 
     static final String WORKSPACE = "default";
     static final String LANGUAGE = "en";
@@ -132,12 +135,12 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
 
-        /*C container = getContainerFrom(response);
-        final Map<String, JSONLink> links = container.getLinks();
+        C container = getContainerFrom(response);
+        final Map<String, JSONLink> links = container.getDecorator().getLinks();
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
-        assertThat(links.get(API.SELF)).isEqualTo(JSONLink.createLink(API.SELF, getContainerURIFor(node)));*/
+        assertThat(links.get(API.SELF)).isEqualTo(JSONLink.createLink(API.SELF, getContainerURIFor(node)));
     }
 
     protected Node createBasicNode() throws RepositoryException {
@@ -154,13 +157,19 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer, T e
         T subElement = getSubElementFrom(response);
         assertThat(subElement).isNotNull();
 
-        /*final Map<String, JSONLink> links = subElement.getLinks();
-        assertThat(links).containsKeys(API.ABSOLUTE, API.SELF);
+        final Map<String, JSONLink> links = subElement.getDecorator().getLinks();
+        assertThat(links).containsKeys(getMandatoryLinkRels());
 
+        checkLinksIfNeeded(node, subElement, links);
+    }
+
+    protected void checkLinksIfNeeded(Node node, T subElement, Map<String, JSONLink> links) throws RepositoryException {
         assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
-        assertThat(subElement.getURI()).isEqualTo(links.get(API.SELF).getURIAsString());
-*/
         assertThat(subElement.getName()).isEqualTo(getSubElementName());
+    }
+
+    protected String[] getMandatoryLinkRels() {
+        return new String[]{API.ABSOLUTE, API.SELF, API.PATH, API.TYPE, API.PARENT, JSONConstants.PROPERTIES, JSONConstants.CHILDREN, JSONConstants.MIXINS, JSONConstants.VERSIONS};
     }
 
     @Test

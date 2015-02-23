@@ -81,6 +81,7 @@ import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.links.JSONLink;
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONChildren;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONNode;
@@ -91,7 +92,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Christophe Laprun
  */
-public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildren, JSONNode, JSONNode> {
+public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildren<LinksDecorator>, JSONNode<LinksDecorator>, JSONNode> {
     private final ChildrenElementAccessor accessor = new ChildrenElementAccessor();
 
     @Override
@@ -105,17 +106,17 @@ public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildre
     }
 
     @Override
-    protected JSONNode getSubElementFrom(Response response) {
-        return (JSONNode) response.getEntity();
+    protected JSONNode<LinksDecorator> getSubElementFrom(Response response) {
+        return (JSONNode<LinksDecorator>) response.getEntity();
     }
 
     @Override
-    protected JSONChildren getContainerFrom(Response response) {
-        return (JSONChildren) response.getEntity();
+    protected JSONChildren<LinksDecorator> getContainerFrom(Response response) {
+        return (JSONChildren<LinksDecorator>) response.getEntity();
     }
 
     @Override
-    public ElementAccessor<JSONChildren, JSONNode, JSONNode> getAccessor() {
+    public ElementAccessor<JSONChildren<LinksDecorator>, JSONNode<LinksDecorator>, JSONNode> getAccessor() {
         return accessor;
     }
 

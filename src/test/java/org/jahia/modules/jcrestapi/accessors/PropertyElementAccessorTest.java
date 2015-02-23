@@ -77,7 +77,9 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.core.Response;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONProperties;
 import org.jahia.modules.json.JSONProperty;
@@ -85,7 +87,7 @@ import org.jahia.modules.json.JSONProperty;
 /**
  * @author Christophe Laprun
  */
-public class PropertyElementAccessorTest extends ElementAccessorTest<JSONProperties, JSONProperty, JSONProperty> {
+public class PropertyElementAccessorTest extends ElementAccessorTest<JSONProperties<LinksDecorator>, JSONProperty<LinksDecorator>, JSONProperty> {
     private final PropertyElementAccessor accessor = new PropertyElementAccessor();
 
     @Override
@@ -111,17 +113,22 @@ public class PropertyElementAccessorTest extends ElementAccessorTest<JSONPropert
     }
 
     @Override
-    protected JSONProperty getSubElementFrom(Response response) {
-        return (JSONProperty) response.getEntity();
+    protected JSONProperty<LinksDecorator> getSubElementFrom(Response response) {
+        return (JSONProperty<LinksDecorator>) response.getEntity();
     }
 
     @Override
-    protected JSONProperties getContainerFrom(Response response) {
-        return (JSONProperties) response.getEntity();
+    protected JSONProperties<LinksDecorator> getContainerFrom(Response response) {
+        return (JSONProperties<LinksDecorator>) response.getEntity();
     }
 
     @Override
-    public ElementAccessor<JSONProperties, JSONProperty, JSONProperty> getAccessor() {
+    public ElementAccessor<JSONProperties<LinksDecorator>, JSONProperty<LinksDecorator>, JSONProperty> getAccessor() {
         return accessor;
+    }
+
+    @Override
+    protected String[] getMandatoryLinkRels() {
+        return new String[]{API.PATH, API.ABSOLUTE, API.SELF, API.TYPE, API.PARENT};
     }
 }

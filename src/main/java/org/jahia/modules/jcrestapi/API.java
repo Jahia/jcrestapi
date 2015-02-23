@@ -141,6 +141,8 @@ public class API {
     public static final String TARGET = "target";
     public static final String PARENT = "parent";
     public static final String PATH = "path";
+    public static final String NODE_AT_VERSION = "nodeAtVersion";
+
     public static final String INCLUDE_FULL_CHILDREN = "includeFullChildren";
     public static final String RESOLVE_REFERENCES = "resolveReferences";
 
@@ -150,7 +152,6 @@ public class API {
             return false;
         }
     };
-
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
     static {

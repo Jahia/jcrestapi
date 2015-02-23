@@ -78,6 +78,7 @@ import javax.jcr.version.VersionHistory;
 import javax.ws.rs.core.UriInfo;
 
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONVersion;
 import org.jahia.modules.json.JSONVersions;
@@ -85,7 +86,7 @@ import org.jahia.modules.json.JSONVersions;
 /**
  * @author Christophe Laprun
  */
-public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVersion, JSONNode> {
+public class VersionElementAccessor extends ElementAccessor<JSONVersions<LinksDecorator>, JSONVersion<LinksDecorator>, JSONNode> {
     @Override
     protected JSONVersions getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         return getFactory().createVersions(getParentFrom(node), node);
@@ -108,7 +109,7 @@ public class VersionElementAccessor extends ElementAccessor<JSONVersions, JSONVe
     }
 
     @Override
-    protected CreateOrUpdateResult<JSONVersion> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
+    protected CreateOrUpdateResult<JSONVersion<LinksDecorator>> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
         throw new UnsupportedOperationException("Cannot create or update versions");
     }
 

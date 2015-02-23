@@ -77,6 +77,7 @@ import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.core.UriInfo;
 
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONMixin;
 import org.jahia.modules.json.JSONMixins;
 import org.jahia.modules.json.JSONNode;
@@ -84,14 +85,14 @@ import org.jahia.modules.json.JSONNode;
 /**
  * @author Christophe Laprun
  */
-public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin, JSONNode> {
+public class MixinElementAccessor extends ElementAccessor<JSONMixins<LinksDecorator>, JSONMixin<LinksDecorator>, JSONNode> {
     @Override
-    protected JSONMixins getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
+    protected JSONMixins<LinksDecorator> getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         return getFactory().createMixins(getParentFrom(node), node);
     }
 
     @Override
-    protected JSONMixin getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
+    protected JSONMixin<LinksDecorator> getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         final NodeType mixin = getMixin(node, subElement);
         if (mixin == null) {
             return null;
@@ -106,7 +107,7 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
     }
 
     @Override
-    protected CreateOrUpdateResult<JSONMixin> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
+    protected CreateOrUpdateResult<JSONMixin<LinksDecorator>> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
         // if the node doesn't already have the mixin, add it
         final boolean isCreation = !node.isNodeType(subElement);
         if (isCreation) {
@@ -119,7 +120,7 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins, JSONMixin,
         // we now need to use the rest of the given child data to add / update the parent node content
         NodeElementAccessor.initNodeFrom(node, childData);
 
-        return new CreateOrUpdateResult<JSONMixin>(!isCreation, getFactory().createMixin(node, mixin));
+        return new CreateOrUpdateResult<JSONMixin<LinksDecorator>>(!isCreation, getFactory().createMixin(node, mixin));
     }
 
     @Override

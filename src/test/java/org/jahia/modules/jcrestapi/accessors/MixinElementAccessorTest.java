@@ -72,9 +72,15 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import java.io.IOException;
+import java.util.Map;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
 
+import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
+import org.jahia.modules.jcrestapi.links.JSONLink;
+import org.jahia.modules.jcrestapi.links.LinksDecorator;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONMixin;
 import org.jahia.modules.json.JSONMixins;
@@ -83,7 +89,7 @@ import org.jahia.modules.json.JSONNode;
 /**
  * @author Christophe Laprun
  */
-public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins, JSONMixin, JSONNode> {
+public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins<LinksDecorator>, JSONMixin<LinksDecorator>, JSONNode> {
     private final MixinElementAccessor accessor = new MixinElementAccessor();
 
     @Override
@@ -110,17 +116,27 @@ public class MixinElementAccessorTest extends ElementAccessorTest<JSONMixins, JS
     }
 
     @Override
-    protected JSONMixin getSubElementFrom(Response response) {
-        return (JSONMixin) response.getEntity();
+    protected JSONMixin<LinksDecorator> getSubElementFrom(Response response) {
+        return (JSONMixin<LinksDecorator>) response.getEntity();
     }
 
     @Override
-    protected JSONMixins getContainerFrom(Response response) {
-        return (JSONMixins) response.getEntity();
+    protected JSONMixins<LinksDecorator> getContainerFrom(Response response) {
+        return (JSONMixins<LinksDecorator>) response.getEntity();
     }
 
     @Override
-    public ElementAccessor<JSONMixins, JSONMixin, JSONNode> getAccessor() {
+    public ElementAccessor<JSONMixins<LinksDecorator>, JSONMixin<LinksDecorator>, JSONNode> getAccessor() {
         return accessor;
+    }
+
+    @Override
+    protected void checkLinksIfNeeded(Node node, JSONMixin<LinksDecorator> subElement, Map<String, JSONLink> links) throws RepositoryException {
+        // nothing to do for now
+    }
+
+    @Override
+    protected String[] getMandatoryLinkRels() {
+        return new String[]{API.TYPE};
     }
 }

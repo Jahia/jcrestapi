@@ -298,6 +298,7 @@ public class Mocks {
         Version version = mock(Version.class);
         when(version.getName()).thenReturn(VERSION);
         when(version.getIdentifier()).thenReturn(VERSION_ID);
+        when(version.getFrozenNode()).thenReturn(mock(Node.class));
 
         // mock version history
         VersionHistory versionHistory = mock(VersionHistory.class);
