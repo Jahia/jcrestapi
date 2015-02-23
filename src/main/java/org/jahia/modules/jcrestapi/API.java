@@ -145,11 +145,18 @@ public class API {
 
     public static final String INCLUDE_FULL_CHILDREN = "includeFullChildren";
     public static final String RESOLVE_REFERENCES = "resolveReferences";
+    public static final String NO_LINKS = "noLinks";
 
     private static final ThreadLocal<Boolean> resolveReferences = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return false;
+        }
+    };
+    private static final ThreadLocal<Boolean> outputLinks = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return true;
         }
     };
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
@@ -336,6 +343,7 @@ public class API {
         Session session = null;
 
         resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
+        outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
 
         final String idOrPath = processor.getIdOrPath();
         final String subElementType = processor.getSubElementType();
@@ -360,6 +368,7 @@ public class API {
             throw new APIException(e, operation, nodeAccessor.getType(), idOrPath, subElementType, Collections.singletonList(subElement), data);
         } finally {
             resolveReferences.set(false);
+            outputLinks.set(true);
             closeSession(session);
         }
     }
@@ -398,6 +407,10 @@ public class API {
 
     public static boolean shouldResolveReferences() {
         return resolveReferences.get();
+    }
+
+    public static boolean shouldOutputLinks() {
+        return outputLinks.get();
     }
 
     protected static interface NodeAccessor {
