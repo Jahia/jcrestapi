@@ -72,7 +72,6 @@
 package org.jahia.modules.jcrestapi;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -131,10 +130,14 @@ public class Paths extends API {
                 String nodePath = computePathUpTo(usefulSegments, index);
                 String subElement = getSubElement(usefulSegments, index);
                 JSONItem converted;
-                try {
-                    converted = accessor.convertFrom(data);
-                } catch (Exception e) {
-                    throw new APIException(e.getCause(), operation, NodeAccessor.BY_PATH.getType(), nodePath, subElementType, Collections.singletonList(subElement), data);
+                if (data != null && !data.isEmpty()) {
+                    try {
+                        converted = accessor.convertFrom(data);
+                    } catch (Exception e) {
+                        throw new APIException(e.getCause(), operation, NodeAccessor.BY_PATH.getType(), nodePath, subElementType, Collections.singletonList(subElement), data);
+                    }
+                } else {
+                    converted = null;
                 }
                 return perform(workspace, language, nodePath, subElementType, subElement, context, operation, converted, NodeAccessor.BY_PATH);
             }
