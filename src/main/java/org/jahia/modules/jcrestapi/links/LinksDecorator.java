@@ -251,7 +251,7 @@ public class LinksDecorator implements JSONDecorator<LinksDecorator> {
                 references = new HashMap<String, JSONItem<? extends Item, LinksDecorator>>(7);
             }
 
-            references.put(node.getName(), APIObjectFactory.getInstance().createNode(node, 1));
+            references.put(node.getName(), APIObjectFactory.getInstance().createNode(node, 0));
         }
     }
 
