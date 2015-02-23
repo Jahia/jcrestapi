@@ -76,6 +76,7 @@ import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.links.JSONLink;
 import org.jahia.modules.json.JSONConstants;
+import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONVersion;
 import org.jahia.modules.json.JSONVersions;
@@ -129,8 +130,18 @@ public class VersionElementAccessorTest extends ElementAccessorTest<JSONVersions
     @Override
     @Test
     public void simpleCreateShouldWork() throws RepositoryException, URISyntaxException, IOException {
+        final Node node = createBasicNode();
+
+        // try to inject some data to create a new version... already not possible to create a node with a versions object :)
+        final JSONNode version;
         try {
-            getAccessor().perform(null, (String) null, API.CREATE_OR_UPDATE, null, context);
+            version = (JSONNode) accessor.convertFrom("{\"properties\" : {}}");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            getAccessor().perform(node, "foo", API.CREATE_OR_UPDATE, version, context);
             failBecauseExceptionWasNotThrown(UnsupportedOperationException.class);
         } catch (UnsupportedOperationException e) {
             assertThat(e.getLocalizedMessage()).contains("create", "update");
