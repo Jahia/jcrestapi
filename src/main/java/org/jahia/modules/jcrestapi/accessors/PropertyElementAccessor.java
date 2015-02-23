@@ -71,7 +71,6 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import java.io.IOException;
 import java.util.List;
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -166,7 +165,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties, JSO
     }
 
     @Override
-    public JSONItem convertFrom(String rawJSONData) throws IOException {
+    public JSONItem convertFrom(String rawJSONData) throws Exception {
         return mapper.readValue(rawJSONData, JSONProperty.class);
     }
 }

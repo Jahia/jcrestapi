@@ -133,8 +133,8 @@ public class Paths extends API {
                 JSONItem converted;
                 try {
                     converted = accessor.convertFrom(data);
-                } catch (IOException e) {
-                    throw new APIException(e, operation, NodeAccessor.BY_PATH.getType(), nodePath, subElementType, Collections.singletonList(subElement), data);
+                } catch (Exception e) {
+                    throw new APIException(e.getCause(), operation, NodeAccessor.BY_PATH.getType(), nodePath, subElementType, Collections.singletonList(subElement), data);
                 }
                 return perform(workspace, language, nodePath, subElementType, subElement, context, operation, converted, NodeAccessor.BY_PATH);
             }

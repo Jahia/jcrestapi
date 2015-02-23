@@ -82,9 +82,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.APIException;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
@@ -124,7 +126,7 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer, T exten
 
     protected abstract CreateOrUpdateResult<T> createOrUpdate(Node node, String subElement, U childData) throws RepositoryException;
 
-    public JSONItem convertFrom(String rawJSONData) throws IOException {
+    public JSONItem convertFrom(String rawJSONData) throws Exception {
         return mapper.readValue(rawJSONData, JSONNode.class);
     }
 
