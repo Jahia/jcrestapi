@@ -71,20 +71,26 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import java.util.List;
+import javax.jcr.Node;
+import javax.jcr.Repository;
+import javax.jcr.Session;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
+
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONProperty;
-
-import javax.jcr.Node;
-import javax.jcr.Repository;
-import javax.jcr.Session;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.util.List;
 
 /**
  * @author Christophe Laprun
@@ -98,7 +104,6 @@ public class Nodes extends API {
     }
 
     @GET
-    @Path("/")
     /**
      * Needed to get URI without trailing / to work :(
      */
