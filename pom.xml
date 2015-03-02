@@ -87,10 +87,10 @@
     <description>Module implementing a RESTful API to access JCR data.</description>
 
     <properties>
-        <jersey.version>2.16</jersey.version>
-        <jaxrs.api.version>2.0.1</jaxrs.api.version>
-        <jackson.version>2.5.1</jackson.version>
-        <jackson-annotations.version>2.5.1</jackson-annotations.version>
+        <jersey.version>2.6</jersey.version>
+        <jaxrs.api.version>2.0</jaxrs.api.version>
+        <jackson.version>2.3.2</jackson.version>
+        <jackson-annotations.version>2.3.0</jackson-annotations.version>
         <slf4j.version>1.6.6</slf4j.version>
         <mockito.version>1.9.5</mockito.version>
         <powermock.version>1.5.4</powermock.version>
