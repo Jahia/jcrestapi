@@ -135,7 +135,7 @@ public class API {
     public static final String UPLOAD = "upload";
     public static final String AS_JSON_STRING = "asJSONString";
 
-    static final String API_PATH = "/api/jcr/v1";
+    static final String API_PATH = "/api/jcr/v1.1";
 
     public static final String TYPE = "type";
     public static final String TARGET = "target";
@@ -169,7 +169,7 @@ public class API {
             throw new RuntimeException("Could not load jcrestapi.properties.", e);
         }
 
-        VERSION = "API version: 1\nModule version:" + props.getProperty("jcrestapi.version");
+        VERSION = "API version: 1.1\nModule version:" + props.getProperty("jcrestapi.version");
 
         ACCESSORS.put(JSONConstants.PROPERTIES, new PropertyElementAccessor());
         ACCESSORS.put(JSONConstants.CHILDREN, new ChildrenElementAccessor());

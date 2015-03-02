@@ -109,17 +109,10 @@ public class APITest extends JerseyTest {
         Properties props = new Properties();
         props.load(API.class.getClassLoader().getResourceAsStream("jcrestapi.properties"));
 
-        try {
-            expect().statusCode(SC_OK)
-                    .contentType("text/plain")
-                    .body(equalTo("API version: 1\nModule version:" + props.getProperty("jcrestapi.version")))
-                    .when().get(generateURL(API.API_PATH + "/version"));
-        } finally {
-            final List<LogRecord> loggedRecords = getLoggedRecords();
-            for (LogRecord record : loggedRecords) {
-                System.out.println("record = " + record.getMessage());
-            }
-        }
+        expect().statusCode(SC_OK)
+                .contentType("text/plain")
+                .body(equalTo("API version: 1.1\nModule version:" + props.getProperty("jcrestapi.version")))
+                .when().get(generateURL(API.API_PATH + "/version"));
     }
 
     @Test
