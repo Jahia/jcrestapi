@@ -329,7 +329,7 @@
                         </Import-Package>
                         <!-- would be nice if the macro didn't also include WADL-related class found on classpath -->
                         <!--<JAX-RS-Classes>$(classes;ANNOTATION;javax.ws.rs.Path)</JAX-RS-Classes>-->
-                        <JAX-RS-Alias>/api/jcr/v1.1</JAX-RS-Alias>
+                        <JAX-RS-Alias>/api/jcr/v1</JAX-RS-Alias>
                         <JAX-RS-Application>org.jahia.modules.jcrestapi.APIApplication</JAX-RS-Application>
                     </instructions>
                 </configuration>

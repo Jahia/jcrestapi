@@ -135,7 +135,7 @@ public class API {
     public static final String UPLOAD = "upload";
     public static final String AS_JSON_STRING = "asJSONString";
 
-    static final String API_PATH = "/api/jcr/v1.1";
+    static final String API_PATH = "/api/jcr/v1";
 
     public static final String TYPE = "type";
     public static final String TARGET = "target";
