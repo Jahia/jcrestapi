@@ -73,6 +73,7 @@ package org.jahia.modules.jcrestapi;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.jcr.Binary;
@@ -173,18 +174,23 @@ public class Paths extends API {
     private List<PathSegment> getUsefulSegments(UriInfo context) {
         final List<PathSegment> pathSegments = context.getPathSegments();
 
-        // skip all empty segments
+        final List<PathSegment> usefulSegments = new ArrayList<PathSegment>(pathSegments.size());
+
+        // skip all initial empty segments
         int nbOfEmptySegments = 0;
         while (pathSegments.get(nbOfEmptySegments).getPath().isEmpty()) {
             nbOfEmptySegments++;
         }
 
-        int fromIndex = IGNORE_SEGMENTS + nbOfEmptySegments;
-        if (MAPPING.equals(pathSegments.get(fromIndex).getPath())) {
-            fromIndex++;
+        for (int fromIndex = IGNORE_SEGMENTS + nbOfEmptySegments; fromIndex < pathSegments.size(); fromIndex++) {
+            final PathSegment pathSegment = pathSegments.get(fromIndex);
+            final String path = pathSegment.getPath();
+            if (!path.isEmpty() && !MAPPING.equals(path)) {
+                usefulSegments.add(pathSegment);
+            }
         }
 
-        return pathSegments.subList(fromIndex, pathSegments.size());
+        return usefulSegments;
     }
 
     private static int getSegmentsNbFrom(String path) {
