@@ -200,6 +200,30 @@ public class API {
     }
 
     /**
+     * Sets the value of the ThreadLocal boolean used to resolve the node reference when generating the JSON output
+     * nodes.
+     * @param newResolveReferences the new value for the current ThreadLocal boolean
+     * @return the old value (before the set) of the ThreadLocal boolean
+     */
+    public static Boolean setResolveReferences(Boolean newResolveReferences) {
+        Boolean oldResolveReferences = resolveReferences.get();
+        resolveReferences.set(newResolveReferences);
+        return oldResolveReferences;
+    }
+
+    /**
+     * Sets the value of the ThreadLocal boolean used to resolve the output the HATEOAS links when generating the JSON
+     * output nodes.
+     * @param newOutputLinks the new value for the current ThreadLocal boolean
+     * @return the old value (before the set) of the ThreadLocal boolean
+     */
+    public static Boolean setOutputLinks(Boolean newOutputLinks) {
+        Boolean oldOutputLinks = outputLinks.get();
+        outputLinks.set(newOutputLinks);
+        return oldOutputLinks;
+    }
+
+    /**
      * Returns the current version of the API and of this implementation.
      */
     @GET

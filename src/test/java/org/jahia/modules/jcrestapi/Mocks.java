@@ -73,18 +73,8 @@ package org.jahia.modules.jcrestapi;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.Workspace;
+import java.util.*;
+import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.Version;
@@ -95,6 +85,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.jackrabbit.value.ReferenceValue;
 import org.apache.jackrabbit.value.StringValue;
 import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.PropertyElementAccessor;
@@ -114,6 +105,7 @@ public class Mocks {
     public static final String VERSION = "version";
     public static final String PATH_TO_NODE = "/path/to/node";
     public static final String PROPERTY = "property";
+    public static final String REF_PROPERTY = "refProperty";
     public static final String CHILD = "child";
     public static final String NODE_ID = "nodeId";
     public static final String MIXIN = "mixin";
@@ -121,11 +113,13 @@ public class Mocks {
     public static final String CHILD_ID = "childId";
     public static final String NODE_NAME = "node";
 
+    public static final Map<String,Node> sessionNodes = new LinkedHashMap<String,Node>();
+
     public static Node createMockNode(String name, String id, String pathToNode) throws RepositoryException {
         return createMockNode(name, id, pathToNode, 1, 1, 1);
     }
 
-    public static Node createMockNode(String name, String id, final String pathToNode, int numberOfChildren, int numberOfProperties, int numberOfMixins) throws RepositoryException {
+    public static Node createMockNode(String name, String id, final String pathToNode, int numberOfChildren, int numberOfStringProperties, int numberOfMixins) throws RepositoryException {
 
         // mock node type
         final NodeType nodeType = createNodeType("nodeType");
@@ -137,11 +131,14 @@ public class Mocks {
         // mock node
         final Node node = mock(Node.class);
 
-        // mock properties
-        for (int i = 0; i < numberOfProperties; i++) {
+        final Map<String,Property> properties = new LinkedHashMap<String,Property>();
+
+        // mock string properties
+        for (int i = 0; i < numberOfStringProperties; i++) {
             final String propertyName = PROPERTY + i;
-            final Property property = createMockProperty(node, propertyName, nodeType, true);
+            final Property property = createMockProperty(node, propertyName, nodeType, StringValue.TYPE, false, true);
             when(node.getProperty(propertyName)).thenReturn(property);
+            properties.put(propertyName, property);
         }
 
         // mock children
@@ -150,7 +147,7 @@ public class Mocks {
             children = new ArrayList<Node>(numberOfChildren);
             for (int i = 0; i < numberOfChildren; i++) {
                 final String childName = CHILD + i;
-                final Node child = createMockNode(childName, CHILD_ID + i, pathToNode + "/" + childName, numberOfChildren - 1, numberOfProperties - 1, numberOfMixins - 1);
+                final Node child = createMockNode(childName, CHILD_ID + i, pathToNode + "/" + childName, numberOfChildren - 1, numberOfStringProperties - 1, numberOfMixins - 1);
                 children.add(child);
                 when(node.getNode(childName)).thenReturn(child);
             }
@@ -171,6 +168,7 @@ public class Mocks {
 
         when(node.getPrimaryNodeType()).thenReturn(nodeType);
         when(node.getIdentifier()).thenReturn(id);
+        when(node.getUUID()).thenReturn(id);
         when(node.getParent()).thenReturn(parent);
         when(node.getPath()).thenReturn(pathToNode);
         // use an Answer to make sure that we always return a new iterator
@@ -184,6 +182,12 @@ public class Mocks {
         when(node.isNodeType(Constants.MIX_VERSIONABLE)).thenReturn(true);
         when(node.getName()).thenReturn(name);
         when(node.getMixinNodeTypes()).thenReturn(finalMixins);
+        when(node.getProperties()).then(new Answer<PropertyIterator>() {
+            @Override
+            public PropertyIterator answer(InvocationOnMock invocation) throws Throwable {
+                return new ListBackedPropertyIterator(properties.values());
+            }
+        });
 
         doAnswer(new Answer() {
             @Override
@@ -209,8 +213,12 @@ public class Mocks {
                 final String propertyName = invocation.getArguments()[0].toString();
                 final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionFrom(propertyName, definitions);
                 if (definition != null && definition.getRequiredType() == ((Integer) invocation.getArguments()[2])) {
-                    final Property property = createMockProperty(node, propertyName, nodeType, false);
+                    Property property = properties.get(propertyName);
+                    if (property == null) {
+                        property = createMockProperty(node, propertyName, nodeType, ((Integer) invocation.getArguments()[2]), false, false);
+                    }
                     when(property.getValue()).thenReturn(new StringValue(invocation.getArguments()[1].toString()));
+                    properties.put(propertyName, property);
                     return property;
                 }
                 return null;
@@ -220,10 +228,62 @@ public class Mocks {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
+                final PropertyDefinition[] definitions = nodeType.getPropertyDefinitions();
+                final String propertyName = invocation.getArguments()[0].toString();
+                PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionFrom(propertyName, definitions);
+                if (definition == null) {
+                    definition = createPropertyDefinition(propertyName, nodeType, ReferenceValue.TYPE, false, null);
+                }
+                if (definition != null && definition.getRequiredType() == ReferenceValue.TYPE) {
+                    Property property = properties.get(propertyName);
+                    if (property == null) {
+                        property = createMockProperty(node, propertyName, nodeType, ReferenceValue.TYPE, false, false);
+                    }
+                    ReferenceValue referenceValue = new ReferenceValue(((Node) invocation.getArguments()[1]));
+                    when(property.getValue()).thenReturn(referenceValue);
+                    properties.put(propertyName, property);
+                    return property;
+                }
+                return null;
+            }
+        }).when(node).setProperty(anyString(), any(Node.class));
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                final PropertyDefinition[] definitions = nodeType.getPropertyDefinitions();
+                final String propertyName = invocation.getArguments()[0].toString();
+                final Value[] propertyValues = (Value[]) invocation.getArguments()[1];
+                if (propertyValues == null && propertyValues.length == 0) {
+                    return properties.remove(propertyName);
+                }
+                final int propertyType = propertyValues[0].getType();
+                PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionFrom(propertyName, definitions);
+                if (definition == null) {
+                    definition = createPropertyDefinition(propertyName, nodeType, propertyType, true, null);
+                }
+                if (definition != null && definition.getRequiredType() == propertyType) {
+                    Property property = properties.get(propertyName);
+                    if (property == null) {
+                        property = createMockProperty(node, propertyName, nodeType, propertyType, true, false);
+                    }
+                    when(property.getValues()).thenReturn(propertyValues);
+                    properties.put(propertyName, property);
+                    return property;
+                }
+                return null;
+            }
+        }).when(node).setProperty(anyString(), any(Value[].class));
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
                 final String name = invocation.getArguments()[0].toString();
                 return createMockNode(name, name + "Id", pathToNode + "/" + name);
             }
         }).when(node).addNode(anyString());
+
+        sessionNodes.put(id, node);
 
         return node;
     }
@@ -234,29 +294,33 @@ public class Mocks {
         return nodeType;
     }
 
-    protected static Property createMockProperty(Node parent, String propertyName, NodeType parentNodeType, boolean createAssociatedDefinition) throws RepositoryException {
+    protected static Property createMockProperty(Node parent, String propertyName, NodeType parentNodeType, Integer requiredType, boolean multiple, boolean createAssociatedDefinition) throws RepositoryException {
         PropertyDefinition propertyDefinition;
         if (createAssociatedDefinition) {
-            propertyDefinition = createPropertyDefinition(propertyName, parentNodeType, null);
+            propertyDefinition = createPropertyDefinition(propertyName, parentNodeType, requiredType, multiple, null);
         } else {
             propertyDefinition = PropertyElementAccessor.getPropertyDefinitionFrom(propertyName, parentNodeType.getPropertyDefinitions());
         }
 
         // mock property
         Property property = mock(Property.class);
+        when(property.toString()).thenReturn("Property:" + propertyName);
         when(property.getName()).thenReturn(propertyName);
+        when(property.getType()).thenReturn(requiredType);
         when(property.getDefinition()).thenReturn(propertyDefinition);
         when(property.getPath()).thenReturn(PATH_TO_NODE + "/" + propertyName);
+        when(property.isMultiple()).thenReturn(multiple);
 
         // set node as property's parent
         when(property.getParent()).thenReturn(parent);
         return property;
     }
 
-    public static PropertyDefinition createPropertyDefinition(String propertyName, NodeType parentNodeType, final PropertyDefinition[] definitions) {
+    public static PropertyDefinition createPropertyDefinition(String propertyName, NodeType parentNodeType, Integer requiredType, boolean multiple, final PropertyDefinition[] definitions) {
         // mock property definition
         PropertyDefinition propertyDefinition = mock(PropertyDefinition.class);
         when(propertyDefinition.getName()).thenReturn(propertyName);
+        when(propertyDefinition.getRequiredType()).thenReturn(requiredType);
 
         // add property definition to parent node type
         PropertyDefinition[] newPropertyDefinitions;
@@ -273,6 +337,7 @@ public class Mocks {
 
         // set the property definition's node type
         when(propertyDefinition.getDeclaringNodeType()).thenReturn(parentNodeType);
+        when(propertyDefinition.isMultiple()).thenReturn(multiple);
         return propertyDefinition;
     }
 
@@ -316,6 +381,15 @@ public class Mocks {
 
         Session session = mock(Session.class);
         when(session.getWorkspace()).thenReturn(workspace);
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                String identifier = (String) invocation.getArguments()[0];
+                Node node = sessionNodes.get(identifier);
+                return node;
+            }
+        }).when(session).getNodeByIdentifier(anyString());
 
         return session;
     }
@@ -396,6 +470,54 @@ public class Mocks {
         @Override
         public Object next() {
             return nextNode();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class ListBackedPropertyIterator implements PropertyIterator {
+
+        private Iterator<Property> iterator;
+        private int size;
+        private int index;
+
+        public ListBackedPropertyIterator(Collection<Property> properties) {
+            this.iterator = properties.iterator();
+            this.size = properties.size();
+        }
+
+        @Override
+        public Property nextProperty() {
+            index++;
+            return iterator.next();
+        }
+
+        @Override
+        public void skip(long skipNum) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long getSize() {
+            return size;
+        }
+
+        @Override
+        public long getPosition() {
+            return index;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public Object next() {
+            return nextProperty();
         }
 
         @Override

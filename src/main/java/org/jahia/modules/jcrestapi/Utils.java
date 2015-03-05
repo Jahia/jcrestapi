@@ -99,9 +99,9 @@ public class Utils {
     public static boolean getFlagValueFrom(UriInfo context, String flagName) {
         final MultivaluedMap<String, String> queryParameters = context.getQueryParameters();
         if (queryParameters != null) {
-            final List<String> includeFullChildren = queryParameters.get(flagName);
-            if (includeFullChildren != null) {
-                if (includeFullChildren.isEmpty() || !"false".equals(includeFullChildren.get(0))) {
+            final List<String> flagValues = queryParameters.get(flagName);
+            if (flagValues != null) {
+                if (flagValues.isEmpty() || !"false".equals(flagValues.get(0))) {
                     return true;
                 }
             }

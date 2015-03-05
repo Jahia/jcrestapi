@@ -278,7 +278,7 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
                 references = new HashMap<String, JSONItem<? extends Item, APIDecorator>>(7);
             }
 
-            references.put(node.getName(), APIObjectFactory.getInstance().createNode(node, 0));
+            references.put(node.getIdentifier(), APIObjectFactory.getInstance().createNode(node, 0));
         }
     }
 

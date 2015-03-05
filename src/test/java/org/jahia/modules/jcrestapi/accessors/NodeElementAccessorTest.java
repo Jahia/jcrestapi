@@ -72,17 +72,25 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
+import java.util.Map;
+import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 import javax.ws.rs.core.Response;
 
+import org.apache.jackrabbit.value.ReferenceValue;
+import org.apache.jackrabbit.value.WeakReferenceValue;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.jcrestapi.links.JSONLink;
+import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNode;
+import org.jahia.modules.json.JSONProperty;
 import org.jahia.modules.json.JSONSubElementContainer;
 import org.junit.Test;
 
@@ -121,12 +129,117 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         // check that the return JSONNode is the same as the one we called perform on
         assertThat(jsonNode.getId()).isEqualTo(node.getIdentifier());
 
-        /*final Map<String, JSONLink> links = jsonNode.getLinks();
-
+        assertThat(jsonNode.getDecorator() instanceof APIDecorator);
+        APIDecorator apiDecorator = (APIDecorator) jsonNode.getDecorator();
+        final Map<String, JSONLink> links = apiDecorator.getLinks();
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
         assertThat(links.get(API.PARENT)).isEqualTo(JSONLink.createLink(API.PARENT, URIUtils.getIdURI(node.getParent().getIdentifier())));
         assertThat(links.get(API.ABSOLUTE).getURIAsString()).startsWith(Mocks.BASE_URI);
-        assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));*/
+        assertThat(links.get(API.SELF)).isEqualTo(getSelfLinkForChild(node));
+
+    }
+
+    @Test
+    public void testResolveReferences() throws RepositoryException {
+        // we save the old value to make sure we don't mess it up for other tests.
+        Boolean oldResolveReferencesValue = API.setResolveReferences(true);
+
+        try {
+            context = Mocks.createMockUriInfo(true);
+
+            final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE, 2, 2, 2);
+            final Node secondNode = Mocks.createMockNode(Mocks.NODE_NAME + "2", Mocks.NODE_ID + "2", Mocks.PATH_TO_NODE + "2", 2, 2, 2);
+            final Node thirdNode = Mocks.createMockNode(Mocks.NODE_NAME + "3", Mocks.NODE_ID + "3", Mocks.PATH_TO_NODE + "3", 2, 2, 2);
+
+            Value[] referenceValues = new Value[] {
+                    new ReferenceValue(secondNode),
+                    new ReferenceValue(thirdNode)
+            };
+
+            node.setProperty(Mocks.REF_PROPERTY + "1", secondNode);
+            node.setProperty(Mocks.REF_PROPERTY + "2", referenceValues);
+
+            final Response response = accessor.perform(node, (String) null, API.READ, null, context);
+
+            assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+            final Object entity = response.getEntity();
+            assertThat(entity instanceof JSONNode);
+
+            JSONNode jsonNode = (JSONNode) entity;
+            // check that the return JSONNode is the same as the one we called perform on
+            assertThat(jsonNode.getId()).isEqualTo(node.getIdentifier());
+
+            assertThat(jsonNode.getDecorator() instanceof APIDecorator);
+
+            JSONProperty jsonProperty = jsonNode.getProperty(Mocks.REF_PROPERTY + "1");
+            assertThat(jsonProperty).isNotNull();
+            assertThat(jsonProperty.isMultiValued()).isFalse();
+            assertThat(jsonProperty.getValue()).isEqualTo(Mocks.NODE_ID + "2");
+            assertThat(jsonProperty.getDecorator()).isNotNull();
+            assertThat(jsonProperty.getDecorator() instanceof APIDecorator);
+            APIDecorator propertyAPIDecorator = (APIDecorator) jsonProperty.getDecorator();
+            assertThat(propertyAPIDecorator.getReferences()).isNotNull();
+            Map<String, JSONItem<? extends Item, APIDecorator>> references = propertyAPIDecorator.getReferences();
+            assertThat(references).hasSize(1);
+            assertThat(references).containsKey(Mocks.NODE_ID + "2");
+            assertThat(references.get(Mocks.NODE_ID + "2") instanceof JSONNode);
+            JSONNode referencedNode = (JSONNode) references.get(Mocks.NODE_ID + "2");
+            assertThat(referencedNode.getId()).isEqualTo(Mocks.NODE_ID + "2");
+            assertThat(referencedNode.getName()).isEqualTo(Mocks.NODE_NAME + "2");
+
+            // now let's validate the multi-valued reference case
+            jsonProperty = jsonNode.getProperty(Mocks.REF_PROPERTY + "2");
+            assertThat(jsonProperty).isNotNull();
+            assertThat(jsonProperty.isMultiValued()).isTrue();
+            assertThat(jsonProperty.getValue() instanceof String[]);
+            assertThat(jsonProperty.getDecorator()).isNotNull();
+            assertThat(jsonProperty.getDecorator() instanceof APIDecorator);
+            propertyAPIDecorator = (APIDecorator) jsonProperty.getDecorator();
+            assertThat(propertyAPIDecorator.getReferences()).isNotNull();
+            references = propertyAPIDecorator.getReferences();
+            assertThat(references).hasSize(2);
+            assertThat(references).containsKey(Mocks.NODE_ID + "2");
+            assertThat(references.get(Mocks.NODE_ID + "2") instanceof JSONNode);
+            assertThat(references).containsKey(Mocks.NODE_ID + "3");
+            assertThat(references.get(Mocks.NODE_ID + "3") instanceof JSONNode);
+            referencedNode = (JSONNode) references.get(Mocks.NODE_ID + "2");
+            assertThat(referencedNode.getId()).isEqualTo(Mocks.NODE_ID + "2");
+            assertThat(referencedNode.getName()).isEqualTo(Mocks.NODE_NAME + "2");
+            referencedNode = (JSONNode) references.get(Mocks.NODE_ID + "3");
+            assertThat(referencedNode.getId()).isEqualTo(Mocks.NODE_ID + "3");
+            assertThat(referencedNode.getName()).isEqualTo(Mocks.NODE_NAME + "3");
+
+        } finally {
+            // we restore the saved value to make sure we don't mess it up for other tests.
+            API.setResolveReferences(oldResolveReferencesValue);
+        }
+
+    }
+
+    @Test
+    public void testNoLinks() throws RepositoryException {
+
+        // we save the old value to make sure we don't mess it up for other tests.
+        Boolean oldOutputLinks = API.setOutputLinks(false);
+
+        try {
+            context = Mocks.createMockUriInfo(true);
+
+            final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE, 2, 2, 2);
+            final Response response = accessor.perform(node, (String) null, API.READ, null, context);
+
+            assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+            final Object entity = response.getEntity();
+            assertThat(entity instanceof JSONNode);
+            JSONNode jsonNode = (JSONNode) entity;
+
+            assertThat(jsonNode.getDecorator()).isNull();
+
+        } finally {
+            // we restore the saved value to make sure we don't mess it up for other tests.
+            API.setOutputLinks(oldOutputLinks);
+        }
+
     }
 
     @Override

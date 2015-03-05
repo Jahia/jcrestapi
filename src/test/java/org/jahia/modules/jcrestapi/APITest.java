@@ -86,6 +86,7 @@ import org.jahia.modules.json.Names;
 import org.junit.Test;
 
 import static com.jayway.restassured.RestAssured.expect;
+import static com.jayway.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.*;
@@ -194,6 +195,34 @@ public class APITest extends JerseyTest {
                         "type", equalTo("rep:system")
                 )
                 .when().get(getURLByPath("jcr__system"));
+    }
+
+    @Test
+    public void testQuery() {
+        given()
+                .contentType("application/json")
+                .body("{\"query\": \"SELECT * FROM [nt:base]\"}")
+                .expect()
+                .statusCode(SC_OK)
+                .contentType("application/hal+json")
+                .body(".", hasSize(188))
+                .body("[0].path", equalTo("/"))
+                .when()
+                .post(generateURL(API_DEFAULT_EN + "query"));
+
+        given()
+                .contentType("application/json")
+                .body("{\"query\": \"SELECT * FROM [nt:base]\"," +
+                        "\"limit\": 10, " +
+                        "\"offset\" : 1}")
+                .expect()
+                .statusCode(SC_OK)
+                .contentType("application/hal+json")
+                .body(".", hasSize(10))
+                .body("[0].path", equalTo("/jcr:system"))
+                .when()
+                .post(generateURL(API_DEFAULT_EN + "query"));
+
     }
 
     private String generateURL(String path) {

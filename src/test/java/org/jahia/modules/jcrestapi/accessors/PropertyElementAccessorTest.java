@@ -77,6 +77,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.ws.rs.core.Response;
 
+import org.apache.jackrabbit.value.StringValue;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.links.APIDecorator;
@@ -94,7 +95,7 @@ public class PropertyElementAccessorTest extends ElementAccessorTest<JSONPropert
     protected void prepareNodeIfNeeded(Node node, String newChildName) throws RepositoryException {
         // property definition for newChildName needs to be added to the parent's property definitions before we start testing
         final NodeType nodeType = node.getPrimaryNodeType();
-        Mocks.createPropertyDefinition(newChildName, nodeType, nodeType.getPropertyDefinitions());
+        Mocks.createPropertyDefinition(newChildName, nodeType, StringValue.TYPE, false, nodeType.getPropertyDefinitions());
     }
 
     @Override
