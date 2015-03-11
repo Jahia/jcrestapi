@@ -91,15 +91,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
-import org.jahia.modules.json.JSONConstants;
-import org.jahia.modules.json.JSONDecorator;
-import org.jahia.modules.json.JSONItem;
-import org.jahia.modules.json.JSONMixin;
-import org.jahia.modules.json.JSONNode;
-import org.jahia.modules.json.JSONProperty;
-import org.jahia.modules.json.JSONSubElementContainer;
-import org.jahia.modules.json.JSONVersion;
-import org.jahia.modules.json.Names;
+import org.jahia.modules.json.*;
 import org.jahia.modules.json.jcr.SessionAccess;
 
 /**
@@ -114,10 +106,16 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
     private Map<String, JSONLink> links;
     private Map<String, JSONItem<? extends Item, APIDecorator>> references;
 
-    private final boolean resolveReferences = API.shouldResolveReferences();
-    private final boolean outputLinks = API.shouldOutputLinks();
+    private final boolean resolveReferences;
+    private final boolean outputLinks;
 
     public APIDecorator() {
+        this(API.shouldOutputLinks(), API.shouldResolveReferences());
+    }
+
+    public APIDecorator(boolean outputLinks, boolean resolveReferences) {
+        this.outputLinks = outputLinks;
+        this.resolveReferences = resolveReferences;
     }
 
     public APIDecorator(String uri) {
@@ -278,7 +276,7 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
                 references = new HashMap<String, JSONItem<? extends Item, APIDecorator>>(7);
             }
 
-            references.put(node.getIdentifier(), APIObjectFactory.getInstance().createNode(node, 0));
+            references.put(node.getIdentifier(), APIObjectFactory.getInstance().createAPINode(node, Filter.OUTPUT_ALL, API.shouldIncludeFullChildren(), false, outputLinks));
         }
     }
 

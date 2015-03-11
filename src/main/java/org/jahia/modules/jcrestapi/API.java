@@ -159,6 +159,12 @@ public class API {
             return true;
         }
     };
+    private static final ThreadLocal<Boolean> includeFullChildren = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
     static {
@@ -206,9 +212,7 @@ public class API {
      * @return the old value (before the set) of the ThreadLocal boolean
      */
     public static Boolean setResolveReferences(Boolean newResolveReferences) {
-        Boolean oldResolveReferences = resolveReferences.get();
-        resolveReferences.set(newResolveReferences);
-        return oldResolveReferences;
+        return setThreadLocalFlag(resolveReferences, newResolveReferences);
     }
 
     /**
@@ -218,9 +222,13 @@ public class API {
      * @return the old value (before the set) of the ThreadLocal boolean
      */
     public static Boolean setOutputLinks(Boolean newOutputLinks) {
-        Boolean oldOutputLinks = outputLinks.get();
-        outputLinks.set(newOutputLinks);
-        return oldOutputLinks;
+        return setThreadLocalFlag(outputLinks, newOutputLinks);
+    }
+
+    private static boolean setThreadLocalFlag(ThreadLocal<Boolean> local, boolean newValue) {
+        boolean old = local.get();
+        local.set(newValue);
+        return old;
     }
 
     /**
@@ -368,6 +376,7 @@ public class API {
 
         resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
         outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
+        includeFullChildren.set(Utils.getFlagValueFrom(context, INCLUDE_FULL_CHILDREN));
 
         final String idOrPath = processor.getIdOrPath();
         final String subElementType = processor.getSubElementType();
@@ -393,6 +402,7 @@ public class API {
         } finally {
             resolveReferences.set(false);
             outputLinks.set(true);
+            includeFullChildren.set(false);
             closeSession(session);
         }
     }
@@ -435,6 +445,10 @@ public class API {
 
     public static boolean shouldOutputLinks() {
         return outputLinks.get();
+    }
+
+    public static boolean shouldIncludeFullChildren() {
+        return includeFullChildren.get();
     }
 
     protected static interface NodeAccessor {

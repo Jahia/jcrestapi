@@ -264,7 +264,7 @@ public class Paths extends API {
 
                 session.save();
 
-                final APINode apiNode = getFactory().createAPINode(childNode, Filter.OUTPUT_ALL, 0);
+                final APINode apiNode = getFactory().createAPINode(childNode, Filter.OUTPUT_ALL, false, false, true);
                 // since IE attempts to download the return JSON, we state that we produce plain/text and return a String representation of the JSONNode instead
                 final String jsonString = apiNode.asJSONString();
                 final Response.ResponseBuilder builder = isUpdate ? Response.ok(jsonString) : Response.created(context.getAbsolutePath()).entity(jsonString);

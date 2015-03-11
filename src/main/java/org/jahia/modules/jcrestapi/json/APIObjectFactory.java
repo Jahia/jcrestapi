@@ -53,15 +53,20 @@ import org.jahia.modules.json.JSONObjectFactory;
 public class APIObjectFactory extends JSONObjectFactory<APIDecorator> {
     @Override
     public APIDecorator createDecorator() {
-        if (API.shouldOutputLinks() || API.shouldResolveReferences()) {
-            return new APIDecorator();
+        return createDecorator(API.shouldResolveReferences(), API.shouldOutputLinks());
+    }
+
+
+    private APIDecorator createDecorator(boolean resolveReferences, boolean outputLinks) {
+        if (outputLinks || resolveReferences) {
+            return new APIDecorator(outputLinks, resolveReferences);
         } else {
             return null;
         }
     }
 
-    public APINode createAPINode(Node node, Filter filter, int depth) throws RepositoryException {
-        return new APINode(createDecorator(), node, filter, depth);
+    public APINode createAPINode(Node node, Filter filter, boolean includeFullChildren, boolean resolveReferences, boolean outputLinks) throws RepositoryException {
+        return new APINode(createDecorator(resolveReferences, outputLinks), node, filter, includeFullChildren ? 1 : 0);
     }
 
     // Initialization on demand holder idiom: thread-safe singleton initialization
