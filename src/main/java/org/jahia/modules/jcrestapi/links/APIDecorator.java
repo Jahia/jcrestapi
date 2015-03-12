@@ -230,7 +230,7 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
 
     @Override
     public APIDecorator newInstance() {
-        return new APIDecorator();
+        return new APIDecorator(outputLinks, resolveReferences);
     }
 
     public void initFrom(JSONProperty jsonProperty) throws RepositoryException {
@@ -240,20 +240,23 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
                 if (jsonProperty.isMultiValued()) {
                     final String[] values = jsonProperty.getValueAsStringArray();
                     String[] links = null;
-                    if (outputLinks) {
-                        links = new String[values.length];
-                    }
-
-                    for (int i = 0; i < values.length; i++) {
-                        final String val = values[i];
+                    final int valuesNb = values.length;
+                    if (valuesNb > 0) {
                         if (outputLinks) {
-                            links[i] = getTargetLink(val, jsonProperty.isPath());
+                            links = new String[valuesNb];
                         }
-                        addReferencesIfNeeded(val);
-                    }
 
-                    if (outputLinks) {
-                        addLink(JSONLink.createLink(API.TARGET, links));
+                        for (int i = 0; i < valuesNb; i++) {
+                            final String val = values[i];
+                            if (outputLinks) {
+                                links[i] = getTargetLink(val, jsonProperty.isPath());
+                            }
+                            addReferencesIfNeeded(val);
+                        }
+
+                        if (outputLinks) {
+                            addLink(JSONLink.createLink(API.TARGET, links));
+                        }
                     }
                 } else {
                     final String value = jsonProperty.getValueAsString();
