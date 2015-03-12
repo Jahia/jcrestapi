@@ -206,23 +206,31 @@ public class API {
     }
 
     /**
-     * Sets the value of the ThreadLocal boolean used to resolve the node reference when generating the JSON output
-     * nodes.
-     * @param newResolveReferences the new value for the current ThreadLocal boolean
-     * @return the old value (before the set) of the ThreadLocal boolean
+     * Specifies whether the API should resolve node references in properties when generating the node representations. This status is only valid for the current Thread.
+     * @param newResolveReferences <code>true</code> if the API should resolve the references in properties, <code>false</code> otherwise
+     * @return the status of reference resolving as it was before this method was called
      */
-    public static Boolean setResolveReferences(Boolean newResolveReferences) {
+    public static boolean setResolveReferences(boolean newResolveReferences) {
         return setThreadLocalFlag(resolveReferences, newResolveReferences);
     }
 
     /**
-     * Sets the value of the ThreadLocal boolean used to resolve the output the HATEOAS links when generating the JSON
-     * output nodes.
-     * @param newOutputLinks the new value for the current ThreadLocal boolean
-     * @return the old value (before the set) of the ThreadLocal boolean
+     * Specifies whether the API should generate HATEOAS links in the node representations. This status is only valid for the current Thread.
+     * @param newOutputLinks <code>true</code> if the API should output HATEOAS links, <code>false</code> otherwise
+     * @return the status of links generation as it was before this method was called
      */
-    public static Boolean setOutputLinks(Boolean newOutputLinks) {
+    public static boolean setOutputLinks(boolean newOutputLinks) {
         return setThreadLocalFlag(outputLinks, newOutputLinks);
+    }
+
+    /**
+     * Specifies whether the API should include full children when generating the node representations. This status is only valid for the current Thread.
+     *
+     * @param newIncludeFullChildren <code>true</code> if the API should generate a complete representation of children, <code>false</code> otherwise
+     * @return the status of the children generation as it was before this method was called
+     */
+    public static boolean setIncludeFullChildren(boolean newIncludeFullChildren) {
+        return setThreadLocalFlag(includeFullChildren, newIncludeFullChildren);
     }
 
     private static boolean setThreadLocalFlag(ThreadLocal<Boolean> local, boolean newValue) {

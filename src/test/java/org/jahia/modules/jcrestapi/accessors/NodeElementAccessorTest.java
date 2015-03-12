@@ -72,7 +72,6 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.util.Map;
 import javax.jcr.Item;
@@ -82,7 +81,6 @@ import javax.jcr.Value;
 import javax.ws.rs.core.Response;
 
 import org.apache.jackrabbit.value.ReferenceValue;
-import org.apache.jackrabbit.value.WeakReferenceValue;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
@@ -141,17 +139,23 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
 
     @Test
     public void testResolveReferences() throws RepositoryException {
+        testReferenceResolving(false);
+    }
+
+
+    private void testReferenceResolving(boolean withFullChildren) throws RepositoryException {
         // we save the old value to make sure we don't mess it up for other tests.
-        Boolean oldResolveReferencesValue = API.setResolveReferences(true);
+        boolean oldResolveReferencesValue = API.setResolveReferences(true);
+        boolean oldIncludeChildren = API.setIncludeFullChildren(withFullChildren);
 
         try {
-            context = Mocks.createMockUriInfo(true);
+            context = Mocks.createMockUriInfo(withFullChildren);
 
             final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE, 2, 2, 2);
             final Node secondNode = Mocks.createMockNode(Mocks.NODE_NAME + "2", Mocks.NODE_ID + "2", Mocks.PATH_TO_NODE + "2", 2, 2, 2);
             final Node thirdNode = Mocks.createMockNode(Mocks.NODE_NAME + "3", Mocks.NODE_ID + "3", Mocks.PATH_TO_NODE + "3", 2, 2, 2);
 
-            Value[] referenceValues = new Value[] {
+            Value[] referenceValues = new Value[]{
                     new ReferenceValue(secondNode),
                     new ReferenceValue(thirdNode)
             };
@@ -187,6 +191,25 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
             assertThat(referencedNode.getId()).isEqualTo(Mocks.NODE_ID + "2");
             assertThat(referencedNode.getName()).isEqualTo(Mocks.NODE_NAME + "2");
 
+            final Map<String, JSONNode> children = referencedNode.getChildren();
+            if (withFullChildren) {
+                assertThat(children).isNotNull();
+                assertThat(children.size()).isEqualTo(2);
+                JSONNode child = children.get(Mocks.CHILD + '0');
+                assertThat(child).isNotNull();
+                assertThat(child.getId()).isEqualTo(Mocks.CHILD_ID + '0');
+
+                child = children.get(Mocks.CHILD + '1');
+                assertThat(child).isNotNull();
+                assertThat(child.getId()).isEqualTo(Mocks.CHILD_ID + '1');
+
+                // check that we only resolve at one-level depth
+                final Map greatChildren = child.getChildren();
+                assertThat(greatChildren).isNull();
+            } else {
+                assertThat(children).isNull();
+            }
+
             // now let's validate the multi-valued reference case
             jsonProperty = jsonNode.getProperty(Mocks.REF_PROPERTY + "2");
             assertThat(jsonProperty).isNotNull();
@@ -212,8 +235,13 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         } finally {
             // we restore the saved value to make sure we don't mess it up for other tests.
             API.setResolveReferences(oldResolveReferencesValue);
+            API.setIncludeFullChildren(oldIncludeChildren);
         }
+    }
 
+    @Test
+    public void includeFullChildrenShouldWorkWithReferenceResolving() throws RepositoryException {
+        testReferenceResolving(true);
     }
 
     @Test
