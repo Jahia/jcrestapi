@@ -146,6 +146,7 @@ public class API {
     public static final String INCLUDE_FULL_CHILDREN = "includeFullChildren";
     public static final String RESOLVE_REFERENCES = "resolveReferences";
     public static final String NO_LINKS = "noLinks";
+    public static final String CHILDREN_NODETYPE_FILTER = "childrenNodeTypes";
 
     private static final ThreadLocal<Boolean> resolveReferences = new ThreadLocal<Boolean>() {
         @Override
@@ -273,7 +274,7 @@ public class API {
                 final NodeIterator nodes = queryResult.getNodes();
                 final List<JSONNode> result = new LinkedList<JSONNode>();
                 while (nodes.hasNext()) {
-                    JSONNode node = getFactory().createNode(nodes.nextNode(), 1);
+                    JSONNode node = getFactory().createNode(nodes.nextNode(), Utils.getFilter(context), 1);
                     result.add(node);
                 }
 

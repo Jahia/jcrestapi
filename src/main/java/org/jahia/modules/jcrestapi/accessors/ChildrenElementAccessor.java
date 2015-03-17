@@ -90,12 +90,12 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren<APIDec
     protected JSONChildren<APIDecorator> getSubElementContainer(Node node, UriInfo context) throws RepositoryException {
         int depth = Utils.getDepthFrom(context, 1);
 
-        return getFactory().createChildren(getParentFrom(node), node, Filter.OUTPUT_ALL, depth);
+        return getFactory().createChildren(getParentFrom(node), node, Utils.getFilter(context), depth);
     }
 
     @Override
     protected JSONNode<APIDecorator> getSubElement(Node node, String subElement, UriInfo context) throws RepositoryException {
-        return getFactory().createNode(node.getNode(subElement), 1);
+        return getFactory().createNode(node.getNode(subElement), Utils.getFilter(context), 1);
     }
 
     @Override

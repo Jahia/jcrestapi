@@ -124,7 +124,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer<APID
         PowerMockito.when(SessionAccess.getCurrentSession()).thenReturn(new SessionAccess.SessionInfo(mockSession, WORKSPACE, LANGUAGE));
 
         // set base URI for absolute links
-        context = Mocks.createMockUriInfo(false);
+        context = Mocks.createMockUriInfo(false, null);
         URIUtils.setBaseURI(context.getBaseUri().toASCIIString());
     }
 

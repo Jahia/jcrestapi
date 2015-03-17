@@ -71,7 +71,13 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.jahia.modules.json.Filter;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
@@ -94,6 +100,53 @@ public class Utils {
 
     public static int getDepthFrom(UriInfo context, int defaultDepth) {
         return getFlagValueFrom(context, API.INCLUDE_FULL_CHILDREN) ? defaultDepth + 1 : defaultDepth;
+    }
+
+    public static class ChildrenNodeTypeFilter extends Filter.DefaultFilter {
+
+        Set<String> acceptedChildrenNodeTypes;
+
+        public ChildrenNodeTypeFilter(Set<String> acceptedChildrenNodeTypes) {
+            this.acceptedChildrenNodeTypes = acceptedChildrenNodeTypes;
+        }
+
+        @Override
+        public boolean acceptChild(Node child) {
+            for (String acceptedChildrenNodeType : acceptedChildrenNodeTypes) {
+                try {
+                    if (child.isNodeType(acceptedChildrenNodeType)) {
+                        return true;
+                    }
+                } catch (RepositoryException e) {
+                    e.printStackTrace();
+                }
+            }
+            return false;
+        }
+    }
+
+    public static Filter getFilter(UriInfo context) {
+        final MultivaluedMap<String, String> queryParameters = context.getQueryParameters();
+        if (queryParameters != null) {
+            final List<String> childrenNodeTypeFilterValues = queryParameters.get(API.CHILDREN_NODETYPE_FILTER);
+            if (childrenNodeTypeFilterValues != null) {
+                if (!childrenNodeTypeFilterValues.isEmpty()) {
+                    Set<String> childrenNodeTypes = new HashSet<String>();
+                    for (String childrenNodeTypeFilterValue : childrenNodeTypeFilterValues) {
+                        String[] childrenNodeTypeValues = childrenNodeTypeFilterValue.split(",");
+                        if (childrenNodeTypeValues != null && childrenNodeTypeValues.length > 0) {
+                            for (String childrenNodeTypeValue : childrenNodeTypeValues) {
+                                childrenNodeTypes.add(childrenNodeTypeValue);
+                            }
+                        }
+                    }
+                    if (childrenNodeTypes.size() > 0) {
+                        return new ChildrenNodeTypeFilter(childrenNodeTypes);
+                    }
+                }
+            }
+        }
+        return Filter.OUTPUT_ALL;
     }
 
     public static boolean getFlagValueFrom(UriInfo context, String flagName) {

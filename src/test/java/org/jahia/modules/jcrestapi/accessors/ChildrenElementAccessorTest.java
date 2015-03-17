@@ -140,7 +140,7 @@ public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildre
 
     @Test
     public void usingFullChildrenShouldIncludeCompleteChildren() throws RepositoryException {
-        context = Mocks.createMockUriInfo(true);
+        context = Mocks.createMockUriInfo(true, null);
 
         final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE, 2, 2, 2);
         final Response response = accessor.perform(node, (String) null, API.READ, null, context);

@@ -85,6 +85,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.jackrabbit.value.ReferenceValue;
 import org.apache.jackrabbit.value.StringValue;
 import org.jahia.api.Constants;
@@ -180,6 +181,8 @@ public class Mocks {
             }
         });
         when(node.isNodeType(Constants.MIX_VERSIONABLE)).thenReturn(true);
+        when(node.isNodeType(Constants.NT_BASE)).thenReturn(true);
+        when(node.isNodeType(nodeType.getName())).thenReturn(true);
         when(node.getName()).thenReturn(name);
         when(node.getMixinNodeTypes()).thenReturn(finalMixins);
         when(node.getProperties()).then(new Answer<PropertyIterator>() {
@@ -341,13 +344,17 @@ public class Mocks {
         return propertyDefinition;
     }
 
-    public static UriInfo createMockUriInfo(boolean fullChildren) {
+    public static UriInfo createMockUriInfo(boolean fullChildren, Set<String> childrenNodeTypes) {
         final UriInfo info = mock(UriInfo.class);
         try {
             when(info.getBaseUri()).thenReturn(new URI(BASE_URI));
             MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<String, String>();
             if (fullChildren) {
                 queryParams.putSingle(API.INCLUDE_FULL_CHILDREN, "");
+            }
+            if (childrenNodeTypes != null) {
+                String childrenNodeTypeFilterValue = StringUtils.join(childrenNodeTypes, ",");
+                queryParams.putSingle(API.CHILDREN_NODETYPE_FILTER, childrenNodeTypeFilterValue);
             }
 
             when(info.getQueryParameters()).thenReturn(queryParams);

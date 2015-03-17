@@ -73,7 +73,9 @@ package org.jahia.modules.jcrestapi.accessors;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -149,7 +151,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         boolean oldIncludeChildren = API.setIncludeFullChildren(withFullChildren);
 
         try {
-            context = Mocks.createMockUriInfo(withFullChildren);
+            context = Mocks.createMockUriInfo(withFullChildren, null);
 
             final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE, 2, 2, 2);
             final Node secondNode = Mocks.createMockNode(Mocks.NODE_NAME + "2", Mocks.NODE_ID + "2", Mocks.PATH_TO_NODE + "2", 2, 2, 2);
@@ -251,7 +253,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
         Boolean oldOutputLinks = API.setOutputLinks(false);
 
         try {
-            context = Mocks.createMockUriInfo(true);
+            context = Mocks.createMockUriInfo(true, null);
 
             final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE, 2, 2, 2);
             final Response response = accessor.perform(node, (String) null, API.READ, null, context);
@@ -267,6 +269,42 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
             // we restore the saved value to make sure we don't mess it up for other tests.
             API.setOutputLinks(oldOutputLinks);
         }
+
+    }
+
+    @Test
+    public void testNodeTypeFilter() throws RepositoryException {
+
+        Set<String> nodeTypes = new HashSet<String>();
+        nodeTypes.add("nt:base");
+
+        context = Mocks.createMockUriInfo(true, nodeTypes);
+
+        final Node node = Mocks.createMockNode(Mocks.NODE_NAME, Mocks.NODE_ID, Mocks.PATH_TO_NODE, 2, 2, 2);
+        Response response = accessor.perform(node, (String) null, API.READ, null, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+        Object entity = response.getEntity();
+        assertThat(entity instanceof JSONNode);
+        JSONNode jsonNode = (JSONNode) entity;
+
+        assertThat(jsonNode).isNotNull();
+        assertThat(jsonNode.getChildren()).hasSize(2);
+
+        nodeTypes.clear();
+        nodeTypes.add("jnt:nonExistingType");
+
+        context = Mocks.createMockUriInfo(true, nodeTypes);
+
+        response = accessor.perform(node, (String) null, API.READ, null, context);
+
+        assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
+        entity = response.getEntity();
+        assertThat(entity instanceof JSONNode);
+        jsonNode = (JSONNode) entity;
+
+        assertThat(jsonNode).isNotNull();
+        assertThat(jsonNode.getChildren()).hasSize(0);
 
     }
 

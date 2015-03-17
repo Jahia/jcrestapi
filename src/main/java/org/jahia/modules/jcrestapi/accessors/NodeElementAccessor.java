@@ -91,7 +91,7 @@ import org.jahia.modules.json.Names;
 public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer<APIDecorator>, JSONNode<APIDecorator>, JSONNode> {
     @Override
     protected Object getElement(Node node, String subElement, UriInfo context) throws RepositoryException {
-        return getFactory().createNode(node, Utils.getDepthFrom(context, 1));
+        return getFactory().createNode(node, Utils.getFilter(context), Utils.getDepthFrom(context, 1));
     }
 
     @Override
