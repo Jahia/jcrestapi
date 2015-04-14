@@ -39,8 +39,28 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.junit.Test;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * @author Christophe Laprun
  */
 public class UtilsTest {
+    @Test
+    public void splitShouldWorkCorrectly() {
+        final Set<String> result = new HashSet<String>();
+        Collections.addAll(result, "foo", "bar", "baz");
+
+        assertThat(Utils.split("foo,bar,baz")).isEqualTo(result);
+        assertThat(Utils.split("foo   ,bar ,    baz   ,,")).isEqualTo(result);
+        assertThat(Utils.split(",,,baz, ,      , ,  ,   , bar, foo,")).isEqualTo(result);
+
+        assertThat(Utils.split("")).isEmpty();
+        assertThat(Utils.split(",,, ,,,        ,,    ,       ,,   ,    ,     ,,   ")).isEmpty();
+    }
 }

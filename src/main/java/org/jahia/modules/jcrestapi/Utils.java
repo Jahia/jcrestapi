@@ -73,6 +73,7 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.json.Filter;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -96,6 +97,35 @@ public class Utils {
      */
     public static boolean exists(String string) {
         return string != null && !string.isEmpty();
+    }
+
+    public static Set<String> split(String string) {
+        if(!exists(string)) {
+            return Collections.emptySet();
+        }
+
+        final Set<String> result = new HashSet<String>();
+        int comma = string.indexOf(',');
+        int previousComma = 0;
+        final int length = string.length();
+        while(comma >= 0 && comma < length) {
+            addSubstringToSetIfNotEmpty(string, result, previousComma, comma);
+            previousComma = comma + 1;
+            comma = string.indexOf(',', previousComma);
+        }
+
+        if(previousComma < length) {
+            addSubstringToSetIfNotEmpty(string, result, previousComma, length);
+        }
+
+        return result;
+    }
+
+    private static void addSubstringToSetIfNotEmpty(String string, Set<String> result, int begin, int end) {
+        final String trimmed = string.substring(begin, end).trim();
+        if (!trimmed.isEmpty()) {
+            result.add(trimmed);
+        }
     }
 
     public static int getDepthFrom(UriInfo context, int defaultDepth) {
@@ -133,14 +163,9 @@ public class Utils {
                 if (!childrenNodeTypeFilterValues.isEmpty()) {
                     Set<String> childrenNodeTypes = new HashSet<String>();
                     for (String childrenNodeTypeFilterValue : childrenNodeTypeFilterValues) {
-                        String[] childrenNodeTypeValues = childrenNodeTypeFilterValue.split(",");
-                        if (childrenNodeTypeValues != null && childrenNodeTypeValues.length > 0) {
-                            for (String childrenNodeTypeValue : childrenNodeTypeValues) {
-                                childrenNodeTypes.add(childrenNodeTypeValue);
-                            }
-                        }
+                        childrenNodeTypes.addAll(split(childrenNodeTypeFilterValue));
                     }
-                    if (childrenNodeTypes.size() > 0) {
+                    if (!childrenNodeTypes.isEmpty()) {
                         return new ChildrenNodeTypeFilter(childrenNodeTypes);
                     }
                 }
