@@ -118,7 +118,7 @@ public class Utils {
                         return true;
                     }
                 } catch (RepositoryException e) {
-                    e.printStackTrace();
+                    return false;
                 }
             }
             return false;
