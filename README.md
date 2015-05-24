@@ -25,6 +25,16 @@ manipulate resources. In particular, the protocol defines methods (or verbs) cor
 For a good (and not overly complex) overview of REST, please see
 [Jos Dirksen's REST: From GET to HATEOAS presentation](http://www.slideshare.net/josdirksen/rest-from-get-to-hateoas).
 
+### Version history
+
+- v1.0: initial release
+- v1.1: 
+    - `PUT` and `DELETE` methods are now supported when operating on nodes via their path
+    - added `includeFullChildren`, `resolveReferences` and `noLinks` flags that can be passed as URI query parameters to control some aspects of the representations
+    - added new `query` endpoint to perform `JCR-SQL2` queries on the repository and retrieve matching nodes
+    - order of children is now properly maintained
+    - it is now possible to filter children to retrieve by providing a list of accepted child node types concatenated by commas
+
 ### Goals
 
 The goals of this project are as follows:
@@ -178,6 +188,10 @@ To sum up, the `_links` section will look similarly to the following example:
 
 // todo: examine whether it's worth using the JSON Hyper Schema specification for links: http://json-schema.org/latest/json-schema-hypermedia.html
 
+As of version 1.1 of the API, we've added the option not to output links if your client application has no need for them.
+This is accomplished by providing a query parameter named `noLinks` to any API URI. If this query parameter is
+present in the URI, its value is assumed to be `true` unless its value is `false`, which corresponds to the default
+behavior where links are output. Any other value will be understood as `true`.
 
 ### Node representation
 
@@ -337,6 +351,11 @@ that information can be inferred from the `type` field, this makes client proces
 If a property is a reference (its `reference` field is set to `true`), an additional `target` link is added to the `_links`
 subsection, providing the URI identifying the resource identified by the path or reference value of the property.
 
+Additionally, if a property is a reference and the `resolveReferences` flag is set in the URI (using a query parameter appended to the URI), 
+another `references` subsection will be added to the property's representation containing basic information about the node(s) being referenced
+by the property value. Each entry in the `references` object is identified using the identifier of the node being referenced. Note also that 
+the `resolveReferences` flag works properly with the `includeFullChildren` one. See the example below for more details.
+
 #### Examples
 
 An example of the `jcr:uuid` property of a `/sites/mySite` node. `jcr:uuid` is defined by the JCR specification as
@@ -397,6 +416,49 @@ represented, demonstrating the `target` field in the `_links` section:
         ...
     }
 
+An example showing how the node pointed at by a reference property `j:node` is resolved in the `references` subsection of the property's representation 
+when the `resolveReferences` flag is used in the URI:  
+
+    "_links": { ... },
+    "references": {
+        "5c82bcdc-b837-4ee0-a15a-c8d8d48a0916": {
+            _links: { ... },
+            name: "banner-earth.png",
+            type: "jnt:file",
+            path: "/sites/ACMESPACE/files/Images/Banner-home-slider/banner-earth.png",
+            id: "5c82bcdc-b837-4ee0-a15a-c8d8d48a0916"
+        }
+    },
+    "name": "j:node",
+    "type": "WeakReference",
+    "path": "/sites/ACMESPACE/home/main/foo/j:node",
+    "multiValued": false,
+    "value": "5c82bcdc-b837-4ee0-a15a-c8d8d48a0916",
+    "reference": true
+    
+An example showing how the node pointed at by a reference property `j:node` is resolved in the `references` subsection of the property's representation 
+when the `resolveReferences` flag is used in the URI, in conjunction with the `includeFullChildren` flag:  
+
+    "_links": { ... },
+    "references": {
+        5c82bcdc-b837-4ee0-a15a-c8d8d48a0916: {
+            _links: { ... },
+            "name": "banner-earth.png",
+            "type": "jnt:file",
+            "path": "/sites/ACMESPACE/files/Images/Banner-home-slider/banner-earth.png",
+            "mixins": { ... },
+            "versions": { ... },
+            "properties": { ... },
+            "children": { ... },
+            "id": "5c82bcdc-b837-4ee0-a15a-c8d8d48a0916"
+        }
+    },
+    "name": "j:node",
+    "type": "WeakReference",
+    "path": "/sites/ACMESPACE/home/main/foo/j:node",
+    "multiValued": false,
+    "value": "5c82bcdc-b837-4ee0-a15a-c8d8d48a0916",
+    "reference": true
 
 ### <a name="mixins"/>Mixins representation
 
@@ -539,6 +601,20 @@ its primary node type and its associated URIs (for both associated node, node ty
             "href": "<URI identifying the resource associated with this node's type>"
         }
     }
+    
+As of version 1.1 of the API, we've added the option to include a full representation for each child instead
+of simply outputting minimal information as above. This means that now children representations can now be 
+equivalent to that of nodes. This fuller representation is, however, currently limited to only one level of
+hierarchy, meaning that children of children will use the regular minimal representation. This feature is 
+activated by providing the `includeFullChildren` query parameter on any API URI. If present, this query
+parameter is assumed to have a `true` value, unless a `false` value is explicitly provided, which corresponds
+to the default behavior. Any other value is understood to be `true`.
+
+Also as of version 1.1 of the API, we've added the option to filter children that are returned when asking for
+a node's children. This is accomplished by providing the `childrenNodeTypes` query parameter which value is a
+concatenation of accepted node type names, separated by a comma (','). If this query parameter is present and 
+its value corresponds to a valid list of node type names, only children of the corresponding node type(s) will
+be output in the node's representation.
 
 #### Example
 
@@ -590,6 +666,41 @@ within the context of the enclosing node `children` element:
         }
     },
     // ...
+    
+If the `includeFullChildren` flag is provided on the URI, we would get the following representation for the `tags` child:
+
+    // ...
+    "children" : {
+        "tags" : {
+            "_links" : { ... },
+            "path": "/sites/mySite/tags",
+            "name" : "tags",
+            "type" : "jnt:tagList",
+            "id" : "e3a6e425-0afa-490b-a319-514db66eea04",
+            "mixins": { ... },
+            "versions": { ... },
+            "properties": { ... },
+            "children": { ... } // children would only contain minimal information as "expanding" children is limited to one hierarchic level
+        },
+    // ...
+    "_links" : {
+        "absolute" : {
+            "rel" : "absolute",
+            "href" : "http://localhost:8080/modules/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67/children"
+        },
+        "parent" : {
+            "rel" : "parent",
+            "href" : "/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67"
+        },
+        "self" : {
+            "rel" : "self",
+            "href" : "/api/jcr/v1/default/en/nodes/49bf6a13-96a8-480a-ae8a-2a82136d1c67/children"
+        }
+    },
+    // ...
+    
+Assuming we have a node `aNode` with children of type `ns:foo`, `ns:bar` and `ns:baz`, adding `?childrenNodeTypes=ns:foo,ns:bar` to the 
+node's URI will only return the `ns:foo` and `ns:bar` children, omitting any `ns:baz` ones. 
 
 #### Special considerations for same-name siblings
 
