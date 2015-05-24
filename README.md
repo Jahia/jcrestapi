@@ -1047,3 +1047,31 @@ included)
 `GET <basecontext>/default/en/types/genericnt__event?nameContains=rest&offset=5&limit=10` will retrieve at most 10 `genericnt:event` nodes starting with the 6th one and which name
 contains `rest`.
 
+### Querying nodes
+
+#### URI template
+`/{workspace}/{language}/query`
+
+#### URI elements
+
+- `query`: path element marking access to the query endpoint
+
+#### Allowed HTTP operations
+
+- `POST`: to query the JCR repository
+
+#### Accepted data
+
+The query endpoint accepts JSON data consisting of the following object structure:
+    
+    { 
+        "query" : <A String representing a valid JCR-SQL2 query>,
+        "limit" : <An optional Integer specifying the maximum number of to retrieve>,
+        "offset": <An optional Integer specifying the starting index of the elements to retrieve to allow for pagination>
+    }
+
+#### Examples
+
+`POST <basecontext>/default/en/query` providing the following body `{query: "SELECT * FROM [nt:base]", limit: 10, offset: 1}` will result in
+retrieving 10 nodes starting with the second one (i.e. bypassing the first one since the offset is not 0).
+
