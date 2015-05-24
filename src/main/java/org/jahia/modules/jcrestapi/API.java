@@ -71,40 +71,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
-import javax.jcr.query.Query;
-import javax.jcr.query.QueryManager;
-import javax.jcr.query.QueryResult;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
-import org.jahia.modules.jcrestapi.accessors.ChildrenElementAccessor;
-import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
-import org.jahia.modules.jcrestapi.accessors.MixinElementAccessor;
-import org.jahia.modules.jcrestapi.accessors.NodeElementAccessor;
-import org.jahia.modules.jcrestapi.accessors.PropertyElementAccessor;
-import org.jahia.modules.jcrestapi.accessors.VersionElementAccessor;
+import org.jahia.modules.jcrestapi.accessors.*;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.jcrestapi.json.JSONQuery;
 import org.jahia.modules.json.JSONConstants;
@@ -115,6 +82,18 @@ import org.jahia.modules.json.jcr.SessionAccess;
 import org.jahia.services.content.JCRSessionFactory;
 import org.jahia.utils.LanguageCodeConverters;
 import org.osgi.service.component.annotations.Component;
+
+import javax.inject.Inject;
+import javax.jcr.*;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.*;
 
 /**
  * The main entry point to the JCR RESTful API.
@@ -460,7 +439,7 @@ public class API {
         return includeFullChildren.get();
     }
 
-    protected static interface NodeAccessor {
+    protected interface NodeAccessor {
         Node getNode(String idOrPath, Session session) throws RepositoryException;
 
         String getType();

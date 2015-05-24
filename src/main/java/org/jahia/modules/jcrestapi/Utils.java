@@ -81,6 +81,10 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Utilities class.
