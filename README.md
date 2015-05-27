@@ -853,6 +853,17 @@ then provide it using the `Authentication` header with each request to the API. 
 You can access the version of the API implementation performing a `GET` on the `<basecontext>/version` URI. This returns plain text information about both the version of the API
 and of the currently running implementation. This can also serve as a quick check to see if the API is currently running or not.
 
+As of version 1.1, if your client requests `application/json` content, you can also retrieve a JSON representation of the version information from that same URI, as follows:
+
+    {
+      "api": <API version>,
+      "module": <API module implementation version>,
+      "commit": {
+        "id": <GIT commit identifier>,
+        "branch": <commit branch name>
+      }
+    }
+
 ### Workspace and language
 
 You can access all the different workspaces and languages available in the Jahia Digital Factory JCR repository. However, you must

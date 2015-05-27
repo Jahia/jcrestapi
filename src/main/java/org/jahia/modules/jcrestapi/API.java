@@ -74,6 +74,7 @@ package org.jahia.modules.jcrestapi;
 import org.jahia.modules.jcrestapi.accessors.*;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.jcrestapi.json.JSONQuery;
+import org.jahia.modules.jcrestapi.json.JSONVersion;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNode;
@@ -107,6 +108,7 @@ public class API {
     public static final String SELF = "self";
     public static final String ABSOLUTE = "absolute";
     private static final String VERSION;
+    private static final JSONVersion JSON_VERSION;
 
     public static final String DELETE = "delete";
     public static final String CREATE_OR_UPDATE = "createOrUpdate";
@@ -147,6 +149,8 @@ public class API {
     };
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
+    public static final String API_VERSION = "1.1";
+
     static {
         Properties props = new Properties();
         try {
@@ -155,7 +159,12 @@ public class API {
             throw new RuntimeException("Could not load jcrestapi.properties.", e);
         }
 
-        VERSION = "API version: 1.1\nModule version:" + props.getProperty("jcrestapi.version");
+        final String moduleVersion = props.getProperty("jcrestapi.version");
+        final String commitId = props.getProperty("jcrestapi.commit.id");
+        final String commitBranch = props.getProperty("jcrestapi.commit.branch");
+        VERSION = "API version: " + API_VERSION + "\nModule version: " + moduleVersion + " (git commit " + commitId + " from "
+                + commitBranch + " branch)";
+        JSON_VERSION = new JSONVersion(moduleVersion, commitId, commitBranch);
 
         ACCESSORS.put(JSONConstants.PROPERTIES, new PropertyElementAccessor());
         ACCESSORS.put(JSONConstants.CHILDREN, new ChildrenElementAccessor());
@@ -227,6 +236,16 @@ public class API {
     @Produces(MediaType.TEXT_PLAIN)
     public String version() {
         return VERSION;
+    }
+
+    /**
+     * Returns a JSONVersion object representing the version information.
+     */
+    @GET
+    @Path("/version")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JSONVersion jsonVersion() {
+        return JSON_VERSION;
     }
 
     @POST
