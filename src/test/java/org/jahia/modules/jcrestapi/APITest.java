@@ -110,10 +110,14 @@ public class APITest extends JerseyTest {
         Properties props = new Properties();
         props.load(API.class.getClassLoader().getResourceAsStream(API.JCRESTAPI_PROPERTIES));
 
-        expect().statusCode(SC_OK)
+        given().accept(ContentType.TEXT)
+                .when()
+                .get(generateURL(API.API_PATH + "/version"))
+                .then()
+                .assertThat()
+                .statusCode(SC_OK)
                 .contentType(MediaType.TEXT_PLAIN)
-                .body(equalTo("API version: " + API.API_VERSION + "\nModule version: " + API.getFullModuleVersion(props)))
-                .when().get(generateURL(API.API_PATH + "/version"));
+                .body(equalTo("API version: " + API.API_VERSION + "\nModule version: " + API.getFullModuleVersion(props)));
     }
 
     @Test
@@ -121,15 +125,14 @@ public class APITest extends JerseyTest {
         Properties props = new Properties();
         props.load(API.class.getClassLoader().getResourceAsStream(API.JCRESTAPI_PROPERTIES));
 
-        given().
-                accept(ContentType.JSON).
-                when().
-                get(generateURL(API.API_PATH + "/version")).
-                then().
-                assertThat().
-                statusCode(SC_OK).
-                contentType(ContentType.JSON).
-                body(
+        given().accept(ContentType.JSON)
+                .when()
+                .get(generateURL(API.API_PATH + "/version"))
+                .then()
+                .assertThat()
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .body(
                         "api", equalTo(API.API_VERSION),
                         "module", equalTo(API.getModuleVersion(props)),
                         "commit.id", equalTo(API.getCommitId(props)),
