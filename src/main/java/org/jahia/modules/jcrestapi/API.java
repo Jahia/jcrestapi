@@ -162,8 +162,7 @@ public class API {
         final String moduleVersion = props.getProperty("jcrestapi.version");
         final String commitId = props.getProperty("jcrestapi.commit.id");
         final String commitBranch = props.getProperty("jcrestapi.commit.branch");
-        VERSION = "API version: " + API_VERSION + "\nModule version: " + moduleVersion + " (git commit " + commitId + " from "
-                + commitBranch + " branch)";
+        VERSION = "API version: " + API_VERSION + "\nModule version: " + getModuleVersion(moduleVersion, commitId, commitBranch);
         JSON_VERSION = new JSONVersion(moduleVersion, commitId, commitBranch);
 
         ACCESSORS.put(JSONConstants.PROPERTIES, new PropertyElementAccessor());
@@ -171,6 +170,19 @@ public class API {
         ACCESSORS.put(JSONConstants.MIXINS, new MixinElementAccessor());
         ACCESSORS.put(JSONConstants.VERSIONS, new VersionElementAccessor());
         ACCESSORS.put("", new NodeElementAccessor());
+    }
+
+    private static String getModuleVersion(String moduleVersion, String commitId, String commitBranch) {
+        return moduleVersion + " (git commit " + commitId + " from "
+                + commitBranch + " branch)";
+    }
+
+    static String getModuleVersion(Properties props) {
+        final String moduleVersion = props.getProperty("jcrestapi.version");
+        final String commitId = props.getProperty("jcrestapi.commit.id");
+        final String commitBranch = props.getProperty("jcrestapi.commit.branch");
+
+        return getModuleVersion(moduleVersion, commitId, commitBranch);
     }
 
     @Inject
