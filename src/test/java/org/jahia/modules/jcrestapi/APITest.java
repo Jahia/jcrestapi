@@ -71,6 +71,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import com.jayway.restassured.http.ContentType;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.test.JerseyTest;
 import org.jahia.modules.json.Names;
@@ -81,6 +82,7 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.MediaType;
 import java.util.Properties;
 
 import static com.jayway.restassured.RestAssured.expect;
@@ -106,12 +108,33 @@ public class APITest extends JerseyTest {
     @Test
     public void testGetVersion() throws Exception {
         Properties props = new Properties();
-        props.load(API.class.getClassLoader().getResourceAsStream("jcrestapi.properties"));
+        props.load(API.class.getClassLoader().getResourceAsStream(API.JCRESTAPI_PROPERTIES));
 
         expect().statusCode(SC_OK)
-                .contentType("text/plain")
-                .body(equalTo("API version: 1.1\nModule version: " + API.getModuleVersion(props)))
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(equalTo("API version: " + API.API_VERSION + "\nModule version: " + API.getFullModuleVersion(props)))
                 .when().get(generateURL(API.API_PATH + "/version"));
+    }
+
+    @Test
+    public void getVersionShouldProduceJSONIfAskedTo() throws Exception {
+        Properties props = new Properties();
+        props.load(API.class.getClassLoader().getResourceAsStream(API.JCRESTAPI_PROPERTIES));
+
+        given().
+                accept(ContentType.JSON).
+                when().
+                get(generateURL(API.API_PATH + "/version")).
+                then().
+                assertThat().
+                statusCode(SC_OK).
+                contentType(ContentType.JSON).
+                body(
+                        "api", equalTo(API.API_VERSION),
+                        "module", equalTo(API.getModuleVersion(props)),
+                        "commit.id", equalTo(API.getCommitId(props)),
+                        "commit.branch", equalTo(API.getCommitBranch(props))
+                );
     }
 
     @Test

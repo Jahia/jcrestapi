@@ -151,18 +151,26 @@ public class API {
 
     public static final String API_VERSION = "1.1";
 
+    private static final String JCRESTAPI_VERSION = "jcrestapi.version";
+
+    private static final String JCRESTAPI_COMMIT_ID = "jcrestapi.commit.id";
+
+    private static final String JCRESTAPI_COMMIT_BRANCH = "jcrestapi.commit.branch";
+
+    static final String JCRESTAPI_PROPERTIES = "jcrestapi.properties";
+
     static {
         Properties props = new Properties();
         try {
-            props.load(API.class.getClassLoader().getResourceAsStream("jcrestapi.properties"));
+            props.load(API.class.getClassLoader().getResourceAsStream(JCRESTAPI_PROPERTIES));
         } catch (Exception e) {
             throw new RuntimeException("Could not load jcrestapi.properties.", e);
         }
 
-        final String moduleVersion = props.getProperty("jcrestapi.version");
-        final String commitId = props.getProperty("jcrestapi.commit.id");
-        final String commitBranch = props.getProperty("jcrestapi.commit.branch");
-        VERSION = "API version: " + API_VERSION + "\nModule version: " + getModuleVersion(moduleVersion, commitId, commitBranch);
+        final String moduleVersion = props.getProperty(JCRESTAPI_VERSION);
+        final String commitId = props.getProperty(JCRESTAPI_COMMIT_ID);
+        final String commitBranch = props.getProperty(JCRESTAPI_COMMIT_BRANCH);
+        VERSION = "API version: " + API_VERSION + "\nModule version: " + getFullModuleVersion(moduleVersion, commitId, commitBranch);
         JSON_VERSION = new JSONVersion(moduleVersion, commitId, commitBranch);
 
         ACCESSORS.put(JSONConstants.PROPERTIES, new PropertyElementAccessor());
@@ -172,17 +180,29 @@ public class API {
         ACCESSORS.put("", new NodeElementAccessor());
     }
 
-    private static String getModuleVersion(String moduleVersion, String commitId, String commitBranch) {
+    private static String getFullModuleVersion(String moduleVersion, String commitId, String commitBranch) {
         return moduleVersion + " (git commit " + commitId + " from "
                 + commitBranch + " branch)";
     }
 
-    static String getModuleVersion(Properties props) {
-        final String moduleVersion = props.getProperty("jcrestapi.version");
-        final String commitId = props.getProperty("jcrestapi.commit.id");
-        final String commitBranch = props.getProperty("jcrestapi.commit.branch");
+    static String getFullModuleVersion(Properties props) {
+        final String moduleVersion = props.getProperty(JCRESTAPI_VERSION);
+        final String commitId = props.getProperty(JCRESTAPI_COMMIT_ID);
+        final String commitBranch = props.getProperty(JCRESTAPI_COMMIT_BRANCH);
 
-        return getModuleVersion(moduleVersion, commitId, commitBranch);
+        return getFullModuleVersion(moduleVersion, commitId, commitBranch);
+    }
+
+    static String getModuleVersion(Properties props) {
+        return props.getProperty(JCRESTAPI_VERSION);
+    }
+
+    static String getCommitId(Properties props) {
+        return props.getProperty(JCRESTAPI_COMMIT_ID);
+    }
+
+    static String getCommitBranch(Properties props) {
+        return props.getProperty(JCRESTAPI_COMMIT_BRANCH);
     }
 
     @Inject
