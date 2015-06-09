@@ -288,6 +288,10 @@ public class API {
             Session session = null;
 
             try {
+                resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
+                outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
+                includeFullChildren.set(Utils.getFlagValueFrom(context, INCLUDE_FULL_CHILDREN));
+
                 session = getSession(workspace, language);
                 final QueryManager queryManager = session.getWorkspace().getQueryManager();
                 final Query query = queryManager.createQuery(jsonQuery.getQuery(), Query.JCR_SQL2);
@@ -312,6 +316,10 @@ public class API {
             } catch (Exception e) {
                 throw new APIException(e);
             } finally {
+                resolveReferences.set(false);
+                outputLinks.set(true);
+                includeFullChildren.set(false);
+
                 closeSession(session);
             }
         } else {
