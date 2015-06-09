@@ -76,6 +76,7 @@ import org.apache.jackrabbit.core.TransientRepository;
 import javax.jcr.Credentials;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
 
 /**
  * A TransientRepository that ignores any passed Credentials to keep tests working and simple. :)
@@ -85,6 +86,6 @@ import javax.jcr.Session;
 public class NoLoggingTransientRepository extends TransientRepository {
     @Override
     public synchronized Session login(Credentials credentials, String workspaceName) throws RepositoryException {
-        return super.login(null, null);
+        return super.login(new SimpleCredentials("admin", "admin".toCharArray()), null);
     }
 }
