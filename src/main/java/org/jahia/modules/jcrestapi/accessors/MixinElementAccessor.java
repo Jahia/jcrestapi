@@ -108,6 +108,10 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins<APIDecorato
 
     @Override
     protected CreateOrUpdateResult<JSONMixin<APIDecorator>> createOrUpdate(Node node, String subElement, JSONNode childData) throws RepositoryException {
+        if(subElement == null || subElement.isEmpty()) {
+            throw new UnsupportedOperationException("Cannot create an automatically named mixin");
+        }
+
         // if the node doesn't already have the mixin, add it
         final boolean isCreation = !node.isNodeType(subElement);
         if (isCreation) {

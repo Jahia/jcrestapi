@@ -72,9 +72,14 @@
 package org.jahia.modules.jcrestapi;
 
 import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.response.Response;
+import mockit.Mock;
+import mockit.MockUp;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.test.JerseyTest;
 import org.jahia.modules.json.Names;
+import org.jahia.services.content.JCRContentUtils;
+import org.jahia.settings.SettingsBean;
 import org.junit.Test;
 
 import javax.jcr.Node;
@@ -83,12 +88,12 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.Properties;
 
 import static com.jayway.restassured.RestAssured.expect;
 import static com.jayway.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.*;
 
 /**
@@ -99,6 +104,20 @@ public class APITest extends JerseyTest {
     private static final String API_DEFAULT_EN = API.API_PATH + "/default/en/";
     private static final String API_DEFAULT_EN_BY_PATH = API_DEFAULT_EN + Paths.MAPPING + "/";
     private static final String API_DEFAULT_EN_NODES = API_DEFAULT_EN + Nodes.MAPPING + "/";
+
+    /*@Before
+    public void setUp() throws Exception {
+        super.setUp();
+
+        // fake settings bean
+        final SettingsBean settingsBean = mock(SettingsBean.class);
+        Mockito.when(settingsBean.getMaxNameSize()).thenReturn(32);
+
+        // DANGER: must be careful with PowerMockito as it appears to replace ALL the static methods
+        // so you might get default return values for methods you don't expect
+//        PowerMockito.mockStatic(SettingsBean.class);
+//        PowerMockito.when(SettingsBean.getInstance()).thenReturn(settingsBean);
+    }*/
 
     @Override
     protected Application configure() {
@@ -138,6 +157,69 @@ public class APITest extends JerseyTest {
                         "commit.id", equalTo(API.getCommitId(props)),
                         "commit.branch", equalTo(API.getCommitBranch(props))
                 );
+    }
+
+    @Test
+    public void checkAutomaticallyNamedChildren() throws Exception {
+        // need write access to repository
+
+        // using jmockit to provide a SettingsBean instance that returns a sane max name size without having to configure the whole bean
+        new MockUp<SettingsBean>() {
+            @Mock
+            public SettingsBean getInstance() throws IOException {
+                return new SettingsBean(null, new Properties(), null) {
+                    @Override
+                    public int getMaxNameSize() {
+                        return 32;
+                    }
+                };
+            }
+        };
+
+        String first = null;
+        String second = null;
+        try {
+            final String nodeType = "nt:address";
+            final String generatedNodeName = JCRContentUtils.generateNodeName(nodeType);
+            Response response = given().body("{\"type\": \"" + nodeType + "\"}")
+                    .contentType(ContentType.JSON)
+                    .when()
+                    .post(getURLByPath("children"))
+                    .then()
+                    .assertThat()
+                    .statusCode(SC_CREATED)
+                    .contentType("application/hal+json")
+                    .body(
+                            "name", equalTo(generatedNodeName),
+                            "type", equalTo(nodeType),
+                            "id", notNullValue()
+                    ).extract().response();
+
+            first = response.path("id");
+
+            response = given().body("{\"type\": \"" + nodeType + "\"}")
+                    .contentType(ContentType.JSON)
+                    .when()
+                    .post(getURLByPath("children"))
+                    .then()
+                    .assertThat()
+                    .statusCode(SC_CREATED)
+                    .contentType("application/hal+json")
+                    .body(
+                            "name", allOf(startsWith(generatedNodeName), not(generatedNodeName)),
+                            "type", equalTo(nodeType),
+                            "id", not(first)
+                    ).extract().response();
+            second = response.path("id");
+        } finally {
+            if (first != null) {
+                given().delete(getURIById(first));
+            }
+            if (second != null) {
+                given().delete(getURIById(second));
+            }
+        }
+
     }
 
     @Test
@@ -226,10 +308,11 @@ public class APITest extends JerseyTest {
         given()
                 .contentType("application/json")
                 .body("{\"query\": \"SELECT * FROM [nt:base]\"}")
+                .queryParam("noLinks", "true")
                 .expect()
                 .statusCode(SC_OK)
                 .contentType("application/hal+json")
-                .body(".", hasSize(188))
+                .body(".", hasSize(greaterThan(100)))
                 .body("[0].path", equalTo("/"))
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
@@ -243,7 +326,7 @@ public class APITest extends JerseyTest {
                 .statusCode(SC_OK)
                 .contentType("application/hal+json")
                 .body(".", hasSize(10))
-                .body("[0].path", equalTo("/jcr:system"))
+                .body("[0].path", not(equalTo("/")))
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
 

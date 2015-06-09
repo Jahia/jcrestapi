@@ -155,6 +155,9 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
 
     @Override
     protected CreateOrUpdateResult<JSONProperty<APIDecorator>> createOrUpdate(Node node, String subElement, JSONProperty childData) throws RepositoryException {
+        if(subElement == null || subElement.isEmpty()) {
+            throw new UnsupportedOperationException("Cannot create automatically named properties");
+        }
         final boolean isUpdate = node.hasProperty(subElement);
         final Property property = setPropertyOnNode(subElement, childData, node);
         return new CreateOrUpdateResult<JSONProperty<APIDecorator>>(isUpdate, getFactory().createProperty(property));

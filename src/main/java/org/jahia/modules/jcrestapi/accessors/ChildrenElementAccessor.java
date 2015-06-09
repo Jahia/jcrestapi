@@ -71,16 +71,18 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.ws.rs.core.UriInfo;
-
+import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.Utils;
 import org.jahia.modules.jcrestapi.links.APIDecorator;
-import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONChildren;
 import org.jahia.modules.json.JSONNode;
+import org.jahia.modules.json.JSONProperty;
+import org.jahia.services.content.JCRContentUtils;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * @author Christophe Laprun
@@ -109,13 +111,30 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren<APIDec
         final Node newOrToUpdate;
 
         // is the child already existing? // todo: deal with same name siblings
-        final boolean isUpdate = node.hasNode(subElement);
+        final boolean hasSubElement = subElement != null && !subElement.isEmpty();
+        final boolean isUpdate = hasSubElement && node.hasNode(subElement);
         if (isUpdate) {
             // in which case, we just want to update it
             newOrToUpdate = node.getNode(subElement);
         } else {
             // otherwise, we add the new node
             final String type = nodeData.getTypeName();
+
+            // if we didn't get a subElement name, generate one
+            if (!hasSubElement) {
+                final JSONProperty title = nodeData.getProperty(Constants.JCR_TITLE);
+                if (title != null) {
+                    // if we have a jcr:title in the node data, use it as basis
+                    subElement = JCRContentUtils.generateNodeName(title.getValueAsString());
+                } else {
+                    // otherwise generate node name from node type
+                    subElement = JCRContentUtils.generateNodeName(type);
+                }
+
+                // then make sure we get an available name from the basis we used
+                subElement = JCRContentUtils.findAvailableNodeName(node, subElement);
+            }
+
             if (type == null) {
                 newOrToUpdate = node.addNode(subElement);
             } else {

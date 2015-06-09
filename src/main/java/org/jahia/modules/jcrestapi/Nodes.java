@@ -140,6 +140,16 @@ public class Nodes extends API {
         return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.BY_ID, processor);
     }
 
+    @POST
+    @Path("/{id: [^/]*}/" + JSONConstants.CHILDREN)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object createAutomaticallyNamedChildOrProperty(@PathParam("id") String id,
+                                          JSONNode childData,
+                                          @Context UriInfo context) {
+        ElementsProcessor processor = new ElementsProcessor(id, JSONConstants.CHILDREN, null);
+        return perform(workspace, language, context, CREATE_OR_UPDATE, childData, NodeAccessor.BY_ID, processor);
+    }
+
     @PUT
     @Path("/{id: [^/]*}/" + JSONConstants.PROPERTIES + "/{subElement}")
     @Consumes(MediaType.APPLICATION_JSON)

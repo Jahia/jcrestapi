@@ -540,13 +540,17 @@ public class API {
                 subElementType = subElementType.substring(1);
             }
 
-            if (subElement.startsWith("/")) {
-                subElement = subElement.substring(1);
-            }
-
             this.idOrPath = Names.unescape(idOrPath);
             this.subElementType = subElementType;
-            this.subElement = Names.unescape(subElement);
+
+            if (subElement != null) {
+                if (subElement.startsWith("/")) {
+                    subElement = subElement.substring(1);
+                }
+                this.subElement = Names.unescape(subElement);
+            } else {
+                this.subElement = null;
+            }
         }
 
         public String getIdOrPath() {

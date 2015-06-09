@@ -100,7 +100,9 @@ import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.jcrestapi.json.APINode;
 import org.jahia.modules.json.Filter;
+import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
+import org.jahia.modules.json.JSONNode;
 
 /**
  * @author Christophe Laprun
@@ -162,6 +164,14 @@ public class Paths extends API {
     public Object createOrUpdate(String childDataAsJSON,
                                  @Context UriInfo context) {
         return performByPath(context, CREATE_OR_UPDATE, childDataAsJSON);
+    }
+
+    @POST
+    @Path("/{path: .*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object createOrUpdateChildNode(String childData,
+                                          @Context UriInfo context) {
+        return performByPath(context, CREATE_OR_UPDATE, childData);
     }
 
     @DELETE
