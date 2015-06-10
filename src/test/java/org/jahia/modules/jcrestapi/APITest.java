@@ -72,7 +72,6 @@
 package org.jahia.modules.jcrestapi;
 
 import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
 import mockit.Mock;
 import mockit.MockUp;
 import org.glassfish.hk2.api.Factory;
@@ -176,50 +175,35 @@ public class APITest extends JerseyTest {
             }
         };
 
-        String first = null;
-        String second = null;
-        try {
-            final String nodeType = "nt:address";
-            final String generatedNodeName = JCRContentUtils.generateNodeName(nodeType);
-            Response response = given().body("{\"type\": \"" + nodeType + "\"}")
-                    .contentType(ContentType.JSON)
-                    .when()
-                    .post(getURLByPath("children"))
-                    .then()
-                    .assertThat()
-                    .statusCode(SC_CREATED)
-                    .contentType("application/hal+json")
-                    .body(
-                            "name", equalTo(generatedNodeName),
-                            "type", equalTo(nodeType),
-                            "id", notNullValue()
-                    ).extract().response();
+        final String nodeType = "nt:address";
+        final String generatedNodeName = JCRContentUtils.generateNodeName(nodeType);
+        final String first = given().body("{\"type\": \"" + nodeType + "\"}")
+                .contentType(ContentType.JSON)
+                .when()
+                .post(getURLByPath("children"))
+                .then()
+                .assertThat()
+                .statusCode(SC_CREATED)
+                .contentType("application/hal+json")
+                .body(
+                        "name", equalTo(generatedNodeName),
+                        "type", equalTo(nodeType),
+                        "id", notNullValue()
+                ).extract().path("id");
 
-            first = response.path("id");
-
-            response = given().body("{\"type\": \"" + nodeType + "\"}")
-                    .contentType(ContentType.JSON)
-                    .when()
-                    .post(getURLByPath("children"))
-                    .then()
-                    .assertThat()
-                    .statusCode(SC_CREATED)
-                    .contentType("application/hal+json")
-                    .body(
-                            "name", allOf(startsWith(generatedNodeName), not(generatedNodeName)),
-                            "type", equalTo(nodeType),
-                            "id", not(first)
-                    ).extract().response();
-            second = response.path("id");
-        } finally {
-            if (first != null) {
-                given().delete(getURIById(first));
-            }
-            if (second != null) {
-                given().delete(getURIById(second));
-            }
-        }
-
+        given().body("{\"type\": \"" + nodeType + "\"}")
+                .contentType(ContentType.JSON)
+                .when()
+                .post(getURLByPath("children"))
+                .then()
+                .assertThat()
+                .statusCode(SC_CREATED)
+                .contentType("application/hal+json")
+                .body(
+                        "name", allOf(startsWith(generatedNodeName), not(generatedNodeName)),
+                        "type", equalTo(nodeType),
+                        "id", not(first)
+                );
     }
 
     @Test
@@ -312,7 +296,7 @@ public class APITest extends JerseyTest {
                 .expect()
                 .statusCode(SC_OK)
                 .contentType("application/hal+json")
-                .body(".", hasSize(greaterThan(100)))
+                .body(".", hasSize(greaterThan(50)))
                 .body("[0].path", equalTo("/"))
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
