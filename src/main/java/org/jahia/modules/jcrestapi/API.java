@@ -3,71 +3,71 @@
  * =                   JAHIA'S DUAL LICENSING - IMPORTANT INFORMATION                       =
  * ==========================================================================================
  *
- *     Copyright (C) 2002-2015 Jahia Solutions Group SA. All rights reserved.
+ * Copyright (C) 2002-2015 Jahia Solutions Group SA. All rights reserved.
  *
- *     THIS FILE IS AVAILABLE UNDER TWO DIFFERENT LICENSES:
- *     1/GPL OR 2/JSEL
+ * THIS FILE IS AVAILABLE UNDER TWO DIFFERENT LICENSES:
+ * 1/GPL OR 2/JSEL
  *
- *     1/ GPL
- *     ======================================================================================
+ * 1/ GPL
+ * ======================================================================================
  *
- *     IF YOU DECIDE TO CHOSE THE GPL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
+ * IF YOU DECIDE TO CHOSE THE GPL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
  *
- *     "This program is free software; you can redistribute it and/or
- *     modify it under the terms of the GNU General Public License
- *     as published by the Free Software Foundation; either version 2
- *     of the License, or (at your option) any later version.
+ * "This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *     GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *     You should have received a copy of the GNU General Public License
- *     along with this program; if not, write to the Free Software
- *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- *     As a special exception to the terms and conditions of version 2.0 of
- *     the GPL (or any later version), you may redistribute this Program in connection
- *     with Free/Libre and Open Source Software ("FLOSS") applications as described
- *     in Jahia's FLOSS exception. You should have received a copy of the text
- *     describing the FLOSS exception, also available here:
- *     http://www.jahia.com/license"
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL (or any later version), you may redistribute this Program in connection
+ * with Free/Libre and Open Source Software ("FLOSS") applications as described
+ * in Jahia's FLOSS exception. You should have received a copy of the text
+ * describing the FLOSS exception, also available here:
+ * http://www.jahia.com/license"
  *
- *     2/ JSEL - Commercial and Supported Versions of the program
- *     ======================================================================================
+ * 2/ JSEL - Commercial and Supported Versions of the program
+ * ======================================================================================
  *
- *     IF YOU DECIDE TO CHOOSE THE JSEL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
+ * IF YOU DECIDE TO CHOOSE THE JSEL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
  *
- *     Alternatively, commercial and supported versions of the program - also known as
- *     Enterprise Distributions - must be used in accordance with the terms and conditions
- *     contained in a separate written agreement between you and Jahia Solutions Group SA.
+ * Alternatively, commercial and supported versions of the program - also known as
+ * Enterprise Distributions - must be used in accordance with the terms and conditions
+ * contained in a separate written agreement between you and Jahia Solutions Group SA.
  *
- *     If you are unsure which license is appropriate for your use,
- *     please contact the sales department at sales@jahia.com.
+ * If you are unsure which license is appropriate for your use,
+ * please contact the sales department at sales@jahia.com.
  *
  *
  * ==========================================================================================
  * =                                   ABOUT JAHIA                                          =
  * ==========================================================================================
  *
- *     Rooted in Open Source CMS, Jahia’s Digital Industrialization paradigm is about
- *     streamlining Enterprise digital projects across channels to truly control
- *     time-to-market and TCO, project after project.
- *     Putting an end to “the Tunnel effect”, the Jahia Studio enables IT and
- *     marketing teams to collaboratively and iteratively build cutting-edge
- *     online business solutions.
- *     These, in turn, are securely and easily deployed as modules and apps,
- *     reusable across any digital projects, thanks to the Jahia Private App Store Software.
- *     Each solution provided by Jahia stems from this overarching vision:
- *     Digital Factory, Workspace Factory, Portal Factory and eCommerce Factory.
- *     Founded in 2002 and headquartered in Geneva, Switzerland,
- *     Jahia Solutions Group has its North American headquarters in Washington DC,
- *     with offices in Chicago, Toronto and throughout Europe.
- *     Jahia counts hundreds of global brands and governmental organizations
- *     among its loyal customers, in more than 20 countries across the globe.
+ * Rooted in Open Source CMS, Jahia’s Digital Industrialization paradigm is about
+ * streamlining Enterprise digital projects across channels to truly control
+ * time-to-market and TCO, project after project.
+ * Putting an end to “the Tunnel effect”, the Jahia Studio enables IT and
+ * marketing teams to collaboratively and iteratively build cutting-edge
+ * online business solutions.
+ * These, in turn, are securely and easily deployed as modules and apps,
+ * reusable across any digital projects, thanks to the Jahia Private App Store Software.
+ * Each solution provided by Jahia stems from this overarching vision:
+ * Digital Factory, Workspace Factory, Portal Factory and eCommerce Factory.
+ * Founded in 2002 and headquartered in Geneva, Switzerland,
+ * Jahia Solutions Group has its North American headquarters in Washington DC,
+ * with offices in Chicago, Toronto and throughout Europe.
+ * Jahia counts hundreds of global brands and governmental organizations
+ * among its loyal customers, in more than 20 countries across the globe.
  *
- *     For more information, please visit http://www.jahia.com
+ * For more information, please visit http://www.jahia.com
  */
 package org.jahia.modules.jcrestapi;
 
@@ -76,10 +76,7 @@ import org.jahia.modules.jcrestapi.api.PreparedQuery;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.jcrestapi.json.JSONQuery;
 import org.jahia.modules.jcrestapi.json.JSONVersion;
-import org.jahia.modules.json.JSONConstants;
-import org.jahia.modules.json.JSONItem;
-import org.jahia.modules.json.JSONNode;
-import org.jahia.modules.json.Names;
+import org.jahia.modules.json.*;
 import org.jahia.modules.json.jcr.SessionAccess;
 import org.jahia.services.content.JCRSessionFactory;
 import org.jahia.utils.LanguageCodeConverters;
@@ -160,6 +157,10 @@ public class API {
 
     static final String JCRESTAPI_PROPERTIES = "jcrestapi.properties";
 
+    static final boolean queryDisabled;
+    static final Set<String> excludedNodeTypes;
+    public static final Filter NODE_FILTER;
+
     static {
         Properties props = new Properties();
         try {
@@ -179,6 +180,21 @@ public class API {
         ACCESSORS.put(JSONConstants.MIXINS, new MixinElementAccessor());
         ACCESSORS.put(JSONConstants.VERSIONS, new VersionElementAccessor());
         ACCESSORS.put("", new NodeElementAccessor());
+
+        final SpringBeansAccess access = SpringBeansAccess.getInstance();
+        queryDisabled = access.isQueryDisabled();
+        excludedNodeTypes = Collections.unmodifiableSet(access.getNodeTypesToSkip());
+        NODE_FILTER = new Filter.DefaultFilter() {
+            @Override
+            public boolean acceptChild(Node child) {
+                try {
+                    return !excludedNodeTypes.contains(child.getPrimaryNodeType().getName());
+                } catch (RepositoryException e) {
+                    throw new RuntimeException("Couldn't access primary node type of " + child, e);
+                }
+            }
+        };
+
     }
 
     private static String getFullModuleVersion(String moduleVersion, String commitId, String commitBranch) {
@@ -285,56 +301,66 @@ public class API {
     @Path("/{workspace}/{language}/query")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object query(@PathParam("workspace") String workspace, @PathParam("language") String language, JSONQuery jsonQuery, @Context UriInfo context) {
-        if (jsonQuery != null) {
-            Session session = null;
+        if (!API.queryDisabled) {
+            if (jsonQuery != null) {
+                Session session = null;
 
-            String statement = jsonQuery.getQuery();
-
-            if (jsonQuery.getQueryName() != null) {
-                PreparedQuery q = PreparedQueriesRegistry.getInstance().getQuery(jsonQuery.getQueryName());
-                if (q == null) {
-                    return Response.status(Response.Status.NOT_FOUND);
-                }
-                statement = q.getQuery(jsonQuery.getParameters());
-            }
-
-            try {
-                resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
-                outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
-                includeFullChildren.set(Utils.getFlagValueFrom(context, INCLUDE_FULL_CHILDREN));
-
-                session = getSession(workspace, language);
-                final QueryManager queryManager = session.getWorkspace().getQueryManager();
-                final Query query = queryManager.createQuery(statement, Query.JCR_SQL2);
-                if (jsonQuery.getLimit() > 0) {
-                    query.setLimit(jsonQuery.getLimit());
+                final String statement;
+                if (jsonQuery.getQueryName() != null) {
+                    PreparedQuery q = PreparedQueriesRegistry.getInstance().getQuery(jsonQuery.getQueryName());
+                    if (q == null) {
+                        return Response.status(Response.Status.NOT_FOUND);
+                    }
+                    statement = q.getQuery(jsonQuery.getParameters());
+                } else {
+                    statement = jsonQuery.getQuery();
                 }
 
-                if (jsonQuery.getOffset() > 0) {
-                    query.setOffset(jsonQuery.getOffset());
+                try {
+                    resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
+                    outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
+                    includeFullChildren.set(Utils.getFlagValueFrom(context, INCLUDE_FULL_CHILDREN));
+
+                    session = getSession(workspace, language);
+                    final QueryManager queryManager = session.getWorkspace().getQueryManager();
+                    final Query query = queryManager.createQuery(statement, Query.JCR_SQL2);
+                    if (jsonQuery.getLimit() > 0) {
+                        query.setLimit(jsonQuery.getLimit());
+                    }
+
+                    if (jsonQuery.getOffset() > 0) {
+                        query.setOffset(jsonQuery.getOffset());
+                    }
+
+                    final QueryResult queryResult = query.execute();
+
+                    final NodeIterator nodes = queryResult.getNodes();
+                    final List<JSONNode> result = new LinkedList<JSONNode>();
+                    while (nodes.hasNext()) {
+                        final Filter filter = Utils.getFilter(context);
+                        final Node resultNode = nodes.nextNode();
+                        if (filter.acceptChild(resultNode)) {
+                            JSONNode node = getFactory().createNode(resultNode, filter, 1);
+                            result.add(node);
+                        }
+                    }
+
+                    return Response.ok(result).build();
+                } catch (Exception e) {
+                    throw new APIException(e);
+                } finally {
+                    resolveReferences.set(false);
+                    outputLinks.set(true);
+                    includeFullChildren.set(false);
+
+                    closeSession(session);
                 }
-
-                final QueryResult queryResult = query.execute();
-
-                final NodeIterator nodes = queryResult.getNodes();
-                final List<JSONNode> result = new LinkedList<JSONNode>();
-                while (nodes.hasNext()) {
-                    JSONNode node = getFactory().createNode(nodes.nextNode(), Utils.getFilter(context), 1);
-                    result.add(node);
-                }
-
-                return Response.ok(result).build();
-            } catch (Exception e) {
-                throw new APIException(e);
-            } finally {
-                resolveReferences.set(false);
-                outputLinks.set(true);
-                includeFullChildren.set(false);
-
-                closeSession(session);
+            } else {
+                return Response.ok().build();
             }
         } else {
-            return Response.ok().build();
+            APIExceptionMapper.LOGGER.debug("Query endpoint is disabled. Attempted query: " + jsonQuery);
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
 
@@ -358,6 +384,7 @@ public class API {
      * @param language  the language code in which we want to retrieve the data
      * @param context   a UriInfo instance, automatically injected, providing context about the request URI
      * @return a Types instance configured to access JCR data from the specified workspace and language
+     * @deprecated Use query endpoint instead
      */
     @Path("/{workspace}/{language}/" + Types.MAPPING)
     public Types getByType(@PathParam("workspace") String workspace, @PathParam("language") String language, @Context UriInfo context) {

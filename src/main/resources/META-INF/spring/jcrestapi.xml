@@ -5,6 +5,8 @@
 
     <bean id="springBeansAccess" class="org.jahia.modules.jcrestapi.SpringBeansAccess" factory-method="getInstance">
         <property name="repository" ref="jcrSessionFactory"/>
+        <property name="queryDisabled" value="${jahia.find.disabled:false}"/>
+        <property name="nodeTypesToSkip" value="${jahia.find.nodeTypesToSkip:jnt:passwordHistory,jnt:passwordHistoryEntry}"/>
     </bean>
 
     <bean id="preparedQueriesRegistry" class="org.jahia.modules.jcrestapi.PreparedQueriesRegistry" factory-method="getInstance">

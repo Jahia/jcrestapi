@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.api.Constants;
+import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.Names;
 
@@ -108,13 +109,23 @@ public class Types extends API {
                             @QueryParam("offset") int offset,
                             @QueryParam("depth") int depth,
                             @Context UriInfo context) {
+        if (API.queryDisabled) {
+            APIExceptionMapper.LOGGER.debug("Types endpoint is disabled. Attempted query on " + type);
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        final String unescapedNodetype = Names.unescape(type);
+        if (API.excludedNodeTypes.contains(unescapedNodetype)) {
+            return Response.status(Response.Status.FORBIDDEN).entity("'" + unescapedNodetype + "' is not available for querying.").build();
+        }
+
         Session session = null;
 
         try {
             session = getSession(workspace, language);
             final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();
             final ValueFactory valueFactory = session.getValueFactory();
-            final Selector selector = qomFactory.selector(Names.unescape(type), SELECTOR_NAME);
+            final Selector selector = qomFactory.selector(unescapedNodetype, SELECTOR_NAME);
 
             // language constraint: either jcr:language doesn't exist or jcr:language is current language
             Constraint constraint = qomFactory.or(
@@ -152,8 +163,12 @@ public class Types extends API {
             final NodeIterator nodes = queryResult.getNodes();
             final List<JSONNode> result = new LinkedList<JSONNode>();
             while (nodes.hasNext()) {
-                JSONNode node = getFactory().createNode(nodes.nextNode(), Utils.getFilter(context), depth);
-                result.add(node);
+                final Filter filter = Utils.getFilter(context);
+                final Node resultNode = nodes.nextNode();
+                if (filter.acceptChild(resultNode)) {
+                    JSONNode node = getFactory().createNode(resultNode, filter, depth);
+                    result.add(node);
+                }
             }
 
             return Response.ok(result).build();

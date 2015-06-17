@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import javax.jcr.Repository;
+import java.util.Set;
 
 /**
  * @author Christophe Laprun
@@ -79,6 +80,8 @@ import javax.jcr.Repository;
 public final class SpringBeansAccess {
     private final static SpringBeansAccess INSTANCE = new SpringBeansAccess();
     private Repository repository;
+    private boolean disableQuery;
+    private Set<String> nodeTypesToSkip;
 
     private SpringBeansAccess() {
     }
@@ -93,5 +96,21 @@ public final class SpringBeansAccess {
 
     public void setRepository(Repository repository) {
         this.repository = repository;
+    }
+
+    public void setQueryDisabled(String disableQuery) {
+        this.disableQuery = Boolean.parseBoolean(disableQuery);
+    }
+
+    public boolean isQueryDisabled() {
+        return disableQuery;
+    }
+
+    public void setNodeTypesToSkip(String nodeTypesToSkip) {
+        this.nodeTypesToSkip = Utils.split(nodeTypesToSkip);
+    }
+
+    public Set<String> getNodeTypesToSkip() {
+        return nodeTypesToSkip;
     }
 }
