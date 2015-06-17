@@ -301,66 +301,66 @@ public class API {
     @Path("/{workspace}/{language}/query")
     @Consumes(MediaType.APPLICATION_JSON)
     public Object query(@PathParam("workspace") String workspace, @PathParam("language") String language, JSONQuery jsonQuery, @Context UriInfo context) {
-        if (!API.queryDisabled) {
-            if (jsonQuery != null) {
-                Session session = null;
+        if (jsonQuery != null) {
+            Session session = null;
 
-                final String statement;
-                if (jsonQuery.getQueryName() != null) {
-                    PreparedQuery q = PreparedQueriesRegistry.getInstance().getQuery(jsonQuery.getQueryName());
-                    if (q == null) {
-                        return Response.status(Response.Status.NOT_FOUND);
-                    }
-                    statement = q.getQuery(jsonQuery.getParameters());
-                } else {
-                    statement = jsonQuery.getQuery();
+            final String statement;
+            if (jsonQuery.getQueryName() != null) {
+                PreparedQuery q = PreparedQueriesRegistry.getInstance().getQuery(jsonQuery.getQueryName());
+                if (q == null) {
+                    return Response.status(Response.Status.NOT_FOUND);
                 }
-
-                try {
-                    resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
-                    outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
-                    includeFullChildren.set(Utils.getFlagValueFrom(context, INCLUDE_FULL_CHILDREN));
-
-                    session = getSession(workspace, language);
-                    final QueryManager queryManager = session.getWorkspace().getQueryManager();
-                    final Query query = queryManager.createQuery(statement, Query.JCR_SQL2);
-                    if (jsonQuery.getLimit() > 0) {
-                        query.setLimit(jsonQuery.getLimit());
-                    }
-
-                    if (jsonQuery.getOffset() > 0) {
-                        query.setOffset(jsonQuery.getOffset());
-                    }
-
-                    final QueryResult queryResult = query.execute();
-
-                    final NodeIterator nodes = queryResult.getNodes();
-                    final List<JSONNode> result = new LinkedList<JSONNode>();
-                    while (nodes.hasNext()) {
-                        final Filter filter = Utils.getFilter(context);
-                        final Node resultNode = nodes.nextNode();
-                        if (filter.acceptChild(resultNode)) {
-                            JSONNode node = getFactory().createNode(resultNode, filter, 1);
-                            result.add(node);
-                        }
-                    }
-
-                    return Response.ok(result).build();
-                } catch (Exception e) {
-                    throw new APIException(e);
-                } finally {
-                    resolveReferences.set(false);
-                    outputLinks.set(true);
-                    includeFullChildren.set(false);
-
-                    closeSession(session);
-                }
+                statement = q.getQuery(jsonQuery.getParameters());
             } else {
-                return Response.ok().build();
+                if (!API.queryDisabled) {
+                    statement = jsonQuery.getQuery();
+                } else {
+                    APIExceptionMapper.LOGGER.debug("Query endpoint is disabled. Attempted query: " + jsonQuery);
+                    return Response.status(Response.Status.NOT_FOUND).build();
+                }
+            }
+
+            try {
+                resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
+                outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
+                includeFullChildren.set(Utils.getFlagValueFrom(context, INCLUDE_FULL_CHILDREN));
+
+                session = getSession(workspace, language);
+                final QueryManager queryManager = session.getWorkspace().getQueryManager();
+                final Query query = queryManager.createQuery(statement, Query.JCR_SQL2);
+                if (jsonQuery.getLimit() > 0) {
+                    query.setLimit(jsonQuery.getLimit());
+                }
+
+                if (jsonQuery.getOffset() > 0) {
+                    query.setOffset(jsonQuery.getOffset());
+                }
+
+                final QueryResult queryResult = query.execute();
+
+                final NodeIterator nodes = queryResult.getNodes();
+                final List<JSONNode> result = new LinkedList<JSONNode>();
+                while (nodes.hasNext()) {
+                    final Filter filter = Utils.getFilter(context);
+                    final Node resultNode = nodes.nextNode();
+                    if (filter.acceptChild(resultNode)) {
+                        JSONNode node = getFactory().createNode(resultNode, filter, 1);
+                        result.add(node);
+                    }
+                }
+
+                return Response.ok(result).build();
+            } catch (Exception e) {
+                throw new APIException(e);
+            } finally {
+                resolveReferences.set(false);
+                outputLinks.set(true);
+                includeFullChildren.set(false);
+
+                closeSession(session);
             }
         } else {
-            APIExceptionMapper.LOGGER.debug("Query endpoint is disabled. Attempted query: " + jsonQuery);
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.ok().build();
         }
     }
 
