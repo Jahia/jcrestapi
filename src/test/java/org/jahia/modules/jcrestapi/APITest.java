@@ -73,7 +73,9 @@ package org.jahia.modules.jcrestapi;
 
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.test.JerseyTest;
+import org.jahia.modules.jcrestapi.api.PreparedQuery;
 import org.jahia.modules.json.Names;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.jcr.Node;
@@ -97,6 +99,25 @@ public class APITest extends JerseyTest {
     private static final String API_DEFAULT_EN = API.API_PATH + "/default/en/";
     private static final String API_DEFAULT_EN_BY_PATH = API_DEFAULT_EN + Paths.MAPPING + "/";
     private static final String API_DEFAULT_EN_NODES = API_DEFAULT_EN + Nodes.MAPPING + "/";
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+
+        PreparedQuery preparedQuery = new PreparedQuery();
+        preparedQuery.setName("myQuery");
+        preparedQuery.setSource("select * from [nt:base] where [jcr:title] like ?");
+        PreparedQueriesRegistry.getInstance().addQuery(preparedQuery);
+
+//        // fake settings bean
+//        final SettingsBean settingsBean = mock(SettingsBean.class);
+//        Mockito.when(settingsBean.getMaxNameSize()).thenReturn(32);
+//
+//        // DANGER: must be careful with PowerMockito as it appears to replace ALL the static methods
+//        // so you might get default return values for methods you don't expect
+////        PowerMockito.mockStatic(SettingsBean.class);
+////        PowerMockito.when(SettingsBean.getInstance()).thenReturn(settingsBean);
+    }
 
     @Override
     protected Application configure() {
@@ -221,6 +242,19 @@ public class APITest extends JerseyTest {
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
 
+        given()
+                .contentType("application/json")
+                .body("{\"queryName\": \"myQuery\"," +
+                        "\"parameters\": [ \"a%\" ], " +
+                        "\"limit\": 10, " +
+                        "\"offset\" : 1}")
+                .expect()
+                .statusCode(SC_OK)
+                .contentType("application/hal+json")
+                .body(".", hasSize(10))
+                .body("[0].path", not(equalTo("/")))
+                .when()
+                .post(generateURL(API_DEFAULT_EN + "query"));
     }
 
     private String generateURL(String path) {
