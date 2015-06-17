@@ -320,6 +320,9 @@
                         <Private-Package>
                             org.jahia.modules.jcrestapi.*
                         </Private-Package>
+                        <Export-Package>
+                            org.jahia.modules.jcrestapi.api
+                        </Export-Package>
                         <Import-Package>
                             javax.jcr.*,
                             javax.xml.bind.annotation,
@@ -328,6 +331,7 @@
                             org.glassfish.hk2.*;
                             org.glassfish.jersey.server,
                             org.glassfish.jersey.media.multipart.*,
+                            org.jahia.services.templates.*,
                             org.jahia.services.content.*,
                             org.jahia.utils;
                             org.slf4j,

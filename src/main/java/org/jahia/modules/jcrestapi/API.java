@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.accessors.*;
+import org.jahia.modules.jcrestapi.api.PreparedQuery;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.jcrestapi.json.JSONQuery;
 import org.jahia.modules.jcrestapi.json.JSONVersion;
@@ -287,6 +288,16 @@ public class API {
         if (jsonQuery != null) {
             Session session = null;
 
+            String statement = jsonQuery.getQuery();
+
+            if (jsonQuery.getQueryName() != null) {
+                PreparedQuery q = PreparedQueriesRegistry.getInstance().getQuery(jsonQuery.getQueryName());
+                if (q == null) {
+                    return Response.status(Response.Status.NOT_FOUND);
+                }
+                statement = q.getQuery(jsonQuery.getParameters());
+            }
+
             try {
                 resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
                 outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
@@ -294,7 +305,7 @@ public class API {
 
                 session = getSession(workspace, language);
                 final QueryManager queryManager = session.getWorkspace().getQueryManager();
-                final Query query = queryManager.createQuery(jsonQuery.getQuery(), Query.JCR_SQL2);
+                final Query query = queryManager.createQuery(statement, Query.JCR_SQL2);
                 if (jsonQuery.getLimit() > 0) {
                     query.setLimit(jsonQuery.getLimit());
                 }

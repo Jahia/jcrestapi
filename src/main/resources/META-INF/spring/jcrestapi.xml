@@ -6,4 +6,8 @@
     <bean id="springBeansAccess" class="org.jahia.modules.jcrestapi.SpringBeansAccess" factory-method="getInstance">
         <property name="repository" ref="jcrSessionFactory"/>
     </bean>
+
+    <bean id="preparedQueriesRegistry" class="org.jahia.modules.jcrestapi.PreparedQueriesRegistry" factory-method="getInstance">
+
+    </bean>
 </beans>
