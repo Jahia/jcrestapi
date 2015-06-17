@@ -112,7 +112,7 @@ public class APITest extends JerseyTest {
 
         PreparedQuery preparedQuery = new PreparedQuery();
         preparedQuery.setName("myQuery");
-        preparedQuery.setSource("select * from [nt:base] where [jcr:title] like ?");
+        preparedQuery.setSource("select * from [nt:nodeType] where [jcr:nodeTypeName] like ?");
         PreparedQueriesRegistry.getInstance().addQuery(preparedQuery);
 
 //        // fake settings bean
@@ -324,7 +324,7 @@ public class APITest extends JerseyTest {
         given()
                 .contentType("application/json")
                 .body("{\"queryName\": \"myQuery\"," +
-                        "\"parameters\": [ \"%\" ], " +
+                        "\"parameters\": [ \"nt:%\" ], " +
                         "\"limit\": 10, " +
                         "\"offset\" : 1}")
                 .expect()
