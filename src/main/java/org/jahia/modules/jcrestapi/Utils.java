@@ -73,10 +73,6 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.json.Filter;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.MultivaluedMap;
@@ -170,12 +166,20 @@ public class Utils {
                         childrenNodeTypes.addAll(split(childrenNodeTypeFilterValue));
                     }
                     if (!childrenNodeTypes.isEmpty()) {
-                        return new ChildrenNodeTypeFilter(childrenNodeTypes);
+                        final ChildrenNodeTypeFilter nodeTypeFilter = new ChildrenNodeTypeFilter(childrenNodeTypes);
+
+                        // wrap filter so that we can always exclude first excluded node types
+                        return new Filter.DefaultFilter() {
+                            @Override
+                            public boolean acceptChild(Node child) {
+                                return API.NODE_FILTER.acceptChild(child) && nodeTypeFilter.acceptChild(child);
+                            }
+                        };
                     }
                 }
             }
         }
-        return Filter.OUTPUT_ALL;
+        return API.NODE_FILTER;
     }
 
     public static boolean getFlagValueFrom(UriInfo context, String flagName) {
