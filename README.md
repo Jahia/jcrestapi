@@ -25,15 +25,28 @@ manipulate resources. In particular, the protocol defines methods (or verbs) cor
 For a good (and not overly complex) overview of REST, please see
 [Jos Dirksen's REST: From GET to HATEOAS presentation](http://www.slideshare.net/josdirksen/rest-from-get-to-hateoas).
 
-### Version history
+### API version history
 
 - v1.0: initial release
 - v1.1: 
     - `PUT` and `DELETE` methods are now supported when operating on nodes via their path
     - added `includeFullChildren`, `resolveReferences` and `noLinks` flags that can be passed as URI query parameters to control some aspects of the representations
-    - added new `query` endpoint to perform `JCR-SQL2` queries on the repository and retrieve matching nodes
+    - added new `query` endpoint to perform `JCR-SQL2` queries on the repository and retrieve matching nodes, disabled by default for security reasons, following the `jahia.find
+    .disabled` property.
     - order of children is now properly maintained
     - it is now possible to filter children to retrieve by providing a list of accepted child node types concatenated by commas
+### Implementation version history
+
+- v2.0.0: initial release
+- v2.0.1: 
+    - properly use `application/hal+json` content type on responses
+    - improved links support
+    - minor improvements
+- v2.1.0:
+    - support for v1.1 of the API
+    - fixed an issue with Paths API where extra slashes in the URI could result in unexpected behavior
+- v2.1.1:
+    - support for disabling query and types endpoint based on `jahia.find.disabled` setting.
 
 ### Goals
 
