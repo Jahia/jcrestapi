@@ -72,6 +72,7 @@
 package org.jahia.modules.jcrestapi;
 
 import javax.jcr.Repository;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -81,7 +82,7 @@ public final class SpringBeansAccess {
     private final static SpringBeansAccess INSTANCE = new SpringBeansAccess();
     private Repository repository;
     private boolean disableQuery;
-    private Set<String> nodeTypesToSkip;
+    private Set<String> nodeTypesToSkip = Collections.emptySet();
 
     private SpringBeansAccess() {
     }
