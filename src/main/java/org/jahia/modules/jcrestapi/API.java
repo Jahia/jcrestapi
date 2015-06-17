@@ -310,7 +310,13 @@ public class API {
                 if (q == null) {
                     return Response.status(Response.Status.NOT_FOUND);
                 }
-                statement = q.getQuery(jsonQuery.getParameters());
+                if (jsonQuery.getParameters() != null) {
+                    statement = q.getQuery(jsonQuery.getParameters());
+                } else if (jsonQuery.getNamedParameters() != null) {
+                    statement = q.getQuery(jsonQuery.getNamedParameters());
+                } else {
+                    statement = q.getSource();
+                }
             } else {
                 if (!API.queryDisabled) {
                     statement = jsonQuery.getQuery();
