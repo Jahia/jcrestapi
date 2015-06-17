@@ -324,7 +324,7 @@ public class APITest extends JerseyTest {
         given()
                 .contentType("application/json")
                 .body("{\"queryName\": \"myQuery\"," +
-                        "\"parameters\": [ \"a%\" ], " +
+                        "\"parameters\": [ \"%\" ], " +
                         "\"limit\": 10, " +
                         "\"offset\" : 1}")
                 .expect()
