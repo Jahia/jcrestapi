@@ -76,6 +76,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
@@ -96,6 +97,9 @@ public class JSONQuery {
     @XmlElement
     private List<Object> parameters;
 
+    @XmlElement
+    private Map<String,Object> namedParameters;
+
 
     public String getQuery() {
         return query;
@@ -115,5 +119,9 @@ public class JSONQuery {
 
     public List<Object> getParameters() {
         return parameters;
+    }
+
+    public Map<String,Object> getNamedParameters() {
+        return namedParameters;
     }
 }

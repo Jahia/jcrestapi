@@ -262,6 +262,8 @@ public class API {
                 }
                 if (jsonQuery.getParameters() != null) {
                     statement = q.getQuery(jsonQuery.getParameters());
+                } else if (jsonQuery.getNamedParameters() != null) {
+                    statement = q.getQuery(jsonQuery.getNamedParameters());
                 } else {
                     statement = q.getSource();
                 }

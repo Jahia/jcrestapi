@@ -7,6 +7,10 @@ import org.springframework.beans.BeansException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * This class stores all prepared queries that will be usable by the query endpoint.
+ * It automatically registers PreparedQuery that are declared in modules spring contexts.
+ */
 public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
     private final static PreparedQueriesRegistry INSTANCE = new PreparedQueriesRegistry();
 
@@ -25,6 +29,10 @@ public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
         return bean;
     }
 
+    /**
+     * Register a PreparedQuery object
+     * @param preparedQuery
+     */
     public void addQuery(PreparedQuery preparedQuery) {
         queries.put(preparedQuery.getName(), preparedQuery);
     }
@@ -37,6 +45,10 @@ public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
         }
     }
 
+    /**
+     * Unregister a PreparedQuery object
+     * @param preparedQuery
+     */
     public void removeQuery(PreparedQuery preparedQuery) {
         queries.remove(preparedQuery.getName());
     }
@@ -46,7 +58,11 @@ public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
         return bean;
     }
 
-
+    /**
+     * Get a query based on its name
+     * @param name
+     * @return
+     */
     public PreparedQuery getQuery(String name) {
         return queries.get(name);
     }
