@@ -17,6 +17,7 @@ public class PreparedQuery {
 
     /**
      * Unique query name
+     *
      * @return
      */
     public String getName() {
@@ -29,6 +30,7 @@ public class PreparedQuery {
 
     /**
      * Get original query source
+     *
      * @return
      */
     public String getSource() {
@@ -41,6 +43,7 @@ public class PreparedQuery {
 
     /**
      * Get parsed query with position parameters replaced
+     *
      * @param params
      * @return
      */
@@ -59,19 +62,24 @@ public class PreparedQuery {
 
     /**
      * Get parsed query with named parameters replaced
+     *
      * @param params
      * @return
      */
-    public String getQuery(Map<String,Object> params) {
+    public String getQuery(Map<String, Object> params) {
         String res = source;
         for (Map.Entry<String, Object> entry : params.entrySet()) {
-            if (entry.getKey().matches("[a-zA-Z0-9_]+"))
-            if (entry.getValue() instanceof Number) {
-                res = res.replaceFirst("(\\s):"+entry.getKey(), "$1" + entry.getValue().toString());
+            final String key = entry.getKey();
+            if (key.matches("[a-zA-Z0-9_]+")) {
+                final Object value = entry.getValue();
+                if (value instanceof Number) {
+                    res = res.replaceFirst("(\\s):" + key, "$1" + value.toString());
+                } else {
+                    res = res.replaceFirst("(\\s):" + key, "$1'" + JCRContentUtils.sqlEncode(value.toString()) + "'");
+                }
             } else {
-                res = res.replaceFirst("(\\s):"+entry.getKey(), "$1'" + JCRContentUtils.sqlEncode(entry.getValue().toString()) + "'");
+                throw new IllegalArgumentException("Invalid parameter name '" + key + "'");
             }
-
         }
         return res;
     }
