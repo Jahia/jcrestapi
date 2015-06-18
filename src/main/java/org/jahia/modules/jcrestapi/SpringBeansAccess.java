@@ -81,7 +81,7 @@ import java.util.Set;
 public final class SpringBeansAccess {
     private final static SpringBeansAccess INSTANCE = new SpringBeansAccess();
     private Repository repository;
-    private boolean disableQuery;
+    private boolean disableQuery = true;
     private Set<String> nodeTypesToSkip = Collections.emptySet();
 
     private SpringBeansAccess() {
