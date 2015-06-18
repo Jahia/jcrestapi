@@ -135,7 +135,7 @@ public class APITest extends JerseyTest {
 
         expect().statusCode(SC_OK)
                 .contentType("text/plain")
-                .body(equalTo("API version: 1.1\nModule version:" + props.getProperty("jcrestapi.version")))
+                .body(equalTo("API version: 1.1.1\nModule version:" + props.getProperty("jcrestapi.version")))
                 .when().get(generateURL(API.API_PATH + "/version"));
     }
 
