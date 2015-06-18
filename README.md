@@ -35,6 +35,12 @@ For a good (and not overly complex) overview of REST, please see
     .disabled` property.
     - order of children is now properly maintained
     - it is now possible to filter children to retrieve by providing a list of accepted child node types concatenated by commas
+- v1.2:
+    - support for server-delegated naming of newly created instances via `POST` requests via both node identifiers or paths
+    - support for prepared queries
+    - added JSON version of the `/version` endpoint to have an easier to parse version information
+    - v1.1 flags are now also supported on query endpoint
+    
 ### Implementation version history
 
 - v2.0.0: initial release
@@ -46,7 +52,10 @@ For a good (and not overly complex) overview of REST, please see
     - support for v1.1 of the API
     - fixed an issue with Paths API where extra slashes in the URI could result in unexpected behavior
 - v2.1.1:
-    - support for disabling query and types endpoint based on `jahia.find.disabled` setting.
+    - support for disabling query and types endpoint based on `jahia.find.disabled` setting
+- v2.2.0:
+    - support for v1.2 of the API
+    - uses BOM from jaxrs-osgi-extender and json-generation modules to keep Jackson and Jersey versions in sync
 
 ### Goals
 
