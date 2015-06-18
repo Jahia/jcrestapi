@@ -109,7 +109,7 @@ public class Types extends API {
                             @QueryParam("offset") int offset,
                             @QueryParam("depth") int depth,
                             @Context UriInfo context) {
-        if (API.queryDisabled) {
+        if (API.isQueryDisabled()) {
             APIExceptionMapper.LOGGER.debug("Types endpoint is disabled. Attempted query on " + type);
             return Response.status(Response.Status.NOT_FOUND).build();
         }
