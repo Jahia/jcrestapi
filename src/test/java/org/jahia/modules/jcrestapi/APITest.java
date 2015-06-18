@@ -300,6 +300,18 @@ public class APITest extends JerseyTest {
 
     @Test
     public void testQuery() {
+        // query is disabled by default
+        given()
+                .contentType("application/json")
+                .body("{\"query\": \"SELECT * FROM [nt:base]\"}")
+                .expect()
+                .statusCode(SC_NOT_FOUND)
+                .when()
+                .post(generateURL(API_DEFAULT_EN + "query"));
+
+        // activate query endpoint and retry
+        API.setQueryDisabled(false);
+
         given()
                 .contentType("application/json")
                 .body("{\"query\": \"SELECT * FROM [nt:base]\"}")
@@ -324,6 +336,9 @@ public class APITest extends JerseyTest {
                 .body("[0].path", not(equalTo("/")))
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
+
+        // now re-deactivate query, we should still be able to perform prepared queries
+        API.setQueryDisabled(true);
 
         given()
                 .contentType("application/json")
