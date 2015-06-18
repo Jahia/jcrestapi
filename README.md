@@ -35,6 +35,10 @@ For a good (and not overly complex) overview of REST, please see
     .disabled` property.
     - order of children is now properly maintained
     - it is now possible to filter children to retrieve by providing a list of accepted child node types concatenated by commas
+- v1.1.1:
+    - added support for prepared queries to the query endpoint. This is now the preferred way to use the query endpoint since prepared queries will still be available
+      even when the query endpoint is disabled since they are considered "safe" by the administrator who deployed them.
+      
 ### Implementation version history
 
 - v2.0.0: initial release
@@ -1028,6 +1032,10 @@ specified file to the `/users/root/files` content directory. Using cURL: `curl -
 
 ### Retrieving nodes using their type
 
+Version 1.1.1 of the API restricts the types endpoint to limit security exposure. It is therefore disabled by default. Its activation is controlled by the value 
+of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Factory install. Please refer to the
+Digital Factory documentation for more details.  
+ 
 #### URI template
 `/{workspace}/{language}/types/{type}`
 
@@ -1062,6 +1070,10 @@ contains `rest`.
 
 ### Querying nodes
 
+Version 1.1.1 of the API restricts the query endpoint introduced in version 1.1 to limit security exposure. It is therefore disabled by default. Its activation is 
+controlled by the value of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Factory 
+install. Please refer to the Digital Factory documentation for more details. 
+
 #### URI template
 `/{workspace}/{language}/query`
 
@@ -1083,8 +1095,56 @@ The query endpoint accepts JSON data consisting of the following object structur
         "offset": <An optional Integer specifying the starting index of the elements to retrieve to allow for pagination>
     }
 
+As of v1.1.1 of the API, the query endpoint is disabled by default and the preferred way to query nodes is to register prepared queries that are checked by administrators of the 
+server and are deemed "safe". These prepared queries are still available even when the default query endpoint is de-activated since they have been vetted. The accepted JSON input
+has therefore evolved to support these prepared queries as follows:
+
+    { 
+        "query" : <An optional String representing a valid JCR-SQL2 query>,
+        "queryName": <An optional String identifying a registered prepared query>,
+        "parameters": <An optional array of Strings providing values for parameter placeholders (the '?' character) in the prepared query>,
+        "namedParameters": <An optional dictionary of String -> Object providing values for named parameters in the prepared query>,
+        "limit" : <An optional Integer specifying the maximum number of to retrieve>,
+        "offset": <An optional Integer specifying the starting index of the elements to retrieve to allow for pagination>
+    }
+
+The `query` value is still supported as previously. However, it will only be taken into account if and only if the query endpoint is activated and no `queryName` value is 
+provided. Otherwise, the API implementation will look for a prepared query registered under the provided `queryName` value. A prepared query can specify placeholders to 
+dynamically provide values when the query is run. This is accomplished using two different means. First, for simple cases, you can use the `?` character as a placeholder for 
+values to be provided later. In that case, you will need to provide a `parameters` array of values to replace these placeholders. Order is significant since placeholders
+are replaced by the provided values in order, the first placeholder being replaced by the first provided value, etc. The other, and preferred, option for complex queries, is to 
+use named parameters with placeholders in the form of a parameter name prefixed by a column (`:`) and preceded by a space. Parameter names can contain only alpha-numerical and 
+underscore (`_`) characters. In this case, you will need to provide a `namedParameters` dictionary providing a mapping between a parameter name and its associated value. 
+
+The prepared query will thus be interpolated using the provided values for the parameters and then limited and offset if needed.
+
+Prepared queries are registered using your module Spring context by defining `PreparedQuery` beans. You will therefore need your module to depend on the `jcrestapi` module.
+You need to provide values for the `name` and `source` properties, `name` being the name of the prepared query with which you can access it from the query endpoint and the 
+`source` property being the query itself, using the appropriate placeholders (either `?` or named parameters as you see fit, but you cannot mix both in the same query). 
+
+
 #### Examples
 
 `POST <basecontext>/default/en/query` providing the following body `{query: "SELECT * FROM [nt:base]", limit: 10, offset: 1}` will result in
-retrieving 10 nodes starting with the second one (i.e. bypassing the first one since the offset is not 0).
+retrieving 10 nodes starting with the second one (i.e. bypassing the first one since the offset is not 0). Note that this query will only work if the query endpoint has been 
+activated (it is disabled by default).
+
+Assuming you've registered the following prepared query in your module's Spring context:
+    
+    <bean id="foo" class="org.jahia.modules.jcrestapi.api.PreparedQuery">
+        <property name="name" value="foo"/>
+        <property name="source" value="select * from [nt:nodeType] where [jcr:nodeTypeName] like ?"/>
+    </bean>
+
+You can execute the query using `POST <basecontext>/default/en/query` with the following body `{"queryName": "foo", "parameters": [ "nt:%" ] }` to execute the following 
+interpolated query on the English version of the `default` workspace: `select * from [nt:nodeType] where [jcr:nodeTypeName] like 'nt:%'`.
+
+If, on the other hand, you used the named parameter option:
+
+    <bean id="foo" class="org.jahia.modules.jcrestapi.api.PreparedQuery">
+        <property name="name" value="foo"/>
+        <property name="source" value="select * from [nt:nodeType] where [jcr:nodeTypeName] like :nodeType"/>
+    </bean>
+
+You could run the same query using the same request providing the following body this time: `{"queryName": "foo", "namedParameters": { "nodeType": "nt:%" } }`
 
