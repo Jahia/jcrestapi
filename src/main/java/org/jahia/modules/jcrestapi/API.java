@@ -145,7 +145,7 @@ public class API {
     };
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
-    static final boolean queryDisabled;
+    private static boolean queryDisabled;
     static final Set<String> excludedNodeTypes;
     public static final Filter NODE_FILTER;
 
@@ -268,7 +268,7 @@ public class API {
                     statement = q.getSource();
                 }
             } else {
-                if (!API.queryDisabled) {
+                if (!API.isQueryDisabled()) {
                     statement = jsonQuery.getQuery();
                 } else {
                     APIExceptionMapper.LOGGER.debug("Query endpoint is disabled. Attempted query: " + jsonQuery);
@@ -562,5 +562,13 @@ public class API {
         public String getSubElement() {
             return subElement;
         }
+    }
+
+    public static boolean isQueryDisabled() {
+        return queryDisabled;
+    }
+
+    static void setQueryDisabled(boolean queryDisabled) {
+        API.queryDisabled = queryDisabled;
     }
 }
