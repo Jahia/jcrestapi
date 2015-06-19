@@ -38,12 +38,10 @@ For a good (and not overly complex) overview of REST, please see
 - v1.1.1:
     - added support for prepared queries to the query endpoint. This is now the preferred way to use the query endpoint since prepared queries will still be available
       even when the query endpoint is disabled since they are considered "safe" by the administrator who deployed them.
+    - flags are now also supported on query endpoint
 - v1.2:
     - support for server-delegated naming of newly created instances via `POST` requests via both node identifiers or paths
-    - support for prepared queries
     - added JSON version of the `/version` endpoint to have an easier to parse version information
-    - v1.1 flags are now also supported on query endpoint
-    
       
 ### Implementation version history
 
@@ -879,7 +877,7 @@ then provide it using the `Authentication` header with each request to the API. 
 You can access the version of the API implementation performing a `GET` on the `<basecontext>/version` URI. This returns plain text information about both the version of the API
 and of the currently running implementation. This can also serve as a quick check to see if the API is currently running or not.
 
-As of version 1.1, if your client requests `application/json` content, you can also retrieve a JSON representation of the version information from that same URI, as follows:
+As of version 1.2, if your client requests `application/json` content, you can also retrieve a JSON representation of the version information from that same URI, as follows:
 
     {
       "api": <API version>,
