@@ -147,7 +147,7 @@ public class API {
     };
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
-    public static final String API_VERSION = "1.1";
+    public static final String API_VERSION = "1.2";
 
     private static final String JCRESTAPI_VERSION = "jcrestapi.version";
 
