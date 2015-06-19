@@ -949,7 +949,9 @@ identified by the `subElement` path element for the node identified by the speci
 - `GET`: to retrieve the identified resource
 - `PUT`: to create (if it doesn't already exist) or update the identified resource
 - `DELETE`: to delete the identified resource
-- `POST`: to rename a resource but leave it at the same spot in the hierarchy
+- `POST`:
+    - to create a new child without providing a name for it, leaving it up to the server to create an appropriate one (starting with v1.2 of the API)
+    - to rename a resource but leave it at the same spot in the hierarchy using the `moveto` sub-resource 
 
 #### Accepted data
 
@@ -1015,6 +1017,10 @@ property to `3000`.
 `POST <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/moveto/newName` will rename the `eae598a3-8a41-4003-9c6b-f31018ee0e46` node to `newName`,
 leaving it at the same spot in the JCR tree.
 
+`POST <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/children` with the appropriate JSON body (specifying at least the child's type and omitting its name) 
+will add a new child to `eae598a3-8a41-4003-9c6b-f31018ee0e46`, automatically generating an appropriate name for it (using its `jcr:title` property if provided or using its type 
+if not) 
+
 ### Operating on nodes using their path
 
 #### URI template
@@ -1034,7 +1040,9 @@ sub-element and the resolution of the sub-element will happen using the next pat
 - `GET`: to retrieve the identified resource
 - `PUT`: to create (if it doesn't already exist) or update the identified resource (starting from v1.1 of the API)
 - `DELETE`: to delete the identified resource (starting from v1.1 of the API)
-- `POST`: to upload a file as a child node of the identified resource using `multipart/form-data` content type and specifying the file to upload using the `file` parameter
+- `POST`:
+    - to create a new child without providing a name for it, leaving it up to the server to create an appropriate one (starting with v1.2 of the API)
+    - to upload a file as a child node of the identified resource using `multipart/form-data` content type and specifying the file to upload using the `file` parameter
 
 #### Examples
 
