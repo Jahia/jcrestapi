@@ -51,6 +51,7 @@ For a good (and not overly complex) overview of REST, please see
     - support for v1.1 of the API
     - fixed an issue with Paths API where extra slashes in the URI could result in unexpected behavior
 - v2.1.1:
+    - support for v1.1.1 of the API
     - support for disabling query and types endpoint based on `jahia.find.disabled` setting.
 
 ### Goals
