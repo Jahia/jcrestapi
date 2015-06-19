@@ -1032,6 +1032,8 @@ sub-element and the resolution of the sub-element will happen using the next pat
 #### Allowed HTTP operations
 
 - `GET`: to retrieve the identified resource
+- `PUT`: to create (if it doesn't already exist) or update the identified resource (starting from v1.1 of the API)
+- `DELETE`: to delete the identified resource (starting from v1.1 of the API)
 - `POST`: to upload a file as a child node of the identified resource using `multipart/form-data` content type and specifying the file to upload using the `file` parameter
 
 #### Examples
