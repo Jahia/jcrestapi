@@ -38,6 +38,7 @@ For a good (and not overly complex) overview of REST, please see
 - v1.1.1:
     - added support for prepared queries to the query endpoint. This is now the preferred way to use the query endpoint since prepared queries will still be available
       even when the query endpoint is disabled since they are considered "safe" by the administrator who deployed them.
+    - flags are now also supported on query endpoint
       
 ### Implementation version history
 
