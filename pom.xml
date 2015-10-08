@@ -91,14 +91,14 @@
             <dependency>
                 <groupId>org.jahia.modules</groupId>
                 <artifactId>jaxrs-osgi-extender-bom</artifactId>
-                <version>2.0.2-SNAPSHOT</version>
+                <version>2.0.2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.jahia.modules</groupId>
                 <artifactId>json-generation</artifactId>
-                <version>1.1.1-SNAPSHOT</version>
+                <version>1.1.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
