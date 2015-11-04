@@ -80,7 +80,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Christophe Laprun
  */
 public class APIException extends WebApplicationException {
-    private final JSONError error;
+    private final transient JSONError error;
 
     public APIException(Throwable e) {
         this(e, null);
