@@ -147,32 +147,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Jackson -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-base</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-        </dependency>
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
@@ -336,6 +310,36 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--<plugin>
+                &lt;!&ndash; to generated API documentation &ndash;&gt;
+                <groupId>com.qmino</groupId>
+                <artifactId>miredot-plugin</artifactId>
+                <version>1.6.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>restdoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <license>
+                        UHJvamVjdHxvcmcuamFoaWEubW9kdWxlcy5qY3Jlc3RhcGl8MjAxNi0xMC0xNHx0cnVlI01DMENGUUNUelZadWo1a2MvTVhsYmtzL2hNOERCRUh1VFFJVU8vOEdYWXVZZDNkMmVmN2E5QW1KdjhTQ0xhZz0=
+                    </license>
+                    <output>
+                        <title>Documentation for Digital Factory's RESTful API ${project.version}</title>
+                        <html>
+                            &lt;!&ndash; optional html configuration &ndash;&gt;
+                        </html>
+                    </output>
+                    <restModel>
+                        <restFramework>
+                            <name>jax-rs</name>
+                        </restFramework>
+                    </restModel>
+                    &lt;!&ndash; insert other configuration here (optional) &ndash;&gt;
+                </configuration>
+            </plugin>-->
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
