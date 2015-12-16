@@ -844,7 +844,7 @@ However, you still need to be able to retrieve that first representation to work
 
 ### Base context
 
-Since the API implementation is deployed as a module, it is available on your Jahia Digital Factory instance under the `/modules`
+Since the API implementation is deployed as a module, it is available on your Jahia Digital Experience Manager instance under the `/modules`
 context with the `/api` specific context. Therefore, all URIs targeting the API will start with `/modules/api`. Keep this in mind
 while looking at the examples below since we might not repeat the base context all the time.
 
@@ -858,7 +858,7 @@ future while we also make it clear which version (if/when several versions are n
 
 Access to the JCR content is protected and different users will be able to see different content. It is therefore required to authenticate properly before using the API. In
 fact, some errors (usually `PathNotFoundException`s) can be the result of attempting to access a node for which you don't have proper access level. There are several options to
-log into Jahia Digital Factory from clients.
+log into Jahia Digital Experience Manager from clients.
 
 If you use a browser and log in, the API will use your existing session.
 
@@ -891,7 +891,7 @@ As of version 1.2, if your client requests `application/json` content, you can a
 
 ### Workspace and language
 
-You can access all the different workspaces and languages available in the Jahia Digital Factory JCR repository. However, you must
+You can access all the different workspaces and languages available in the Jahia Digital Experience Manager JCR repository. However, you must
 choose a combination of workspace _and_ language at any one time to work with JCR data. Which workspace and language to use are
 specified in the URI path, using first, the escaped workspace name followed by the language code associated with the language you
 wish to retrieve data in.
@@ -1062,8 +1062,8 @@ specified file to the `/users/root/files` content directory. Using cURL: `curl -
 ### Retrieving nodes using their type
 
 Version 1.1.1 of the API restricts the types endpoint to limit security exposure. It is therefore disabled by default. Its activation is controlled by the value 
-of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Factory install. Please refer to the
-Digital Factory documentation for more details.  
+of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Experience Manager install. Please refer to the
+Digital Experience Manager documentation for more details.  
  
 #### URI template
 `/{workspace}/{language}/types/{type}`
@@ -1100,8 +1100,8 @@ contains `rest`.
 ### Querying nodes
 
 Version 1.1.1 of the API restricts the query endpoint introduced in version 1.1 to limit security exposure. It is therefore disabled by default. Its activation is 
-controlled by the value of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Factory 
-install. Please refer to the Digital Factory documentation for more details. 
+controlled by the value of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Experience Manager 
+install. Please refer to the Digital Experience Manager documentation for more details. 
 
 #### URI template
 `/{workspace}/{language}/query`
