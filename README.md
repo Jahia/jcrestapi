@@ -1148,7 +1148,34 @@ underscore (`_`) characters. In this case, you will need to provide a `namedPara
 
 The prepared query will thus be interpolated using the provided values for the parameters and then limited and offset if needed.
 
-Prepared queries are registered using your module Spring context by defining `PreparedQuery` beans. You will therefore need your module to depend on the `jcrestapi` module.
+Prepared queries are registered using your module Spring context by defining `PreparedQuery` beans. You will therefore need your module to depend on the `jcrestapi` module in
+your maven configuration:
+
+```xml
+<plugin>
+    <groupId>org.apache.felix</groupId>
+    <artifactId>maven-bundle-plugin</artifactId>
+    <extensions>true</extensions>
+    <configuration>
+        <instructions>
+            <Jahia-Depends>jcrestapi,...</Jahia-Depends>
+            ...
+        </instructions>
+    </configuration>
+</plugin>
+```
+
+Of course, since your implementation will need to reference `PreparedQuery`, you will need to add a `provided` scope dependency on the API maven artifact:
+
+```xml
+<dependency>
+    <groupId>org.jahia.modules</groupId>
+    <artifactId>jcrestapi</artifactId>
+    <version>...</version>
+    <scope>provided</scope>
+</dependency>
+```
+
 You need to provide values for the `name` and `source` properties, `name` being the name of the prepared query with which you can access it from the query endpoint and the 
 `source` property being the query itself, using the appropriate placeholders (either `?` or named parameters as you see fit, but you cannot mix both in the same query). 
 
