@@ -98,6 +98,7 @@ using Response.cacheControl method instead of filter.
 - <del>Support file uploads</del> __(Done)__
 - Support easier creation of same-name siblings using POST and JSON data
 - Migrate String constants (link relations, sub-element types, etc.) to typesafe constants organized by type
+- Rename sub-element type names (children, properties, etc.) to something with a namespace to avoid potential conflicts in by-path access.
 
 ---
 
