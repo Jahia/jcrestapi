@@ -319,7 +319,7 @@
                         UHJvamVjdHxvcmcuamFoaWEubW9kdWxlcy5qY3Jlc3RhcGl8MjAxNi0xMC0xNHx0cnVlI01DMENGUUNUelZadWo1a2MvTVhsYmtzL2hNOERCRUh1VFFJVU8vOEdYWXVZZDNkMmVmN2E5QW1KdjhTQ0xhZz0=
                     </license>
                     <output>
-                        <title>Documentation for Digital Factory's RESTful API ${project.version}</title>
+                        <title>Documentation for Digital Experience Manager's RESTful API ${project.version}</title>
                         <html>
                             &lt;!&ndash; optional html configuration &ndash;&gt;
                         </html>
