@@ -3,43 +3,43 @@
  * =                   JAHIA'S DUAL LICENSING - IMPORTANT INFORMATION                       =
  * ==========================================================================================
  *
- *                                 http://www.jahia.com
+ * http://www.jahia.com
  *
- *     Copyright (C) 2002-2016 Jahia Solutions Group SA. All rights reserved.
+ * Copyright (C) 2002-2016 Jahia Solutions Group SA. All rights reserved.
  *
- *     THIS FILE IS AVAILABLE UNDER TWO DIFFERENT LICENSES:
- *     1/GPL OR 2/JSEL
+ * THIS FILE IS AVAILABLE UNDER TWO DIFFERENT LICENSES:
+ * 1/GPL OR 2/JSEL
  *
- *     1/ GPL
- *     ==================================================================================
+ * 1/ GPL
+ * ==================================================================================
  *
- *     IF YOU DECIDE TO CHOOSE THE GPL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
+ * IF YOU DECIDE TO CHOOSE THE GPL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
  *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *     GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *     You should have received a copy of the GNU General Public License
- *     along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *     2/ JSEL - Commercial and Supported Versions of the program
- *     ===================================================================================
+ * 2/ JSEL - Commercial and Supported Versions of the program
+ * ===================================================================================
  *
- *     IF YOU DECIDE TO CHOOSE THE JSEL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
+ * IF YOU DECIDE TO CHOOSE THE JSEL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
  *
- *     Alternatively, commercial and supported versions of the program - also known as
- *     Enterprise Distributions - must be used in accordance with the terms and conditions
- *     contained in a separate written agreement between you and Jahia Solutions Group SA.
+ * Alternatively, commercial and supported versions of the program - also known as
+ * Enterprise Distributions - must be used in accordance with the terms and conditions
+ * contained in a separate written agreement between you and Jahia Solutions Group SA.
  *
- *     If you are unsure which license is appropriate for your use,
- *     please contact the sales department at sales@jahia.com.
+ * If you are unsure which license is appropriate for your use,
+ * please contact the sales department at sales@jahia.com.
  */
 package org.jahia.modules.jcrestapi;
 
@@ -99,6 +99,7 @@ public class APITest extends JerseyTest {
 //        // so you might get default return values for methods you don't expect
 ////        PowerMockito.mockStatic(SettingsBean.class);
 ////        PowerMockito.when(SettingsBean.getInstance()).thenReturn(settingsBean);
+        // todo: we should destroy the repository to ensure tests isolation
     }
 
     @Override
@@ -187,6 +188,33 @@ public class APITest extends JerseyTest {
                         "type", equalTo(nodeType),
                         "id", not(first)
                 );
+    }
+
+    @Test
+    public void checkDelete() throws Exception {
+        // create a node
+        final String nodeType = "nt:address";
+        final String name = "bar";
+        given().body("{\"type\": \"" + nodeType + "\"}")
+                .contentType(ContentType.JSON)
+                .when()
+                .post(getURLByPath("children/" + name))
+                .then()
+                .assertThat()
+                .statusCode(SC_CREATED)
+                .contentType("application/hal+json")
+                .body(
+                        "name", equalTo(name),
+                        "type", equalTo(nodeType),
+                        "id", notNullValue()
+                );
+
+        // then delete it
+        given().when()
+                .delete(getURLByPath("children/" + name))
+                .then()
+                .assertThat()
+                .statusCode(SC_NO_CONTENT);
     }
 
     @Test
