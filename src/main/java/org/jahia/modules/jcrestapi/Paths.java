@@ -149,7 +149,7 @@ public class Paths extends API {
     @DELETE
     @Path("/{path: .*}")
     public Object delete(@Context UriInfo context) {
-        return performByPath(context, CREATE_OR_UPDATE, null);
+        return performByPath(context, DELETE, null);
     }
 
 
