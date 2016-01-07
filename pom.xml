@@ -50,6 +50,7 @@
         <artifactId>jahia-modules</artifactId>
         <groupId>org.jahia.modules</groupId>
         <version>7.0.0.0</version>
+		<relativePath/>
     </parent>
     <artifactId>jcrestapi</artifactId>
     <name>Jahia RESTful JCR Access</name>
