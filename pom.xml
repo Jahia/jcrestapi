@@ -239,7 +239,7 @@
                 <!-- Latest version of Jahia plugin. Remove when parent is updated. -->
                 <groupId>org.jahia.server</groupId>
                 <artifactId>jahia-maven-plugin</artifactId>
-                <version>4.3-SNAPSHOT</version>
+                <version>4.3</version>
                 <executions>
                     <execution>
                         <id>jahia-version</id>
