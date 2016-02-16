@@ -479,12 +479,16 @@ public class API {
             language = "en"; // todo: retrieve configured default language if possible
         }
 
-        final Session session;
+        Session session;
         if (repository instanceof JCRSessionFactory) {
             JCRSessionFactory factory = (JCRSessionFactory) repository;
             session = factory.getCurrentUserSession(workspace, LanguageCodeConverters.languageCodeToLocale(language), Locale.ENGLISH);
+        } else if (repository.getClass().getName().equals("org.jahia.modules.jcrestapi.NoLoggingTransientRepository")) {
+            // only the case for the execution or tests
+            session = repository.login(null, null);
         } else {
-            session = repository.login(new SimpleCredentials("root", new char[]{'r', 'o', 'o', 't', '1', '2', '3', '4'}), workspace);
+            throw new UnsupportedOperationException("Unsupported JCR repository type: "
+                    + repository.getClass().getName() + ". Expected type: " + JCRSessionFactory.class.getName());
         }
 
         // put the session in the session holder so that other objects can access it if needed
