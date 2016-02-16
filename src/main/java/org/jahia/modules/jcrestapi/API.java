@@ -484,7 +484,7 @@ public class API {
             JCRSessionFactory factory = (JCRSessionFactory) repository;
             session = factory.getCurrentUserSession(workspace, LanguageCodeConverters.languageCodeToLocale(language), Locale.ENGLISH);
         } else if (repository.getClass().getName().equals("org.jahia.modules.jcrestapi.NoLoggingTransientRepository")) {
-            // only the case for the execution or tests
+            // only the case for the execution of our tests
             session = repository.login(null, null);
         } else {
             throw new UnsupportedOperationException("Unsupported JCR repository type: "
