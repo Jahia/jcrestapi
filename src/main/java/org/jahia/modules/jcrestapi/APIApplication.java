@@ -48,6 +48,7 @@ import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 import javax.jcr.Repository;
 
@@ -67,6 +68,7 @@ public class APIApplication extends ResourceConfig {
                 bindFactory(repositoryFactoryClass).to(Repository.class);
             }
         });
+        property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
 
         // activates tracing of requests and responses and outputs log to /tmp/jersey.log
         /*property(ServerProperties.TRACING, "ALL");
