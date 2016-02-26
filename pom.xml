@@ -44,13 +44,14 @@
         please contact the sales department at sales@jahia.com.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>jahia-modules</artifactId>
         <groupId>org.jahia.modules</groupId>
         <version>7.0.0.0</version>
-		<relativePath />
+        <relativePath/>
     </parent>
     <artifactId>jcrestapi</artifactId>
     <name>Jahia RESTful JCR Access</name>
@@ -58,7 +59,7 @@
     <packaging>bundle</packaging>
     <description>Module implementing a RESTful API to access JCR data.</description>
 
-    <!-- Import depedencies from jaxrs-osgi-extender for Jersey and related, json-generation for Jackson -->
+    <!-- Import dependencies from jaxrs-osgi-extender for Jersey and related, json-generation for Jackson -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -90,8 +91,8 @@
         <connection>scm:git:git@github.com:Jahia/jcrestapi.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/jcrestapi.git</developerConnection>
         <url>http://git@github.com:Jahia/jcrestapi.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <repositories>
         <repository>
