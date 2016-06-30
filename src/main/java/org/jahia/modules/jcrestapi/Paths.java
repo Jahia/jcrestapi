@@ -72,9 +72,7 @@ import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.jcrestapi.json.APINode;
 import org.jahia.modules.json.Filter;
-import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
-import org.jahia.modules.json.JSONNode;
 
 /**
  * @author Christophe Laprun
@@ -93,7 +91,7 @@ public class Paths extends API {
         super(workspace, language, repository, context);
     }
 
-    private Object performByPath(UriInfo context, String operation, String data) {
+    private Object performByPath(UriInfo context, String operation, Object data) {
         // only consider useful segments
         final List<PathSegment> usefulSegments = getUsefulSegments(context);
         int index = 0;
@@ -105,11 +103,23 @@ public class Paths extends API {
                 String nodePath = computePathUpTo(usefulSegments, index);
                 String subElement = getSubElement(usefulSegments, index);
                 JSONItem converted;
-                if (data != null && !data.isEmpty()) {
-                    try {
-                        converted = accessor.convertFrom(data);
-                    } catch (Exception e) {
-                        throw new APIException(e.getCause(), operation, NodeAccessor.BY_PATH.getType(), nodePath, subElementType, Collections.singletonList(subElement), data);
+                if (data != null) {
+                    if (data instanceof String) {
+                        String dataAsString = (String) data;
+                        try {
+                            converted = accessor.convertFrom(dataAsString);
+                        } catch (Exception e) {
+                            throw new APIException(e.getCause(), operation, NodeAccessor.BY_PATH.getType(), nodePath, subElementType, Collections.singletonList(subElement), data);
+                        }
+                    } else if (data instanceof List) {
+                        List<String> dataAsList = (List<String>) data;
+                        return performBatchDelete(workspace, language, nodePath, subElementType, dataAsList, context,
+                                NodeAccessor.BY_PATH);
+                    }
+                    else {
+                        throw new APIException(new IllegalArgumentException("Unknown payload type"), operation,
+                                NodeAccessor.BY_PATH.getType(), nodePath,
+                                subElementType, Collections.singletonList(subElement), data);
                     }
                 } else {
                     converted = null;
@@ -148,8 +158,9 @@ public class Paths extends API {
 
     @DELETE
     @Path("/{path: .*}")
-    public Object delete(@Context UriInfo context) {
-        return performByPath(context, DELETE, null);
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object delete(List<String> subElementsToDelete, @Context UriInfo context) {
+        return performByPath(context, DELETE, subElementsToDelete);
     }
 
 

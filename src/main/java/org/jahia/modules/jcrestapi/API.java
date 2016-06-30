@@ -393,24 +393,25 @@ public class API {
      *
      * @param workspace      the JCR workspace that we want to access
      * @param language       the language code in which we want to retrieve the data
-     * @param id             the identifier of the parent node which sub-elements we want to delete
+     * @param parentIdOrPath the identifier of the parent node which sub-elements we want to delete
      * @param subElementType the type of sub-elements to delete
      * @param subElements    a list of sub-elements names to delete
      * @param context        a UriInfo instance, automatically injected, providing context about the request URI
+     * @param nodeAccessor   the {@link NodeAccessor} instance to use to resolve the parent node
      * @return a Response ready to be sent to the client
      */
-    protected Response performBatchDelete(String workspace, String language, String id, String subElementType, List<String> subElements, UriInfo context) {
+    protected Response performBatchDelete(String workspace, String language, String parentIdOrPath, String subElementType, List<String> subElements, UriInfo context, NodeAccessor nodeAccessor) {
         Session session = null;
 
         try {
             session = getSession(workspace, language);
 
             // process given elements
-            final ElementsProcessor processor = new ElementsProcessor(id, subElementType, "");
-            id = processor.getIdOrPath();
+            final ElementsProcessor processor = new ElementsProcessor(parentIdOrPath, subElementType, "");
+            parentIdOrPath = processor.getIdOrPath();
             subElementType = processor.getSubElementType();
 
-            final Node node = NodeAccessor.BY_ID.getNode(id, session);
+            final Node node = nodeAccessor.getNode(parentIdOrPath, session);
 
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
@@ -423,7 +424,7 @@ public class API {
                 return null;
             }
         } catch (Exception e) {
-            throw new APIException(e, DELETE, NodeAccessor.BY_ID.getType(), id, subElementType, subElements, null);
+            throw new APIException(e, DELETE, NodeAccessor.BY_ID.getType(), parentIdOrPath, subElementType, subElements, null);
         } finally {
             closeSession(session);
         }

@@ -156,7 +156,7 @@ public class Utils {
 
     public static boolean getFlagValueFrom(UriInfo context, String flagName) {
         final MultivaluedMap<String, String> queryParameters = context.getQueryParameters();
-        if (queryParameters != null) {
+        if (queryParameters != null && !queryParameters.isEmpty()) {
             final List<String> flagValues = queryParameters.get(flagName);
             if (flagValues != null) {
                 if (flagValues.isEmpty() || !"false".equals(flagValues.get(0))) {

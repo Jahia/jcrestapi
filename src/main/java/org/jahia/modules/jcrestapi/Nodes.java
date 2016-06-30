@@ -164,7 +164,7 @@ public class Nodes extends API {
                              List<String> subElementsToDelete,
                              @Context UriInfo context) {
         if (subElementsToDelete != null) {
-            return performBatchDelete(workspace, language, id, subElementType, subElementsToDelete, context);
+            return performBatchDelete(workspace, language, id, subElementType, subElementsToDelete, context, NodeAccessor.BY_ID);
         }
         return perform(workspace, language, id, subElementType, subElement, context, DELETE, null);
     }
