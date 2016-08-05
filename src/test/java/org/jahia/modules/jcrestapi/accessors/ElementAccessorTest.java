@@ -48,12 +48,10 @@ import mockit.MockUp;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.Utils;
 import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.jcrestapi.links.JSONLink;
-import org.jahia.modules.json.JSONConstants;
-import org.jahia.modules.json.JSONItem;
-import org.jahia.modules.json.JSONNamed;
-import org.jahia.modules.json.JSONSubElementContainer;
+import org.jahia.modules.json.*;
 import org.jahia.modules.json.jcr.SessionAccess;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +65,9 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -139,7 +140,24 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer<APID
     }
 
     protected String[] getMandatoryLinkRels() {
-        return new String[]{API.ABSOLUTE, API.SELF, API.PATH, API.TYPE, API.PARENT, JSONConstants.PROPERTIES, JSONConstants.CHILDREN, JSONConstants.MIXINS, JSONConstants.VERSIONS};
+        List<String> links = new LinkedList<>();
+        Collections.addAll(links, API.ABSOLUTE, API.SELF, API.PATH, API.TYPE, API.PARENT);
+
+        Filter filter = Utils.getFilter(context);
+        if (filter.outputProperties()) {
+            links.add(JSONConstants.PROPERTIES);
+        }
+        if (filter.outputVersions()) {
+            links.add(JSONConstants.VERSIONS);
+        }
+        if (filter.outputChildren()) {
+            links.add(JSONConstants.CHILDREN);
+        }
+        if (filter.outputMixins()) {
+            links.add(JSONConstants.MIXINS);
+        }
+
+        return links.toArray(new String[links.size()]);
     }
 
     @Test

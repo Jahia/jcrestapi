@@ -43,15 +43,13 @@
  */
 package org.jahia.modules.jcrestapi.links;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import javax.jcr.Item;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.json.APIObjectFactory;
+import org.jahia.modules.json.*;
+import org.jahia.modules.json.jcr.SessionAccess;
+
+import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.Version;
@@ -59,12 +57,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.json.APIObjectFactory;
-import org.jahia.modules.json.*;
-import org.jahia.modules.json.jcr.SessionAccess;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
@@ -193,10 +188,17 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
 
     public void initFrom(JSONNode<APIDecorator> jsonNode) {
         if (outputLinks) {
-            addLink(JSONLink.createLink(JSONConstants.PROPERTIES, jsonNode.getJSONProperties().getDecorator().getURI()));
-            addLink(JSONLink.createLink(JSONConstants.MIXINS, jsonNode.getJSONMixins().getDecorator().getURI()));
-            addLink(JSONLink.createLink(JSONConstants.CHILDREN, jsonNode.getJSONChildren().getDecorator().getURI()));
-            addLink(JSONLink.createLink(JSONConstants.VERSIONS, jsonNode.getJSONVersions().getDecorator().getURI()));
+            createAndAddLinkIfNeeded(jsonNode.getJSONProperties(), JSONConstants.PROPERTIES);
+            createAndAddLinkIfNeeded(jsonNode.getJSONMixins(), JSONConstants.MIXINS);
+            createAndAddLinkIfNeeded(jsonNode.getJSONChildren(), JSONConstants.CHILDREN);
+            createAndAddLinkIfNeeded(jsonNode.getJSONVersions(), JSONConstants.VERSIONS);
+        }
+    }
+
+    private void createAndAddLinkIfNeeded(JSONSubElementContainer<APIDecorator> container, String rel) {
+        final String uri = container != null ? container.getDecorator().getURI() : null;
+        if (uri != null) {
+            addLink(JSONLink.createLink(rel, uri));
         }
     }
 
