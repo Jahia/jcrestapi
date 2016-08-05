@@ -53,6 +53,7 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.qom.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.LinkedList;
@@ -61,7 +62,7 @@ import java.util.List;
 /**
  * @author Christophe Laprun
  */
-@Produces({"application/hal+json"})
+@Produces({"application/hal+json", MediaType.APPLICATION_JSON})
 public class Types extends API {
     private static final String SELECTOR_NAME = "type";
     static final String MAPPING = "types";
@@ -72,6 +73,7 @@ public class Types extends API {
 
     @GET
     @Path("/{type}")
+    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
     public Object getByType(@PathParam("workspace") String workspace,
                             @PathParam("language") String language,
                             @PathParam("type") String type,
