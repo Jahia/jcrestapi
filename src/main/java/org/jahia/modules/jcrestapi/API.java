@@ -73,7 +73,7 @@ import java.util.*;
  */
 @Component
 @Path(API.API_PATH)
-@Produces({"application/hal+json"})
+@Produces({"application/hal+json", MediaType.APPLICATION_JSON})
 public class API {
     public static final String SELF = "self";
     public static final String ABSOLUTE = "absolute";
@@ -272,6 +272,7 @@ public class API {
     @POST
     @Path("/{workspace}/{language}/query")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
     public Object query(@PathParam("workspace") String workspace, @PathParam("language") String language, JSONQuery jsonQuery, @Context UriInfo context) {
         if (jsonQuery != null) {
             Session session = null;
