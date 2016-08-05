@@ -136,8 +136,8 @@ public class Types extends API {
 
             final NodeIterator nodes = queryResult.getNodes();
             final List<JSONNode> result = new LinkedList<JSONNode>();
+            final Filter filter = Utils.getFilter(context);
             while (nodes.hasNext()) {
-                final Filter filter = Utils.getFilter(context);
                 final Node resultNode = nodes.nextNode();
                 if (filter.acceptChild(resultNode)) {
                     JSONNode node = getFactory().createNode(resultNode, filter, depth);
