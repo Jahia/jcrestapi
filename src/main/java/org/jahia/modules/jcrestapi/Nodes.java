@@ -43,31 +43,24 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import java.util.List;
-import javax.jcr.Node;
-import javax.jcr.Repository;
-import javax.jcr.Session;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
-
 import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONProperty;
 
+import javax.jcr.Node;
+import javax.jcr.Repository;
+import javax.jcr.Session;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
+import java.util.List;
+
 /**
  * @author Christophe Laprun
  */
-@Produces({"application/hal+json"})
+@Produces({"application/hal+json", MediaType.APPLICATION_JSON})
 public class Nodes extends API {
     static final String MAPPING = "nodes";
 
@@ -76,6 +69,7 @@ public class Nodes extends API {
     }
 
     @GET
+    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
     /**
      * Needed to get URI without trailing / to work :(
      */
@@ -84,6 +78,7 @@ public class Nodes extends API {
     }
 
     @GET
+    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
     @Path("/{id: [^/]*}{subElementType: (/(" + JSONConstants.CHILDREN +
             "|" + JSONConstants.MIXINS +
             "|" + JSONConstants.PROPERTIES +
@@ -97,6 +92,7 @@ public class Nodes extends API {
     }
 
     @PUT
+    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
     @Path("/{id: [^/]*}{subElementType: (/(" + JSONConstants.CHILDREN +
             "|" + JSONConstants.MIXINS +
             "|" + JSONConstants.PROPERTIES +
@@ -125,6 +121,7 @@ public class Nodes extends API {
     @PUT
     @Path("/{id: [^/]*}/" + JSONConstants.PROPERTIES + "/{subElement}")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
     public Object createOrUpdateProperty(@PathParam("id") String id,
                                          @PathParam("subElement") String subElement,
                                          JSONProperty childData,
@@ -135,6 +132,7 @@ public class Nodes extends API {
 
     @GET
     @Path("/{id: [^/]*}/" + JSONConstants.PROPERTIES + "/{subElement}")
+    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
     public Object getProperty(@PathParam("id") String id,
                               @PathParam("subElement") String subElement,
                               @Context UriInfo context) {
@@ -158,13 +156,14 @@ public class Nodes extends API {
             "|" + JSONConstants.PROPERTIES +
             "|" + JSONConstants.VERSIONS +
             "))?}{subElement: .*}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Object deleteNode(@PathParam("id") String id,
                              @PathParam("subElementType") String subElementType,
                              @PathParam("subElement") String subElement,
                              List<String> subElementsToDelete,
                              @Context UriInfo context) {
         if (subElementsToDelete != null) {
-            return performBatchDelete(workspace, language, id, subElementType, subElementsToDelete, context);
+            return performBatchDelete(workspace, language, id, subElementType, subElementsToDelete, context, NodeAccessor.BY_ID);
         }
         return perform(workspace, language, id, subElementType, subElement, context, DELETE, null);
     }

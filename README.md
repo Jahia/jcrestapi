@@ -42,6 +42,8 @@ For a good (and not overly complex) overview of REST, please see
 - v1.2:
     - support for server-delegated naming of newly created instances via `POST` requests via both node identifiers or paths
     - added JSON version of the `/version` endpoint to have an easier to parse version information
+- v1.3:
+    - support for batch delete of nodes using their paths, providing a list of children node names to batch delete.
       
 ### Implementation version history
 
@@ -59,6 +61,10 @@ For a good (and not overly complex) overview of REST, please see
 - v2.2.0:
     - support for v1.2 of the API
     - uses BOM from jaxrs-osgi-extender and json-generation modules to keep Jackson and Jersey versions in sync
+- v2.2.1-2.2.2:
+    - Minor improvements
+- v2.2.3:
+    - support for v1.3 of the API
 
 ### Goals
 
@@ -950,7 +956,7 @@ identified by the `subElement` path element for the node identified by the speci
 
 - `GET`: to retrieve the identified resource
 - `PUT`: to create (if it doesn't already exist) or update the identified resource
-- `DELETE`: to delete the identified resource
+- `DELETE`: to delete the identified resource(s)
 - `POST`:
     - to create a new child without providing a name for it, leaving it up to the server to create an appropriate one (starting with v1.2 of the API)
     - to rename a resource but leave it at the same spot in the hierarchy using the `moveto` sub-resource 
@@ -1041,10 +1047,19 @@ sub-element and the resolution of the sub-element will happen using the next pat
 
 - `GET`: to retrieve the identified resource
 - `PUT`: to create (if it doesn't already exist) or update the identified resource (starting from v1.1 of the API)
-- `DELETE`: to delete the identified resource (starting from v1.1 of the API)
+- `DELETE`: to delete the identified resource(s) (starting from v1.1 of the API, v1.3 adding the option to provide a list of children names to batch delete)
 - `POST`:
     - to create a new child without providing a name for it, leaving it up to the server to create an appropriate one (starting with v1.2 of the API)
     - to upload a file as a child node of the identified resource using `multipart/form-data` content type and specifying the file to upload using the `file` parameter
+    
+#### Accepted data
+
+`PUT` operations accept JSON representations of the objects that the method intends to update or create, meaning a `PUT` to create a property must provide
+a valid JSON representation of a property, a `PUT` to update a node must provide in the body of the request a valid JSON representation of a node.
+As mentioned before, this representation only needs to be partial, containing only the information that is required to complete the operation.
+
+`DELETE` operations accept a JSON array of String name of children elements to be batch-deleted. This way several elements can be deleted in one single call.
+
 
 #### Examples
 
