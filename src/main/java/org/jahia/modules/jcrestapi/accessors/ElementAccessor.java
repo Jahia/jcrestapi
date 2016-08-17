@@ -54,6 +54,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.URIUtils;
@@ -97,7 +98,8 @@ public abstract class ElementAccessor<C extends JSONSubElementContainer<APIDecor
     protected abstract CreateOrUpdateResult<T> createOrUpdate(Node node, String subElement, U childData) throws RepositoryException;
 
     public JSONItem convertFrom(String rawJSONData) throws Exception {
-        return mapper.readValue(rawJSONData, JSONNode.class);
+        ObjectReader reader = mapper.reader(JSONItem.class);
+        return reader.readValue(rawJSONData);
     }
 
     public Response perform(Node node, String subElement, String operation, U childData, UriInfo context) throws RepositoryException {
