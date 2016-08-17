@@ -56,6 +56,7 @@ import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.jcrestapi.links.JSONLink;
 import org.jahia.modules.json.JSONChildren;
 import org.jahia.modules.json.JSONConstants;
+import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNode;
 import org.junit.Test;
 
@@ -126,5 +127,14 @@ public class ChildrenElementAccessorTest extends ElementAccessorTest<JSONChildre
         final Map greatChildren = child.getChildren();
         assertThat(greatChildren).isNotNull();
         assertThat(greatChildren.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void convertFromString() throws  Exception
+    {
+        JSONItem jsonItem = getAccessor().convertFrom("{\"id\":10,\"name\":\"objectName\",\"type\":\"objectType\" }");
+        assertThat(jsonItem).isNotNull();
+        assertThat(jsonItem.getName()).isEqualTo("objectName");
+        assertThat(jsonItem.getTypeName()).isEqualTo("objectType");
     }
 }
