@@ -289,7 +289,7 @@ public class APITest extends JerseyTest {
 
     @Test
     public void testGetRoot() throws RepositoryException {
-        final Session session = TestRepositoryFactory.repository.login();
+        final Session session = TestRepositoryFactory.getRepository().login();
         final Node rootNode = session.getRootNode();
         final String rootId = rootNode.getIdentifier();
         final String rootTypeName = rootNode.getPrimaryNodeType().getName();
@@ -490,11 +490,14 @@ public class APITest extends JerseyTest {
     }*/
 
     private static class TestRepositoryFactory implements Factory<Repository> {
-        static final Repository repository = new NoLoggingTransientRepository();
+
+        static Repository getRepository() {
+            return new NoLoggingTransientRepository();
+        }
 
         @Override
         public Repository provide() {
-            return repository;
+            return getRepository();
         }
 
         @Override
