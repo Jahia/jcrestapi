@@ -52,6 +52,7 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.ws.rs.core.UriInfo;
 
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.links.APIDecorator;
 import org.jahia.modules.json.JSONItem;
@@ -64,6 +65,8 @@ import org.jahia.services.content.JCRNodeWrapper;
  * @author Christophe Laprun
  */
 public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APIDecorator>, JSONProperty<APIDecorator>, JSONProperty> {
+    private static final ObjectReader reader = mapper.reader(JSONProperty.class);
+
     static Property setPropertyOnNode(String escapedName, JSONProperty jsonProperty, Node node) throws RepositoryException {
         final String propName = Names.unescape(escapedName);
 
@@ -142,6 +145,6 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
 
     @Override
     public JSONItem convertFrom(String rawJSONData) throws Exception {
-        return mapper.readValue(rawJSONData, JSONProperty.class);
+        return reader.readValue(rawJSONData);
     }
 }

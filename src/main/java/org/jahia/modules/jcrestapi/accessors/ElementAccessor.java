@@ -53,6 +53,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.jahia.modules.jcrestapi.API;
@@ -70,7 +71,8 @@ import org.jahia.modules.json.JSONSubElementContainer;
  * @author Christophe Laprun
  */
 public abstract class ElementAccessor<C extends JSONSubElementContainer<APIDecorator>, T extends JSONNamed<APIDecorator>, U extends JSONItem> {
-    static final ObjectReader reader = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE).reader(JSONItem.class);
+    protected static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
+    private static final ObjectReader reader = mapper.reader(JSONItem.class);
 
     public static APIObjectFactory getFactory() {
         return APIObjectFactory.getInstance();

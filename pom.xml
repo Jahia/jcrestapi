@@ -236,52 +236,6 @@
         </resources>
         <plugins>
             <plugin>
-                <!-- Latest version of Jahia plugin. Remove when parent is updated. -->
-                <groupId>org.jahia.server</groupId>
-                <artifactId>jahia-maven-plugin</artifactId>
-                <version>4.3</version>
-                <executions>
-                    <execution>
-                        <id>jahia-version</id>
-                        <goals>
-                            <goal>jahia-version</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>native2ascii</id>
-                        <goals>
-                            <goal>native2ascii</goal>
-                        </goals>
-                        <configuration>
-                            <includes>resources/*.properties</includes>
-                            <defaultPropertiesFileLocale>en</defaultPropertiesFileLocale>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>package-imports</id>
-                        <goals>
-                            <goal>package-imports</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>prepare-package-dependencies</id>
-                        <goals>
-                            <goal>dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <contentDefinitionCapabilitiesActivated>true</contentDefinitionCapabilitiesActivated>
-                        </configuration>
-                        <phase>prepare-package</phase>
-                    </execution>
-                    <execution>
-                        <id>verify-package-dependencies</id>
-                        <goals>
-                            <goal>check-dependencies</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
