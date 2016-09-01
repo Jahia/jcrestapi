@@ -72,7 +72,7 @@ import org.jahia.modules.json.JSONSubElementContainer;
  */
 public abstract class ElementAccessor<C extends JSONSubElementContainer<APIDecorator>, T extends JSONNamed<APIDecorator>, U extends JSONItem> {
     protected static final ObjectMapper mapper = new JacksonJaxbJsonProvider().locateMapper(JSONNode.class, MediaType.APPLICATION_JSON_TYPE);
-    private static final ObjectReader reader = mapper.reader(JSONItem.class);
+    private static final ObjectReader reader = mapper.reader(JSONNode.class);
 
     public static APIObjectFactory getFactory() {
         return APIObjectFactory.getInstance();
