@@ -44,6 +44,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.apache.jackrabbit.core.TransientRepository;
+import org.apache.jackrabbit.core.config.RepositoryConfig;
 
 import javax.jcr.Credentials;
 import javax.jcr.RepositoryException;
@@ -56,6 +57,10 @@ import javax.jcr.SimpleCredentials;
  * @author Christophe Laprun
  */
 public class NoLoggingTransientRepository extends TransientRepository {
+    NoLoggingTransientRepository(RepositoryConfig config) {
+        super(config);
+    }
+
     @Override
     public synchronized Session login(Credentials credentials, String workspaceName) throws RepositoryException {
         return super.login(new SimpleCredentials("admin", "admin".toCharArray()), null);

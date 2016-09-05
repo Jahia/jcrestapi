@@ -2,42 +2,42 @@
  * ==========================================================================================
  * =                   JAHIA'S DUAL LICENSING - IMPORTANT INFORMATION                       =
  * ==========================================================================================
- *
+ * <p>
  * http://www.jahia.com
- *
+ * <p>
  * Copyright (C) 2002-2016 Jahia Solutions Group SA. All rights reserved.
- *
+ * <p>
  * THIS FILE IS AVAILABLE UNDER TWO DIFFERENT LICENSES:
  * 1/GPL OR 2/JSEL
- *
+ * <p>
  * 1/ GPL
  * ==================================================================================
- *
+ * <p>
  * IF YOU DECIDE TO CHOOSE THE GPL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- *
+ * <p>
+ * <p>
  * 2/ JSEL - Commercial and Supported Versions of the program
  * ===================================================================================
- *
+ * <p>
  * IF YOU DECIDE TO CHOOSE THE JSEL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
- *
+ * <p>
  * Alternatively, commercial and supported versions of the program - also known as
  * Enterprise Distributions - must be used in accordance with the terms and conditions
  * contained in a separate written agreement between you and Jahia Solutions Group SA.
- *
+ * <p>
  * If you are unsure which license is appropriate for your use,
  * please contact the sales department at sales@jahia.com.
  */
@@ -46,14 +46,17 @@ package org.jahia.modules.jcrestapi;
 import com.jayway.restassured.http.ContentType;
 import mockit.Mock;
 import mockit.MockUp;
+import org.apache.commons.io.FileUtils;
+import org.apache.jackrabbit.core.TransientRepository;
+import org.apache.jackrabbit.core.config.ConfigurationException;
+import org.apache.jackrabbit.core.config.RepositoryConfig;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.test.JerseyTest;
 import org.jahia.modules.jcrestapi.api.PreparedQuery;
 import org.jahia.modules.json.Names;
 import org.jahia.services.content.JCRContentUtils;
 import org.jahia.settings.SettingsBean;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import javax.jcr.Node;
 import javax.jcr.Repository;
@@ -61,7 +64,11 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import static com.jayway.restassured.RestAssured.expect;
@@ -77,6 +84,37 @@ public class APITest extends JerseyTest {
     private static final String API_DEFAULT_EN = API.API_PATH + "/default/en/";
     private static final String API_DEFAULT_EN_BY_PATH = API_DEFAULT_EN + Paths.MAPPING + "/";
     private static final String API_DEFAULT_EN_NODES = API_DEFAULT_EN + Nodes.MAPPING + "/";
+    private static TransientRepository repository;
+    private Session session;
+
+    @BeforeClass
+    public static void beforeAll() throws IOException, ConfigurationException {
+        final Path repositoryPath = Files.createTempDirectory("jcrestapi-test-dir_");
+        final InputStream configStream = APITest.class.getResourceAsStream("/repository.xml");
+
+        final Path repositoryLocation = repositoryPath.toAbsolutePath();
+        final RepositoryConfig config = RepositoryConfig.create(configStream, repositoryLocation.toString());
+        repository = new NoLoggingTransientRepository(config);
+
+        Runtime.getRuntime().addShutdownHook(new Thread("Repository Cleanup") {
+            @Override
+            public void run() {
+                destroyRepository();
+            }
+        });
+    }
+
+    @AfterClass
+    public static void destroyRepository() {
+        repository.shutdown();
+        String repositoryLocation = repository.getHomeDir();
+        try {
+            FileUtils.deleteDirectory(new File(repositoryLocation));
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+        repository = null;
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -99,7 +137,13 @@ public class APITest extends JerseyTest {
 //        // so you might get default return values for methods you don't expect
 ////        PowerMockito.mockStatic(SettingsBean.class);
 ////        PowerMockito.when(SettingsBean.getInstance()).thenReturn(settingsBean);
-        // todo: we should destroy the repository to ensure tests isolation
+
+        session = repository.login();
+    }
+
+    @After
+    public void afterEach() {
+        session.logout();
     }
 
     @Override
@@ -289,11 +333,10 @@ public class APITest extends JerseyTest {
 
     @Test
     public void testGetRoot() throws RepositoryException {
-        final Session session = TestRepositoryFactory.getRepository().login();
+
         final Node rootNode = session.getRootNode();
         final String rootId = rootNode.getIdentifier();
         final String rootTypeName = rootNode.getPrimaryNodeType().getName();
-        session.logout();
 
         expect().statusCode(SC_OK)
                 .body(
@@ -490,14 +533,9 @@ public class APITest extends JerseyTest {
     }*/
 
     private static class TestRepositoryFactory implements Factory<Repository> {
-
-        static Repository getRepository() {
-            return new NoLoggingTransientRepository();
-        }
-
         @Override
         public Repository provide() {
-            return getRepository();
+            return repository;
         }
 
         @Override
