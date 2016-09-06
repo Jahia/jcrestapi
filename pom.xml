@@ -307,7 +307,8 @@
                             org.jahia.modules.jcrestapi.*
                         </Private-Package>
                         <Export-Package>
-                            org.jahia.modules.jcrestapi.api
+                            org.jahia.modules.jcrestapi.api;version="2.2.2",
+							org.jahia.modules.jcrestapi.api;version="${project.version}"
                         </Export-Package>
                         <Import-Package>
                             javax.jcr.*,
