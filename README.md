@@ -44,12 +44,8 @@ For a good (and not overly complex) overview of REST, please see
     - added JSON version of the `/version` endpoint to have an easier to parse version information
 - v1.3:
     - support for batch delete of nodes using their paths, providing a list of children node names to batch delete.
-- v2:
-    - make it possible to call to the API using default workspace and language
     - QA-8753: made sure that all endpoints properly provide @Produces and @Consumes annotations.
-    - support for `/filters` endpoint to be able to manage filters
-    - added `/queries` endpoint, deprecated `/query` endpoint
-      
+ 
 ### Implementation version history
 
 - v2.0.0: initial release
@@ -70,8 +66,6 @@ For a good (and not overly complex) overview of REST, please see
     - Minor improvements
 - v2.2.3:
     - support for v1.3 of the API
-- v3.0.0:
-    - support for v2 of the API
 
 ### Goals
 
