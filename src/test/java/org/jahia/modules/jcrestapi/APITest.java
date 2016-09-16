@@ -85,6 +85,7 @@ public class APITest extends JerseyTest {
     private static final String API_DEFAULT_EN_BY_PATH = API_DEFAULT_EN + Paths.MAPPING + "/";
     private static final String API_DEFAULT_EN_NODES = API_DEFAULT_EN + Nodes.MAPPING + "/";
     private static TransientRepository repository;
+    private static String repositoryLocation;
     private Session session;
 
     @BeforeClass
@@ -92,8 +93,9 @@ public class APITest extends JerseyTest {
         final Path repositoryPath = Files.createTempDirectory("jcrestapi-test-dir_");
         final InputStream configStream = APITest.class.getResourceAsStream("/repository.xml");
 
-        final Path repositoryLocation = repositoryPath.toAbsolutePath();
-        final RepositoryConfig config = RepositoryConfig.create(configStream, repositoryLocation.toString());
+        final Path absolutePath = repositoryPath.toAbsolutePath();
+        repositoryLocation = absolutePath.toString();
+        final RepositoryConfig config = RepositoryConfig.create(configStream, repositoryLocation);
         repository = new NoLoggingTransientRepository(config);
 
         Runtime.getRuntime().addShutdownHook(new Thread("Repository Cleanup") {
@@ -106,14 +108,16 @@ public class APITest extends JerseyTest {
 
     @AfterClass
     public static void destroyRepository() {
-        repository.shutdown();
-        String repositoryLocation = repository.getHomeDir();
+        if (repository != null) {
+            repository.shutdown();
+            repository = null;
+        }
+
         try {
             FileUtils.deleteDirectory(new File(repositoryLocation));
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
-        repository = null;
     }
 
     @Before
