@@ -77,67 +77,6 @@ The goals of this project are as follows:
 - Optimize the API for Javascript client applications
 - Provide full JCR access from the API with the associated benefits and risks
 
-### Special provision for PUT and POST methods
-
-PUT and POST methods theoretically exchange full resource representations. However, nodes and properties representations can be quite complex with a potentially deep graph-like
-structure. Moreover, much of the exposed data is actually read-only (node type information, links...) or is or can be derived from the node type information. It would therefore
-be inefficient to require clients to pass all that information to the API during creation or update of resources. We adopt the convention that only the information that is
-either required or is being changed as a result of the operation is passed along to the API. This results in minimal effort on the client side and has the added benefit of
-reducing the amount of network chatter. The semantics we follow is therefore close to the PATCH method semantics in spirit, if not in implementation.
-
----
-
-## TODO:
-
-- Improve cache control using ETag (for simple node GETs), in particular, can we use jcr:lastModified as an ETag and
-using Response.cacheControl method instead of filter.
-- Clarify usage of children vs. access via path and its consequences on NodeElementAccessor.
-- <del>Design and implement versions access.</del> __(Done)__
-- <del>Re-design URIs to provide easier access to workspace and language.</del> __(Done)__
-- JS Client library?
-- Improve cross-site support
-- Improve authentication support, clarify which authentication options are supported
-- <del>Define a versioning scheme</del> __(Done: use version number in the URIs)__
-- <del>Should we use a vendor-specific content type?</del> __(Done: deemed too complex at the moment without much upside)__
-- <del>JSON-P support</del> __(Done: no JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)__
-- <del>Packaging</del> __(Done)__
-- Documentation using apiary.io?
-- <del>Support file uploads</del> __(Done)__
-- Support easier creation of same-name siblings using POST and JSON data
-- Migrate String constants (link relations, sub-element types, etc.) to typesafe constants organized by type
-- Rename sub-element type names (children, properties, etc.) to something with a namespace to avoid potential conflicts in by-path access.
-
----
-
-## Resources identification
-
-The natural match to map JCR data unto resources is to use JCR nodes as resources, identified either by their path or identifier,
-which is made rather easy since JCR data is stored mostly in tree form.
-
-A node also defines sub-resources:
-
-- children for a given node are accessed using the `children` child resource
-- properties for a given node are found under the `properties` child resource
-- mixins for a given node are accessed using the `mixins` child resource
-- versions for a given node are found under the `versions` child resource
-
-Each of these sub-resources (which we also call _sub-element type_ as they identify a type of node sub-element) provides named access to their respective sub-elements as well.
-
----
-
-## <a name="uri"/>URI design
-
-- `:` character is encoded by `__` in property names since `:` is a reserved character for URIs
-- indices of same name siblings are denoted using the `--` prefix
-
-### Examples
-
-| Node                        | Encoded URI                 |
-| :-------------------------- | --------------------------- |
-| `/foo/ns:bar/ns:child[2]`   | `/foo/ns__bar/ns__child--2` |
-| `mix:title` mixin of `/foo` | `/foo/mixins/mix__title`    |
-| `jcr:uuid` property of `/a` | `/a/properties/jcr__uuid`   |
-
 ---
 
 ## Basic API workflow
@@ -161,6 +100,422 @@ __Note regarding asynchronous calls to the RESTful API:__ While the API implemen
 it is not designed to handle <strong>re-entrant</strong> requests. This will result in an exception. This could happen if you're calling the API from Javascript and you're 
 calling back to the API in your success callback in an asynchronous call. There normally shouldn't be a need for such calls which is why we are not currently supporting this use
 case. We might revisit this position if such need arises.
+
+---
+
+## API entry points
+
+The goal of this API is that you should be able to operate on its data using links provided within the returned representations.
+However, you still need to be able to retrieve that first representation to work with in the first place.
+
+### Base context
+
+Since the API implementation is deployed as a module, it is available on your Jahia Digital Experience Manager instance under the `/modules`
+context with the `/api` specific context. Therefore, all URIs targeting the API will start with `/modules/api`. Keep this in mind
+while looking at the examples below since we might not repeat the base context all the time.
+
+We further qualify the base context by adding `/jcr/v1` to specify that this particular API deals with the JCR
+domain and is currently in version 1. The scoping by domain allows us to potentially expand the API's reach to other aspects in the
+future while we also make it clear which version (if/when several versions are needed) of that particular domain API is being used.
+
+`<basecontext>` will henceforth refer to the `/modules/api/jcr/v1` base context below.
+
+### Resources identification
+
+The natural match to map JCR data unto resources is to use JCR nodes as resources, identified either by their path or identifier,
+which is made rather easy since JCR data is stored mostly in tree form.
+
+A node also defines sub-resources:
+
+- children for a given node are accessed using the `children` child resource
+- properties for a given node are found under the `properties` child resource
+- mixins for a given node are accessed using the `mixins` child resource
+- versions for a given node are found under the `versions` child resource
+
+Each of these sub-resources (which we also call _sub-element type_ as they identify a type of node sub-element) provides named access to their respective sub-elements as well.
+
+### <a name="uri"></a>URI design
+
+- `:` character is encoded by `__` in property names since `:` is a reserved character for URIs
+- indices of same name siblings are denoted using the `--` prefix
+
+Examples
+
+| Node                        | Encoded URI                 |
+| :-------------------------- | --------------------------- |
+| `/foo/ns:bar/ns:child[2]`   | `/foo/ns__bar/ns__child--2` |
+| `mix:title` mixin of `/foo` | `/foo/mixins/mix__title`    |
+| `jcr:uuid` property of `/a` | `/a/properties/jcr__uuid`   |
+
+
+
+### Authentication
+
+Access to the JCR content is protected and different users will be able to see different content. It is therefore required to authenticate properly before using the API. In
+fact, some errors (usually `PathNotFoundException`s) can be the result of attempting to access a node for which you don't have proper access level. There are several options to
+log into Jahia Digital Experience Manager from clients.
+
+If you use a browser and log in, the API will use your existing session.
+
+From a non-browser client, you have different options. You can programatically log in using the `/cms/login` URL, `POST`ing to it as follows:
+`<your Jahia root context>/cms/login?doLogin=true&restMode=true&username=<user name>&password=<user password>&redirectActive=false`
+For example, if you're using cURL, you would do it as follows:
+`curl -i -X POST --cookie-jar cookies.txt '<Jahia DF context>/cms/login?doLogin=true&restMode=true&username=<user name>&password=<user password>&redirectActive=false'`
+Note that we're using the `cookie-jar` option. This is needed to record the session information sent back by the server as we then need to provide it for each subsequent request
+ using this mode.
+
+Alternatively, you can use the `Authentication` HTTP header, using the `Basic` authentication mode. You can generate a `Basic` authentication token using your credentials and
+then provide it using the `Authentication` header with each request to the API. See
+[Client side Basic HTTP Authentication](http://en.wikipedia.org/wiki/Basic_access_authentication#Client_side) for more details on how to do this.
+
+### API version
+
+You can access the version of the API implementation performing a `GET` on the `<basecontext>/version` URI. This returns plain text information about both the version of the API
+and of the currently running implementation. This can also serve as a quick check to see if the API is currently running or not.
+
+As of version 1.2, if your client requests `application/json` content, you can also retrieve a JSON representation of the version information from that same URI, as follows:
+
+    {
+      "api": <API version>,
+      "module": <API module implementation version>,
+      "commit": {
+        "id": <GIT commit identifier>,
+        "branch": <commit branch name>
+      }
+    }
+
+### Workspace and language
+
+You can access all the different workspaces and languages available in the Jahia Digital Experience Manager JCR repository. However, you must
+choose a combination of workspace _and_ language at any one time to work with JCR data. Which workspace and language to use are
+specified in the URI path, using first, the escaped workspace name followed by the language code associated with the language you
+wish to retrieve data in.
+
+Therefore, all URIs targeting JCR data will be prefixed as follows: `<basecontext>/<workspace name>/<language code>/<rest of the URI>`
+
+In the following sections, we detail the different types of URIs the API responds to. We will use `<placeholder>` or `{placeholder}`
+indifferently to represent place holders in the different URIs. Each section will first present the URI template using the JAX-RS
+`@Path` syntax for URIs which is quite self-explanatory for anyone with regular expression knowledge. We will then detail each part
+of the URI template, specify the expected result, define which options if any are available and, finally, which HTTP operations can
+be used on these URIs. Since we already talked about the workspace and language path elements, we won't address them in the following.
+
+### Error reporting
+
+Should an error occur during the processing of an API call, a response using an appropriate HTTP error code should be returned with a JSON body providing some context and
+details about what went wrong in the form of a JSON object with the following format:
+
+      {
+         "exception": <type of the exception that occurred as a fully qualified Java exception name if available>,
+         "message": <associated message if any>,
+         "operation": <type of operation that triggered the error>,
+         "nodeAccess": <how the node on which the error was triggered was accessed: 'byId' if using the nodes entry point or 'byPath' if the paths entry point was used>,
+         "idOrPath": <identifier if nodeAccess is byId or path if nodeAccess is byPath of the node that caused the issue>,
+         "subElementType": <type of sub-element requested if any>,
+         "subElements": <list of requested sub-elements if any>,
+         "data": <JSON data that was provided in the request>
+       }
+
+Currently the following types of operations exist: `read`, `createOrUpdate`, `delete` which map to `GET`, `PUT` and `DELETE` requests respectively and `upload` which corresponds
+ to the `POST`-performed upload method.
+ 
+### Special provision for PUT and POST methods
+
+PUT and POST methods theoretically exchange full resource representations. However, nodes and properties representations can be quite complex with a potentially deep graph-like
+structure. Moreover, much of the exposed data is actually read-only (node type information, links...) or is or can be derived from the node type information. It would therefore
+be inefficient to require clients to pass all that information to the API during creation or update of resources. We adopt the convention that only the information that is
+either required or is being changed as a result of the operation is passed along to the API. This results in minimal effort on the client side and has the added benefit of
+reducing the amount of network chatter. The semantics we follow is therefore close to the PATCH method semantics in spirit, if not in implementation.
+
+
+### Operating on nodes using their identifier
+
+#### URI template
+`/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/children|mixins|properties|versions)?}{subElement: .*}`
+
+#### URI elements
+
+- `nodes`: path element marking access to JCR nodes from their identifier
+- `{id: [^/]*}`: the identifier of the node we want to operate on, which is defined as all characters up to the next `/` character
+- `{subElementType: (/children|mixins|properties|versions)?}`: an optional sub-element type to operate on the identified node's sub-resources
+ as defined in the [URI Design](#uri) section
+- `{subElement: .*}`: an optional sub-element escaped name to operate on a specific sub-resource of the identified node
+
+If no `subElementType` path element is provided then no `subElement` path element can be provided either and the resource on which the API
+will operate is the node identified by the specified `id` path element.
+
+If a `subElementType` path element is provided but no `subElement` path element is provided, then the API will operate on the collection of
+specified type of child resources for the node identified by the specified `id` path element.
+
+If a `subElementType` path element is provided and a `subElement` path element is provided, then the API will operate on the child resource
+identified by the `subElement` path element for the node identified by the specified `id` path element.
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified resource
+- `PUT`: to create (if it doesn't already exist) or update the identified resource
+- `DELETE`: to delete the identified resource(s)
+- `POST`:
+    - to create a new child without providing a name for it, leaving it up to the server to create an appropriate one (starting with v1.2 of the API)
+    - to rename a resource but leave it at the same spot in the hierarchy using the `moveto` sub-resource 
+
+#### Accepted data
+
+`PUT` operations accept JSON representations of the objects that the method intends to update or create, meaning a `PUT` to create a property must provide
+a valid JSON representation of a property, a `PUT` to update a node must provide in the body of the request a valid JSON representation of a node.
+As mentioned before, this representation only needs to be partial, containing only the information that is required to complete the operation.
+
+`DELETE` operations accept a JSON array of String identifiers of elements to be batch-deleted. This way several elements can be deleted in one single call.
+
+#### Examples
+
+`GET <basecontext>/default/en/nodes/` will retrieve the root node of the `default` workspace using its English version when internationalized
+exists.
+
+`GET <basecontext>/live/fr/nodes/children` will retrieve only the children of the root node in the `live` workspace using the French version.
+
+`PUT <basecontext>/default/en/nodes/27d671f6-9c75-4604-8f81-0d1861c5e302/children/foo` with the `{"type" : "jnt:bigText", "properties" : {"text" : {"value" : "FOO!"}}}` JSON body
+ data will create a new node of type `jnt:bigText` named `foo` with a `text` property set to `FOO!` and add it to the children of the node identified with the
+ `27d671f6-9c75-4604-8f81-0d1861c5e302` identifier. Note that this assumes that such a child can be added on that particular node. For example, sending the same request to a
+ node that doesn't accept `jnt:bigText` children will result in a `500` error response with a body similar to the following one:
+
+      {
+        "exception": "javax.jcr.nodetype.ConstraintViolationException",
+        "message": "No child node definition for foo found in node /sites/ACMESPACE/home/slider-1/acme-space-demo-carousel",
+        "operation": "createOrUpdate",
+        "nodeAccess": "byId",
+        "idOrPath": "9aa720a1-23d4-454e-ac9c-8bfdf83a8351",
+        "subElementType": "children",
+        "subElements": ["foo"],
+        "data": {
+          "type": "jnt:bigText",
+          "properties": {
+            "text": {
+              "multiValued": false,
+              "value": "FOO BAR!",
+              "reference": false
+            }
+          }
+        }
+      }
+
+This body response provides some details as to why this particular operation failed.
+
+`PUT <basecontext>/default/en/nodes/27d671f6-9c75-4604-8f81-0d1861c5e302/properties/foo` with the `{"value" : "bar"}` JSON body data will
+create (or update if it already exists) the `foo` property of the node identified by the `27d671f6-9c75-4604-8f81-0d1861c5e302` identifier
+and sets its value to `bar`.
+
+`PUT <basecontext>/default/en//nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/mixins/jmix__rating` with the
+`{"properties" : {"j__lastVote": {"value": "-1"}, "j__nbOfVotes": {"value": "100"}, "j__sumOfVotes": {"value": "1000"}}}'` JSON body data will add the `jmix:rating` mixin on the
+`eae598a3-8a41-4003-9c6b-f31018ee0e46` node, initializing it with the following properties values: `j:lastVote` set to `-1`,
+`j:nbOfVotes` set to `100` and `j:sumOfVotes` set to `1000`. If the mixin already existed on this node then the properties would only be updated to the specified values.
+Once that `jmix:rating` is added to the node, you can then modify its properties as you would do with "normal" properties.
+For example, `PUT <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties/j__sumOfVotes` with the `{"value": "3000"}` JSON body data will update the `j:sumOfVotes`
+property to `3000`.
+
+`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/mixins/jmix__rating` will remove the mixin from the node, while
+
+`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties/j__sumOfVotes` will just remove the `j:sumOfVotes` property.
+
+`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties` with the `["j__sumOfVotes", "j__nbOfVotes"]` will delete both `j:sumOfVotes` and
+`j:nbOfVotes` properties.
+
+`POST <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/moveto/newName` will rename the `eae598a3-8a41-4003-9c6b-f31018ee0e46` node to `newName`,
+leaving it at the same spot in the JCR tree.
+
+`POST <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/children` with the appropriate JSON body (specifying at least the child's type and omitting its name) 
+will add a new child to `eae598a3-8a41-4003-9c6b-f31018ee0e46`, automatically generating an appropriate name for it (using its `jcr:title` property if provided or using its type 
+if not) 
+
+### Operating on nodes using their path
+
+#### URI template
+`/{workspace}/{language}/paths{path: /.*}`
+
+#### URI elements
+
+- `paths`: path element marking access to JCR nodes from their path
+- `{path: /.*}`: the path of the resource to operate one
+
+The `path` path element should contain the absolute path to a given JCR node with optional sub-element resolution if one of the child resource
+names defined in the [URI Design](#uri) section is found. Note that once a sub-element is found, the node resolution will occur up to that
+sub-element and the resolution of the sub-element will happen using the next path element, all others being discarded.
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified resource
+- `PUT`: to create (if it doesn't already exist) or update the identified resource (starting from v1.1 of the API)
+- `DELETE`: to delete the identified resource(s) (starting from v1.1 of the API, v1.3 adding the option to provide a list of children names to batch delete)
+- `POST`:
+    - to create a new child without providing a name for it, leaving it up to the server to create an appropriate one (starting with v1.2 of the API)
+    - to upload a file as a child node of the identified resource using `multipart/form-data` content type and specifying the file to upload using the `file` parameter
+    
+#### Accepted data
+
+`PUT` operations accept JSON representations of the objects that the method intends to update or create, meaning a `PUT` to create a property must provide
+a valid JSON representation of a property, a `PUT` to update a node must provide in the body of the request a valid JSON representation of a node.
+As mentioned before, this representation only needs to be partial, containing only the information that is required to complete the operation.
+
+`DELETE` operations accept a JSON array of String name of children elements to be batch-deleted. This way several elements can be deleted in one single call.
+
+
+#### Examples
+
+`<basecontext>/default/en/paths/users/root/profile` resolves to the `/users/root/profile` node in the `default` workspace using the `en` language.
+
+`<basecontext>/live/fr/paths/sites/foo/properties/bar` resolves to the French (`fr` language) version of the `bar` property of the `/sites/foo` node
+in the `live` workspace.
+
+`<basecontext>/live/fr/paths/sites/foo/properties/bar/baz/foo` also resolves to the French version of the `bar` property of the `/sites/foo` node since
+ only the next path element is considered when a sub-element type if found in one of the path elements of the considered URI.
+
+`POST <basecontext>default/en/paths/users/root/files` using `multipart/form-data` content type and specifying the file to upload using the `file` parameter will upload the
+specified file to the `/users/root/files` content directory. Using cURL: `curl -i -H "Authorization:Basic cm9vdDpyb290MTIzNA==" -F file=@file.png
+<basecontext>/default/en/paths/users/root/files`. The API will respond with the new node's representation, including its links and identifier so that you can further work with it.
+
+### Retrieving nodes using their type
+
+Version 1.1.1 of the API restricts the types endpoint to limit security exposure. It is therefore disabled by default. Its activation is controlled by the value 
+of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Experience Manager install. Please refer to the
+Digital Experience Manager documentation for more details.  
+ 
+#### URI template
+`/{workspace}/{language}/types/{type}`
+
+#### URI elements
+
+- `types`: path element marking access to JCR nodes from their type
+- `{type}`: the escaped name of the type of JCR nodes to retrieve
+
+#### Options
+
+Options are specified using query parameters in the URI, further refining the request. Here is the list of available query parameters:
+
+- `nameContains`: a possibly multi-valued String (by passing the query parameter several time in the URI) specifying which String(s) the retrieved
+nodes must contain in their name. This is an `AND` constraint so further value of this parameter further limit the possible names.
+- `orderBy`: a String specifying whether returned nodes should be ordered by ascending order (the default) or by descending order if the `desc`
+value is passed.
+- `limit`: an integer specifying how many nodes should be returned at most
+- `offset`: an integer specifying how many nodes are skipped so that paging can be implemented
+- `depth`: an integer specifying whether the returned nodes hierarchy is expanded to include sub-elements or not (default is `0` so no sub-elements
+included)
+
+#### Allowed HTTP operations
+
+- `GET`: to retrieve the identified nodes
+
+#### Examples
+
+`GET <basecontext>/default/en/types/genericnt__event?nameContains=jahia` will retrieve all the `genericnt:event` nodes which name contains `jahia`.
+
+`GET <basecontext>/default/en/types/genericnt__event?nameContains=rest&offset=5&limit=10` will retrieve at most 10 `genericnt:event` nodes starting with the 6th one and which name
+contains `rest`.
+
+### Querying nodes
+
+Version 1.1.1 of the API restricts the query endpoint introduced in version 1.1 to limit security exposure. It is therefore disabled by default. Its activation is 
+controlled by the value of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Experience Manager 
+install. Please refer to the Digital Experience Manager documentation for more details. 
+
+#### URI template
+`/{workspace}/{language}/query`
+
+#### URI elements
+
+- `query`: path element marking access to the query endpoint
+
+#### Allowed HTTP operations
+
+- `POST`: to query the JCR repository
+
+#### Accepted data
+
+The query endpoint accepts JSON data consisting of the following object structure:
+    
+    { 
+        "query" : <A String representing a valid JCR-SQL2 query>,
+        "limit" : <An optional Integer specifying the maximum number of to retrieve>,
+        "offset": <An optional Integer specifying the starting index of the elements to retrieve to allow for pagination>
+    }
+
+As of v1.1.1 of the API, the query endpoint is disabled by default and the preferred way to query nodes is to register prepared queries that are checked by administrators of the 
+server and are deemed "safe". These prepared queries are still available even when the default query endpoint is de-activated since they have been vetted. The accepted JSON input
+has therefore evolved to support these prepared queries as follows:
+
+    { 
+        "query" : <An optional String representing a valid JCR-SQL2 query>,
+        "queryName": <An optional String identifying a registered prepared query>,
+        "parameters": <An optional array of Strings providing values for parameter placeholders (the '?' character) in the prepared query>,
+        "namedParameters": <An optional dictionary of String -> Object providing values for named parameters in the prepared query>,
+        "limit" : <An optional Integer specifying the maximum number of to retrieve>,
+        "offset": <An optional Integer specifying the starting index of the elements to retrieve to allow for pagination>
+    }
+
+The `query` value is still supported as previously. However, it will only be taken into account if and only if the query endpoint is activated and no `queryName` value is 
+provided. Otherwise, the API implementation will look for a prepared query registered under the provided `queryName` value. A prepared query can specify placeholders to 
+dynamically provide values when the query is run. This is accomplished using two different means. First, for simple cases, you can use the `?` character as a placeholder for 
+values to be provided later. In that case, you will need to provide a `parameters` array of values to replace these placeholders. Order is significant since placeholders
+are replaced by the provided values in order, the first placeholder being replaced by the first provided value, etc. The other, and preferred, option for complex queries, is to 
+use named parameters with placeholders in the form of a parameter name prefixed by a column (`:`) and preceded by a space. Parameter names can contain only alpha-numerical and 
+underscore (`_`) characters. In this case, you will need to provide a `namedParameters` dictionary providing a mapping between a parameter name and its associated value. 
+
+The prepared query will thus be interpolated using the provided values for the parameters and then limited and offset if needed.
+
+Prepared queries are registered using your module Spring context by defining `PreparedQuery` beans. You will therefore need your module to depend on the `jcrestapi` module in
+your maven configuration:
+
+```xml
+<plugin>
+    <groupId>org.apache.felix</groupId>
+    <artifactId>maven-bundle-plugin</artifactId>
+    <extensions>true</extensions>
+    <configuration>
+        <instructions>
+            <Jahia-Depends>jcrestapi,...</Jahia-Depends>
+            ...
+        </instructions>
+    </configuration>
+</plugin>
+```
+
+Of course, since your implementation will need to reference `PreparedQuery`, you will need to add a `provided` scope dependency on the API maven artifact:
+
+```xml
+<dependency>
+    <groupId>org.jahia.modules</groupId>
+    <artifactId>jcrestapi</artifactId>
+    <version>...</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+You need to provide values for the `name` and `source` properties, `name` being the name of the prepared query with which you can access it from the query endpoint and the 
+`source` property being the query itself, using the appropriate placeholders (either `?` or named parameters as you see fit, but you cannot mix both in the same query). 
+
+
+#### Examples
+
+`POST <basecontext>/default/en/query` providing the following body `{query: "SELECT * FROM [nt:base]", limit: 10, offset: 1}` will result in
+retrieving 10 nodes starting with the second one (i.e. bypassing the first one since the offset is not 0). Note that this query will only work if the query endpoint has been 
+activated (it is disabled by default).
+
+Assuming you've registered the following prepared query in your module's Spring context:
+    
+    <bean id="foo" class="org.jahia.modules.jcrestapi.api.PreparedQuery">
+        <property name="name" value="foo"/>
+        <property name="source" value="select * from [nt:nodeType] where [jcr:nodeTypeName] like ?"/>
+    </bean>
+
+You can execute the query using `POST <basecontext>/default/en/query` with the following body `{"queryName": "foo", "parameters": [ "nt:%" ] }` to execute the following 
+interpolated query on the English version of the `default` workspace: `select * from [nt:nodeType] where [jcr:nodeTypeName] like 'nt:%'`.
+
+If, on the other hand, you used the named parameter option:
+
+    <bean id="foo" class="org.jahia.modules.jcrestapi.api.PreparedQuery">
+        <property name="name" value="foo"/>
+        <property name="source" value="select * from [nt:nodeType] where [jcr:nodeTypeName] like :nodeType"/>
+    </bean>
+
+You could run the same query using the same request providing the following body this time: `{"queryName": "foo", "namedParameters": { "nodeType": "nt:%" } }`
 
 ---
 
@@ -845,379 +1200,24 @@ Each version is represented as follows:
     "name" : "<unescaped name of this version>",
     "created" : <creation time of this version>
 
-## API entry points
-
-The goal of this API is that you should be able to operate on its data using links provided within the returned representations.
-However, you still need to be able to retrieve that first representation to work with in the first place.
-
-### Base context
-
-Since the API implementation is deployed as a module, it is available on your Jahia Digital Experience Manager instance under the `/modules`
-context with the `/api` specific context. Therefore, all URIs targeting the API will start with `/modules/api`. Keep this in mind
-while looking at the examples below since we might not repeat the base context all the time.
-
-We further qualify the base context by adding `/jcr/v1` to specify that this particular API deals with the JCR
-domain and is currently in version 1. The scoping by domain allows us to potentially expand the API's reach to other aspects in the
-future while we also make it clear which version (if/when several versions are needed) of that particular domain API is being used.
-
-`<basecontext>` will henceforth refer to the `/modules/api/jcr/v1` base context below.
-
-### Authentication
-
-Access to the JCR content is protected and different users will be able to see different content. It is therefore required to authenticate properly before using the API. In
-fact, some errors (usually `PathNotFoundException`s) can be the result of attempting to access a node for which you don't have proper access level. There are several options to
-log into Jahia Digital Experience Manager from clients.
-
-If you use a browser and log in, the API will use your existing session.
-
-From a non-browser client, you have different options. You can programatically log in using the `/cms/login` URL, `POST`ing to it as follows:
-`<your Jahia root context>/cms/login?doLogin=true&restMode=true&username=<user name>&password=<user password>&redirectActive=false`
-For example, if you're using cURL, you would do it as follows:
-`curl -i -X POST --cookie-jar cookies.txt '<Jahia DF context>/cms/login?doLogin=true&restMode=true&username=<user name>&password=<user password>&redirectActive=false'`
-Note that we're using the `cookie-jar` option. This is needed to record the session information sent back by the server as we then need to provide it for each subsequent request
- using this mode.
-
-Alternatively, you can use the `Authentication` HTTP header, using the `Basic` authentication mode. You can generate a `Basic` authentication token using your credentials and
-then provide it using the `Authentication` header with each request to the API. See
-[Client side Basic HTTP Authentication](http://en.wikipedia.org/wiki/Basic_access_authentication#Client_side) for more details on how to do this.
-
-### API version
-
-You can access the version of the API implementation performing a `GET` on the `<basecontext>/version` URI. This returns plain text information about both the version of the API
-and of the currently running implementation. This can also serve as a quick check to see if the API is currently running or not.
-
-As of version 1.2, if your client requests `application/json` content, you can also retrieve a JSON representation of the version information from that same URI, as follows:
-
-    {
-      "api": <API version>,
-      "module": <API module implementation version>,
-      "commit": {
-        "id": <GIT commit identifier>,
-        "branch": <commit branch name>
-      }
-    }
-
-### Workspace and language
-
-You can access all the different workspaces and languages available in the Jahia Digital Experience Manager JCR repository. However, you must
-choose a combination of workspace _and_ language at any one time to work with JCR data. Which workspace and language to use are
-specified in the URI path, using first, the escaped workspace name followed by the language code associated with the language you
-wish to retrieve data in.
-
-Therefore, all URIs targeting JCR data will be prefixed as follows: `<basecontext>/<workspace name>/<language code>/<rest of the URI>`
-
-In the following sections, we detail the different types of URIs the API responds to. We will use `<placeholder>` or `{placeholder}`
-indifferently to represent place holders in the different URIs. Each section will first present the URI template using the JAX-RS
-`@Path` syntax for URIs which is quite self-explanatory for anyone with regular expression knowledge. We will then detail each part
-of the URI template, specify the expected result, define which options if any are available and, finally, which HTTP operations can
-be used on these URIs. Since we already talked about the workspace and language path elements, we won't address them in the following.
-
-### Error reporting
-
-Should an error occur during the processing of an API call, a response using an appropriate HTTP error code should be returned with a JSON body providing some context and
-details about what went wrong in the form of a JSON object with the following format:
-
-      {
-         "exception": <type of the exception that occurred as a fully qualified Java exception name if available>,
-         "message": <associated message if any>,
-         "operation": <type of operation that triggered the error>,
-         "nodeAccess": <how the node on which the error was triggered was accessed: 'byId' if using the nodes entry point or 'byPath' if the paths entry point was used>,
-         "idOrPath": <identifier if nodeAccess is byId or path if nodeAccess is byPath of the node that caused the issue>,
-         "subElementType": <type of sub-element requested if any>,
-         "subElements": <list of requested sub-elements if any>,
-         "data": <JSON data that was provided in the request>
-       }
-
-Currently the following types of operations exist: `read`, `createOrUpdate`, `delete` which map to `GET`, `PUT` and `DELETE` requests respectively and `upload` which corresponds
- to the `POST`-performed upload method.
-
-### Operating on nodes using their identifier
-
-#### URI template
-`/{workspace}/{language}/nodes/{id: [^/]*}{subElementType: (/children|mixins|properties|versions)?}{subElement: .*}`
-
-#### URI elements
-
-- `nodes`: path element marking access to JCR nodes from their identifier
-- `{id: [^/]*}`: the identifier of the node we want to operate on, which is defined as all characters up to the next `/` character
-- `{subElementType: (/children|mixins|properties|versions)?}`: an optional sub-element type to operate on the identified node's sub-resources
- as defined in the [URI Design](#uri) section
-- `{subElement: .*}`: an optional sub-element escaped name to operate on a specific sub-resource of the identified node
-
-If no `subElementType` path element is provided then no `subElement` path element can be provided either and the resource on which the API
-will operate is the node identified by the specified `id` path element.
-
-If a `subElementType` path element is provided but no `subElement` path element is provided, then the API will operate on the collection of
-specified type of child resources for the node identified by the specified `id` path element.
-
-If a `subElementType` path element is provided and a `subElement` path element is provided, then the API will operate on the child resource
-identified by the `subElement` path element for the node identified by the specified `id` path element.
-
-#### Allowed HTTP operations
-
-- `GET`: to retrieve the identified resource
-- `PUT`: to create (if it doesn't already exist) or update the identified resource
-- `DELETE`: to delete the identified resource(s)
-- `POST`:
-    - to create a new child without providing a name for it, leaving it up to the server to create an appropriate one (starting with v1.2 of the API)
-    - to rename a resource but leave it at the same spot in the hierarchy using the `moveto` sub-resource 
-
-#### Accepted data
-
-`PUT` operations accept JSON representations of the objects that the method intends to update or create, meaning a `PUT` to create a property must provide
-a valid JSON representation of a property, a `PUT` to update a node must provide in the body of the request a valid JSON representation of a node.
-As mentioned before, this representation only needs to be partial, containing only the information that is required to complete the operation.
-
-`DELETE` operations accept a JSON array of String identifiers of elements to be batch-deleted. This way several elements can be deleted in one single call.
-
-#### Examples
-
-`GET <basecontext>/default/en/nodes/` will retrieve the root node of the `default` workspace using its English version when internationalized
-exists.
-
-`GET <basecontext>/live/fr/nodes/children` will retrieve only the children of the root node in the `live` workspace using the French version.
-
-`PUT <basecontext>/default/en/nodes/27d671f6-9c75-4604-8f81-0d1861c5e302/children/foo` with the `{"type" : "jnt:bigText", "properties" : {"text" : {"value" : "FOO!"}}}` JSON body
- data will create a new node of type `jnt:bigText` named `foo` with a `text` property set to `FOO!` and add it to the children of the node identified with the
- `27d671f6-9c75-4604-8f81-0d1861c5e302` identifier. Note that this assumes that such a child can be added on that particular node. For example, sending the same request to a
- node that doesn't accept `jnt:bigText` children will result in a `500` error response with a body similar to the following one:
-
-      {
-        "exception": "javax.jcr.nodetype.ConstraintViolationException",
-        "message": "No child node definition for foo found in node /sites/ACMESPACE/home/slider-1/acme-space-demo-carousel",
-        "operation": "createOrUpdate",
-        "nodeAccess": "byId",
-        "idOrPath": "9aa720a1-23d4-454e-ac9c-8bfdf83a8351",
-        "subElementType": "children",
-        "subElements": ["foo"],
-        "data": {
-          "type": "jnt:bigText",
-          "properties": {
-            "text": {
-              "multiValued": false,
-              "value": "FOO BAR!",
-              "reference": false
-            }
-          }
-        }
-      }
-
-This body response provides some details as to why this particular operation failed.
-
-`PUT <basecontext>/default/en/nodes/27d671f6-9c75-4604-8f81-0d1861c5e302/properties/foo` with the `{"value" : "bar"}` JSON body data will
-create (or update if it already exists) the `foo` property of the node identified by the `27d671f6-9c75-4604-8f81-0d1861c5e302` identifier
-and sets its value to `bar`.
-
-`PUT <basecontext>/default/en//nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/mixins/jmix__rating` with the
-`{"properties" : {"j__lastVote": {"value": "-1"}, "j__nbOfVotes": {"value": "100"}, "j__sumOfVotes": {"value": "1000"}}}'` JSON body data will add the `jmix:rating` mixin on the
-`eae598a3-8a41-4003-9c6b-f31018ee0e46` node, initializing it with the following properties values: `j:lastVote` set to `-1`,
-`j:nbOfVotes` set to `100` and `j:sumOfVotes` set to `1000`. If the mixin already existed on this node then the properties would only be updated to the specified values.
-Once that `jmix:rating` is added to the node, you can then modify its properties as you would do with "normal" properties.
-For example, `PUT <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties/j__sumOfVotes` with the `{"value": "3000"}` JSON body data will update the `j:sumOfVotes`
-property to `3000`.
-
-`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/mixins/jmix__rating` will remove the mixin from the node, while
-
-`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties/j__sumOfVotes` will just remove the `j:sumOfVotes` property.
-
-`DELETE <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/properties` with the `["j__sumOfVotes", "j__nbOfVotes"]` will delete both `j:sumOfVotes` and
-`j:nbOfVotes` properties.
-
-`POST <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/moveto/newName` will rename the `eae598a3-8a41-4003-9c6b-f31018ee0e46` node to `newName`,
-leaving it at the same spot in the JCR tree.
-
-`POST <basecontext>/default/en/nodes/eae598a3-8a41-4003-9c6b-f31018ee0e46/children` with the appropriate JSON body (specifying at least the child's type and omitting its name) 
-will add a new child to `eae598a3-8a41-4003-9c6b-f31018ee0e46`, automatically generating an appropriate name for it (using its `jcr:title` property if provided or using its type 
-if not) 
-
-### Operating on nodes using their path
-
-#### URI template
-`/{workspace}/{language}/paths{path: /.*}`
-
-#### URI elements
-
-- `paths`: path element marking access to JCR nodes from their path
-- `{path: /.*}`: the path of the resource to operate one
-
-The `path` path element should contain the absolute path to a given JCR node with optional sub-element resolution if one of the child resource
-names defined in the [URI Design](#uri) section is found. Note that once a sub-element is found, the node resolution will occur up to that
-sub-element and the resolution of the sub-element will happen using the next path element, all others being discarded.
-
-#### Allowed HTTP operations
-
-- `GET`: to retrieve the identified resource
-- `PUT`: to create (if it doesn't already exist) or update the identified resource (starting from v1.1 of the API)
-- `DELETE`: to delete the identified resource(s) (starting from v1.1 of the API, v1.3 adding the option to provide a list of children names to batch delete)
-- `POST`:
-    - to create a new child without providing a name for it, leaving it up to the server to create an appropriate one (starting with v1.2 of the API)
-    - to upload a file as a child node of the identified resource using `multipart/form-data` content type and specifying the file to upload using the `file` parameter
-    
-#### Accepted data
-
-`PUT` operations accept JSON representations of the objects that the method intends to update or create, meaning a `PUT` to create a property must provide
-a valid JSON representation of a property, a `PUT` to update a node must provide in the body of the request a valid JSON representation of a node.
-As mentioned before, this representation only needs to be partial, containing only the information that is required to complete the operation.
-
-`DELETE` operations accept a JSON array of String name of children elements to be batch-deleted. This way several elements can be deleted in one single call.
-
-
-#### Examples
-
-`<basecontext>/default/en/paths/users/root/profile` resolves to the `/users/root/profile` node in the `default` workspace using the `en` language.
-
-`<basecontext>/live/fr/paths/sites/foo/properties/bar` resolves to the French (`fr` language) version of the `bar` property of the `/sites/foo` node
-in the `live` workspace.
-
-`<basecontext>/live/fr/paths/sites/foo/properties/bar/baz/foo` also resolves to the French version of the `bar` property of the `/sites/foo` node since
- only the next path element is considered when a sub-element type if found in one of the path elements of the considered URI.
-
-`POST <basecontext>default/en/paths/users/root/files` using `multipart/form-data` content type and specifying the file to upload using the `file` parameter will upload the
-specified file to the `/users/root/files` content directory. Using cURL: `curl -i -H "Authorization:Basic cm9vdDpyb290MTIzNA==" -F file=@file.png
-<basecontext>/default/en/paths/users/root/files`. The API will respond with the new node's representation, including its links and identifier so that you can further work with it.
-
-### Retrieving nodes using their type
-
-Version 1.1.1 of the API restricts the types endpoint to limit security exposure. It is therefore disabled by default. Its activation is controlled by the value 
-of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Experience Manager install. Please refer to the
-Digital Experience Manager documentation for more details.  
- 
-#### URI template
-`/{workspace}/{language}/types/{type}`
-
-#### URI elements
-
-- `types`: path element marking access to JCR nodes from their type
-- `{type}`: the escaped name of the type of JCR nodes to retrieve
-
-#### Options
-
-Options are specified using query parameters in the URI, further refining the request. Here is the list of available query parameters:
-
-- `nameContains`: a possibly multi-valued String (by passing the query parameter several time in the URI) specifying which String(s) the retrieved
-nodes must contain in their name. This is an `AND` constraint so further value of this parameter further limit the possible names.
-- `orderBy`: a String specifying whether returned nodes should be ordered by ascending order (the default) or by descending order if the `desc`
-value is passed.
-- `limit`: an integer specifying how many nodes should be returned at most
-- `offset`: an integer specifying how many nodes are skipped so that paging can be implemented
-- `depth`: an integer specifying whether the returned nodes hierarchy is expanded to include sub-elements or not (default is `0` so no sub-elements
-included)
-
-#### Allowed HTTP operations
-
-- `GET`: to retrieve the identified nodes
-
-#### Examples
-
-`GET <basecontext>/default/en/types/genericnt__event?nameContains=jahia` will retrieve all the `genericnt:event` nodes which name contains `jahia`.
-
-`GET <basecontext>/default/en/types/genericnt__event?nameContains=rest&offset=5&limit=10` will retrieve at most 10 `genericnt:event` nodes starting with the 6th one and which name
-contains `rest`.
-
-### Querying nodes
-
-Version 1.1.1 of the API restricts the query endpoint introduced in version 1.1 to limit security exposure. It is therefore disabled by default. Its activation is 
-controlled by the value of the `jahia.find.disabled` property that can be set in the `digital-factory-config/jahia/jahia.properties` properties file of your Digital Experience Manager 
-install. Please refer to the Digital Experience Manager documentation for more details. 
-
-#### URI template
-`/{workspace}/{language}/query`
-
-#### URI elements
-
-- `query`: path element marking access to the query endpoint
-
-#### Allowed HTTP operations
-
-- `POST`: to query the JCR repository
-
-#### Accepted data
-
-The query endpoint accepts JSON data consisting of the following object structure:
-    
-    { 
-        "query" : <A String representing a valid JCR-SQL2 query>,
-        "limit" : <An optional Integer specifying the maximum number of to retrieve>,
-        "offset": <An optional Integer specifying the starting index of the elements to retrieve to allow for pagination>
-    }
-
-As of v1.1.1 of the API, the query endpoint is disabled by default and the preferred way to query nodes is to register prepared queries that are checked by administrators of the 
-server and are deemed "safe". These prepared queries are still available even when the default query endpoint is de-activated since they have been vetted. The accepted JSON input
-has therefore evolved to support these prepared queries as follows:
-
-    { 
-        "query" : <An optional String representing a valid JCR-SQL2 query>,
-        "queryName": <An optional String identifying a registered prepared query>,
-        "parameters": <An optional array of Strings providing values for parameter placeholders (the '?' character) in the prepared query>,
-        "namedParameters": <An optional dictionary of String -> Object providing values for named parameters in the prepared query>,
-        "limit" : <An optional Integer specifying the maximum number of to retrieve>,
-        "offset": <An optional Integer specifying the starting index of the elements to retrieve to allow for pagination>
-    }
-
-The `query` value is still supported as previously. However, it will only be taken into account if and only if the query endpoint is activated and no `queryName` value is 
-provided. Otherwise, the API implementation will look for a prepared query registered under the provided `queryName` value. A prepared query can specify placeholders to 
-dynamically provide values when the query is run. This is accomplished using two different means. First, for simple cases, you can use the `?` character as a placeholder for 
-values to be provided later. In that case, you will need to provide a `parameters` array of values to replace these placeholders. Order is significant since placeholders
-are replaced by the provided values in order, the first placeholder being replaced by the first provided value, etc. The other, and preferred, option for complex queries, is to 
-use named parameters with placeholders in the form of a parameter name prefixed by a column (`:`) and preceded by a space. Parameter names can contain only alpha-numerical and 
-underscore (`_`) characters. In this case, you will need to provide a `namedParameters` dictionary providing a mapping between a parameter name and its associated value. 
-
-The prepared query will thus be interpolated using the provided values for the parameters and then limited and offset if needed.
-
-Prepared queries are registered using your module Spring context by defining `PreparedQuery` beans. You will therefore need your module to depend on the `jcrestapi` module in
-your maven configuration:
-
-```xml
-<plugin>
-    <groupId>org.apache.felix</groupId>
-    <artifactId>maven-bundle-plugin</artifactId>
-    <extensions>true</extensions>
-    <configuration>
-        <instructions>
-            <Jahia-Depends>jcrestapi,...</Jahia-Depends>
-            ...
-        </instructions>
-    </configuration>
-</plugin>
-```
-
-Of course, since your implementation will need to reference `PreparedQuery`, you will need to add a `provided` scope dependency on the API maven artifact:
-
-```xml
-<dependency>
-    <groupId>org.jahia.modules</groupId>
-    <artifactId>jcrestapi</artifactId>
-    <version>...</version>
-    <scope>provided</scope>
-</dependency>
-```
-
-You need to provide values for the `name` and `source` properties, `name` being the name of the prepared query with which you can access it from the query endpoint and the 
-`source` property being the query itself, using the appropriate placeholders (either `?` or named parameters as you see fit, but you cannot mix both in the same query). 
-
-
-#### Examples
-
-`POST <basecontext>/default/en/query` providing the following body `{query: "SELECT * FROM [nt:base]", limit: 10, offset: 1}` will result in
-retrieving 10 nodes starting with the second one (i.e. bypassing the first one since the offset is not 0). Note that this query will only work if the query endpoint has been 
-activated (it is disabled by default).
-
-Assuming you've registered the following prepared query in your module's Spring context:
-    
-    <bean id="foo" class="org.jahia.modules.jcrestapi.api.PreparedQuery">
-        <property name="name" value="foo"/>
-        <property name="source" value="select * from [nt:nodeType] where [jcr:nodeTypeName] like ?"/>
-    </bean>
-
-You can execute the query using `POST <basecontext>/default/en/query` with the following body `{"queryName": "foo", "parameters": [ "nt:%" ] }` to execute the following 
-interpolated query on the English version of the `default` workspace: `select * from [nt:nodeType] where [jcr:nodeTypeName] like 'nt:%'`.
-
-If, on the other hand, you used the named parameter option:
-
-    <bean id="foo" class="org.jahia.modules.jcrestapi.api.PreparedQuery">
-        <property name="name" value="foo"/>
-        <property name="source" value="select * from [nt:nodeType] where [jcr:nodeTypeName] like :nodeType"/>
-    </bean>
-
-You could run the same query using the same request providing the following body this time: `{"queryName": "foo", "namedParameters": { "nodeType": "nt:%" } }`
-
+---
+
+## TODO:
+
+- Improve cache control using ETag (for simple node GETs), in particular, can we use jcr:lastModified as an ETag and
+using Response.cacheControl method instead of filter.
+- Clarify usage of children vs. access via path and its consequences on NodeElementAccessor.
+- <del>Design and implement versions access.</del> __(Done)__
+- <del>Re-design URIs to provide easier access to workspace and language.</del> __(Done)__
+- JS Client library?
+- Improve cross-site support
+- Improve authentication support, clarify which authentication options are supported
+- <del>Define a versioning scheme</del> __(Done: use version number in the URIs)__
+- <del>Should we use a vendor-specific content type?</del> __(Done: deemed too complex at the moment without much upside)__
+- <del>JSON-P support</del> __(Done: no JSON-P support as after evaluation it's an inferior solution, focusing on CORS instead)__
+- <del>Packaging</del> __(Done)__
+- Documentation using apiary.io?
+- <del>Support file uploads</del> __(Done)__
+- Support easier creation of same-name siblings using POST and JSON data
+- Migrate String constants (link relations, sub-element types, etc.) to typesafe constants organized by type
+- Rename sub-element type names (children, properties, etc.) to something with a namespace to avoid potential conflicts in by-path access.
