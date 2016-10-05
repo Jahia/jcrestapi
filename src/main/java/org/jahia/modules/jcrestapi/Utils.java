@@ -61,6 +61,8 @@ import java.util.Set;
  */
 public class Utils {
 
+    public static final String MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON = "application/hal+json";
+
     /**
      * Retrieves whether or not the specified String is not null and not empty.
      *
@@ -72,6 +74,7 @@ public class Utils {
     }
 
     public static Set<String> split(String string) {
+
         if(!exists(string)) {
             return Collections.emptySet();
         }
@@ -128,6 +131,7 @@ public class Utils {
     }
 
     public static Filter getFilter(UriInfo context) {
+
         final MultivaluedMap<String, String> queryParameters = context.getQueryParameters();
         if (queryParameters != null) {
             final List<String> childrenNodeTypeFilterValues = queryParameters.get(API.CHILDREN_NODETYPE_FILTER);
@@ -137,11 +141,14 @@ public class Utils {
                     for (String childrenNodeTypeFilterValue : childrenNodeTypeFilterValues) {
                         childrenNodeTypes.addAll(split(childrenNodeTypeFilterValue));
                     }
+
                     if (!childrenNodeTypes.isEmpty()) {
+
                         final ChildrenNodeTypeFilter nodeTypeFilter = new ChildrenNodeTypeFilter(childrenNodeTypes);
 
                         // wrap filter so that we can always exclude first excluded node types
                         return new Filter.DefaultFilter() {
+
                             @Override
                             public boolean acceptChild(Node child) {
                                 return API.NODE_FILTER.acceptChild(child) && nodeTypeFilter.acceptChild(child);

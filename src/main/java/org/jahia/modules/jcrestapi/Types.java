@@ -62,8 +62,9 @@ import java.util.List;
 /**
  * @author Christophe Laprun
  */
-@Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+@Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
 public class Types extends API {
+
     private static final String SELECTOR_NAME = "type";
     static final String MAPPING = "types";
 
@@ -73,7 +74,7 @@ public class Types extends API {
 
     @GET
     @Path("/{type}")
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     public Object getByType(@PathParam("workspace") String workspace,
                             @PathParam("language") String language,
                             @PathParam("type") String type,
@@ -83,6 +84,7 @@ public class Types extends API {
                             @QueryParam("offset") int offset,
                             @QueryParam("depth") int depth,
                             @Context UriInfo context) {
+
         if (API.isQueryDisabled()) {
             APIExceptionMapper.LOGGER.debug("Types endpoint is disabled. Attempted query on " + type);
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -96,6 +98,7 @@ public class Types extends API {
         Session session = null;
 
         try {
+
             session = getSession(workspace, language);
             final QueryObjectModelFactory qomFactory = session.getWorkspace().getQueryManager().getQOMFactory();
             final ValueFactory valueFactory = session.getValueFactory();

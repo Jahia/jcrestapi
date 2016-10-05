@@ -90,6 +90,7 @@ public class APITest extends JerseyTest {
 
     @BeforeClass
     public static void beforeAll() throws IOException, ConfigurationException {
+
         final Path repositoryPath = Files.createTempDirectory("jcrestapi-test-dir_");
         final InputStream configStream = APITest.class.getResourceAsStream("/repository.xml");
 
@@ -99,6 +100,7 @@ public class APITest extends JerseyTest {
         repository = new NoLoggingTransientRepository(config);
 
         Runtime.getRuntime().addShutdownHook(new Thread("Repository Cleanup") {
+
             @Override
             public void run() {
                 destroyRepository();
@@ -112,7 +114,6 @@ public class APITest extends JerseyTest {
             repository.shutdown();
             repository = null;
         }
-
         try {
             FileUtils.deleteDirectory(new File(repositoryLocation));
         } catch (final IOException e) {
@@ -121,7 +122,9 @@ public class APITest extends JerseyTest {
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
+
         super.setUp();
 
         PreparedQuery preparedQuery = new PreparedQuery();
@@ -157,6 +160,7 @@ public class APITest extends JerseyTest {
 
     @Test
     public void testGetVersion() throws Exception {
+
         Properties props = new Properties();
         props.load(API.class.getClassLoader().getResourceAsStream(API.JCRESTAPI_PROPERTIES));
 
@@ -172,6 +176,7 @@ public class APITest extends JerseyTest {
 
     @Test
     public void getVersionShouldProduceJSONIfAskedTo() throws Exception {
+
         Properties props = new Properties();
         props.load(API.class.getClassLoader().getResourceAsStream(API.JCRESTAPI_PROPERTIES));
 
@@ -196,9 +201,11 @@ public class APITest extends JerseyTest {
 
         // using jmockit to provide a SettingsBean instance that returns a sane max name size without having to configure the whole bean
         new MockUp<SettingsBean>() {
+
             @Mock
             public SettingsBean getInstance() throws IOException {
                 return new SettingsBean(null, new Properties(), null) {
+
                     @Override
                     public int getMaxNameSize() {
                         return 32;
@@ -216,7 +223,7 @@ public class APITest extends JerseyTest {
                 .then()
                 .assertThat()
                 .statusCode(SC_CREATED)
-                .contentType("application/hal+json")
+                .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
                 .body(
                         "name", equalTo(generatedNodeName),
                         "type", equalTo(nodeType),
@@ -230,7 +237,7 @@ public class APITest extends JerseyTest {
                 .then()
                 .assertThat()
                 .statusCode(SC_CREATED)
-                .contentType("application/hal+json")
+                .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
                 .body(
                         "name", allOf(startsWith(generatedNodeName), not(generatedNodeName)),
                         "type", equalTo(nodeType),
@@ -240,6 +247,7 @@ public class APITest extends JerseyTest {
 
     @Test
     public void checkDelete() throws Exception {
+
         // create a node
         final String nodeType = "nt:address";
         final String name = "bar";
@@ -261,6 +269,7 @@ public class APITest extends JerseyTest {
 
     @Test
     public void batchDeleteShouldWork() throws Exception {
+
         // create nodes
         final String nodeType = "nt:address";
         final String name = "bar";
@@ -304,10 +313,8 @@ public class APITest extends JerseyTest {
                 result[i++] = "children." + childName + ".id";
                 result[i++] = is(notNullValue());
             }
-
             return result;
         }
-
         return null;
     }
 
@@ -318,7 +325,7 @@ public class APITest extends JerseyTest {
                 .post(getURLByPath("children/" + name))
                 .then()
                 .assertThat()
-                .contentType("application/hal+json")
+                .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
                 .body(
                         "name", equalTo(name),
                         "type", equalTo(nodeType),
@@ -328,6 +335,7 @@ public class APITest extends JerseyTest {
 
     @Test
     public void testGetInexistingNode() {
+
         expect().statusCode(SC_NOT_FOUND)
                 .when().get(generateURL("/foo"));
 
@@ -399,7 +407,7 @@ public class APITest extends JerseyTest {
     @Test
     public void testGetJCRSystem() {
         expect().statusCode(SC_OK)
-                .contentType("application/hal+json")
+                .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
                 .body(
                         "name", equalTo("jcr:system"),
                         "type", equalTo("rep:system")
@@ -409,6 +417,7 @@ public class APITest extends JerseyTest {
 
     @Test
     public void testQuery() {
+
         // query is disabled by default
         given()
                 .contentType("application/json")
@@ -427,7 +436,7 @@ public class APITest extends JerseyTest {
                 .queryParam("noLinks", "true")
                 .expect()
                 .statusCode(SC_OK)
-                .contentType("application/hal+json")
+                .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
                 .body(".", hasSize(greaterThan(50)))
                 .body("[0].path", equalTo("/"))
                 .when()
@@ -440,7 +449,7 @@ public class APITest extends JerseyTest {
                         "\"offset\" : 1}")
                 .expect()
                 .statusCode(SC_OK)
-                .contentType("application/hal+json")
+                .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
                 .body(".", hasSize(10))
                 .body("[0].path", not(equalTo("/")))
                 .when()
@@ -457,7 +466,7 @@ public class APITest extends JerseyTest {
                         "\"offset\" : 1}")
                 .expect()
                 .statusCode(SC_OK)
-                .contentType("application/hal+json")
+                .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
                 .body(".", hasSize(10))
                 .body("[0].path", not(equalTo("/")))
                 .when()
@@ -471,7 +480,7 @@ public class APITest extends JerseyTest {
                         "\"offset\" : 1}")
                 .expect()
                 .statusCode(SC_OK)
-                .contentType("application/hal+json")
+                .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
                 .body(".", hasSize(10))
                 .body("[0].path", not(equalTo("/")))
                 .when()
@@ -537,6 +546,7 @@ public class APITest extends JerseyTest {
     }*/
 
     private static class TestRepositoryFactory implements Factory<Repository> {
+
         @Override
         public Repository provide() {
             return repository;
@@ -547,5 +557,4 @@ public class APITest extends JerseyTest {
             // nothing
         }
     }
-
 }

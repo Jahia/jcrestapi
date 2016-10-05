@@ -73,8 +73,9 @@ import java.util.*;
  */
 @Component
 @Path(API.API_PATH)
-@Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+@Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
 public class API {
+
     public static final String SELF = "self";
     public static final String ABSOLUTE = "absolute";
     private static final String VERSION;
@@ -100,33 +101,36 @@ public class API {
     public static final String CHILDREN_NODETYPE_FILTER = "childrenNodeTypes";
 
     private static final ThreadLocal<Boolean> resolveReferences = new ThreadLocal<Boolean>() {
+
         @Override
         protected Boolean initialValue() {
             return false;
         }
     };
+
     private static final ThreadLocal<Boolean> outputLinks = new ThreadLocal<Boolean>() {
+
         @Override
         protected Boolean initialValue() {
             return true;
         }
     };
+
     private static final ThreadLocal<Boolean> includeFullChildren = new ThreadLocal<Boolean>() {
+
         @Override
         protected Boolean initialValue() {
             return false;
         }
     };
+
     protected static final Map<String, ElementAccessor> ACCESSORS = new HashMap<String, ElementAccessor>(7);
 
     public static final String API_VERSION = "1.3";
 
     private static final String JCRESTAPI_VERSION = "jcrestapi.version";
-
     private static final String JCRESTAPI_COMMIT_ID = "jcrestapi.commit.id";
-
     private static final String JCRESTAPI_COMMIT_BRANCH = "jcrestapi.commit.branch";
-
     static final String JCRESTAPI_PROPERTIES = "jcrestapi.properties";
 
     private static boolean queryDisabled;
@@ -134,6 +138,7 @@ public class API {
     public static final Filter NODE_FILTER;
 
     static {
+
         Properties props = new Properties();
         try {
             props.load(API.class.getClassLoader().getResourceAsStream(JCRESTAPI_PROPERTIES));
@@ -166,7 +171,6 @@ public class API {
                 }
             }
         };
-
     }
 
     private static String getFullModuleVersion(String moduleVersion, String commitId, String commitBranch) {
@@ -178,7 +182,6 @@ public class API {
         final String moduleVersion = props.getProperty(JCRESTAPI_VERSION);
         final String commitId = props.getProperty(JCRESTAPI_COMMIT_ID);
         final String commitBranch = props.getProperty(JCRESTAPI_COMMIT_BRANCH);
-
         return getFullModuleVersion(moduleVersion, commitId, commitBranch);
     }
 
@@ -272,9 +275,11 @@ public class API {
     @POST
     @Path("/{workspace}/{language}/query")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     public Object query(@PathParam("workspace") String workspace, @PathParam("language") String language, JSONQuery jsonQuery, @Context UriInfo context) {
+
         if (jsonQuery != null) {
+
             Session session = null;
 
             final String statement;
@@ -300,6 +305,7 @@ public class API {
             }
 
             try {
+
                 resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
                 outputLinks.set(!Utils.getFlagValueFrom(context, NO_LINKS));
                 includeFullChildren.set(Utils.getFlagValueFrom(context, INCLUDE_FULL_CHILDREN));
@@ -335,7 +341,6 @@ public class API {
                 resolveReferences.set(false);
                 outputLinks.set(true);
                 includeFullChildren.set(false);
-
                 closeSession(session);
             }
         } else {
@@ -402,9 +407,11 @@ public class API {
      * @return a Response ready to be sent to the client
      */
     protected Response performBatchDelete(String workspace, String language, String parentIdOrPath, String subElementType, List<String> subElements, UriInfo context, NodeAccessor nodeAccessor) {
+
         Session session = null;
 
         try {
+
             session = getSession(workspace, language);
 
             // process given elements
@@ -417,9 +424,7 @@ public class API {
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 final Response response = accessor.perform(node, subElements, DELETE, null, context);
-
                 session.save();
-
                 return response;
             } else {
                 return null;
@@ -437,6 +442,7 @@ public class API {
     }
 
     protected Response perform(String workspace, String language, UriInfo context, String operation, JSONItem data, NodeAccessor nodeAccessor, ElementsProcessor processor) {
+
         Session session = null;
 
         resolveReferences.set(Utils.getFlagValueFrom(context, RESOLVE_REFERENCES));
@@ -448,6 +454,7 @@ public class API {
         final String subElement = processor.getSubElement();
 
         try {
+
             session = getSession(workspace, language);
 
             final Node node = nodeAccessor.getNode(idOrPath, session);
@@ -455,9 +462,7 @@ public class API {
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 final Response response = accessor.perform(node, subElement, operation, data, context);
-
                 session.save();
-
                 return response;
             } else {
                 return null;
@@ -473,6 +478,7 @@ public class API {
     }
 
     protected Session getSession(String workspace, String language) throws RepositoryException {
+
         if (!Utils.exists(workspace)) {
             workspace = "default";
         }
@@ -500,6 +506,7 @@ public class API {
     }
 
     protected void closeSession(Session session) {
+
         if (session != null && session.isLive()) {
             session.logout();
         }
@@ -521,6 +528,7 @@ public class API {
     }
 
     protected interface NodeAccessor {
+
         Node getNode(String idOrPath, Session session) throws RepositoryException;
 
         String getType();
@@ -555,11 +563,13 @@ public class API {
     }
 
     protected static class ElementsProcessor {
+
         private final String idOrPath;
         private final String subElementType;
         private final String subElement;
 
         public ElementsProcessor(String idOrPath, String subElementType, String subElement) {
+
             // check if we're trying to access root's sub-elements
             if (subElementType.isEmpty() && ACCESSORS.containsKey(idOrPath)) {
                 subElementType = idOrPath;

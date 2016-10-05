@@ -60,8 +60,9 @@ import java.util.List;
 /**
  * @author Christophe Laprun
  */
-@Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+@Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
 public class Nodes extends API {
+
     static final String MAPPING = "nodes";
 
     public Nodes(String workspace, String language, Repository repository, UriInfo context) {
@@ -69,7 +70,7 @@ public class Nodes extends API {
     }
 
     @GET
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     /**
      * Needed to get URI without trailing / to work :(
      */
@@ -78,7 +79,7 @@ public class Nodes extends API {
     }
 
     @GET
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     @Path("/{id: [^/]*}{subElementType: (/(" + JSONConstants.CHILDREN +
             "|" + JSONConstants.MIXINS +
             "|" + JSONConstants.PROPERTIES +
@@ -92,7 +93,7 @@ public class Nodes extends API {
     }
 
     @PUT
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     @Path("/{id: [^/]*}{subElementType: (/(" + JSONConstants.CHILDREN +
             "|" + JSONConstants.MIXINS +
             "|" + JSONConstants.PROPERTIES +
@@ -111,6 +112,7 @@ public class Nodes extends API {
     @POST
     @Path("/{id: [^/]*}/" + JSONConstants.CHILDREN)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     public Object createAutomaticallyNamedChildOrProperty(@PathParam("id") String id,
                                           JSONNode childData,
                                           @Context UriInfo context) {
@@ -121,7 +123,7 @@ public class Nodes extends API {
     @PUT
     @Path("/{id: [^/]*}/" + JSONConstants.PROPERTIES + "/{subElement}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     public Object createOrUpdateProperty(@PathParam("id") String id,
                                          @PathParam("subElement") String subElement,
                                          JSONProperty childData,
@@ -132,7 +134,7 @@ public class Nodes extends API {
 
     @GET
     @Path("/{id: [^/]*}/" + JSONConstants.PROPERTIES + "/{subElement}")
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     public Object getProperty(@PathParam("id") String id,
                               @PathParam("subElement") String subElement,
                               @Context UriInfo context) {
@@ -174,15 +176,11 @@ public class Nodes extends API {
                              @PathParam("newName") String newName,
                              @Context UriInfo context) {
         Session session = null;
-
         try {
             session = getSession(workspace, language);
-
             final Node node = session.getNodeByIdentifier(id);
             session.move(node.getPath(), node.getParent().getPath() + "/" + newName);
-
             session.save();
-
             return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id), context);
         } catch (Exception e) {
             throw new APIException(e);
@@ -190,5 +188,4 @@ public class Nodes extends API {
             closeSession(session);
         }
     }
-
 }

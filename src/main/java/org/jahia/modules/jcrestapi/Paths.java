@@ -66,7 +66,7 @@ import java.util.List;
 /**
  * @author Christophe Laprun
  */
-@Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+@Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
 public class Paths extends API {
 
     static final String MAPPING = "paths";
@@ -81,6 +81,7 @@ public class Paths extends API {
     }
 
     private Object performByPath(UriInfo context, String operation, Object data) {
+
         // only consider useful segments
         final List<PathSegment> usefulSegments = getUsefulSegments(context);
         int index = 0;
@@ -124,7 +125,7 @@ public class Paths extends API {
 
     @GET
     @Path("/{path: .*}")
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     public Object get(@PathParam("path") String path,
                       @Context UriInfo context) {
         return performByPath(context, READ, null);
@@ -133,7 +134,7 @@ public class Paths extends API {
     @PUT
     @Path("/{path: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     public Object createOrUpdate(String childDataAsJSON,
                                  @Context UriInfo context) {
         return performByPath(context, CREATE_OR_UPDATE, childDataAsJSON);
@@ -142,7 +143,7 @@ public class Paths extends API {
     @POST
     @Path("/{path: .*}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({"application/hal+json", MediaType.APPLICATION_JSON})
+    @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
     public Object createOrUpdateChildNode(String childData,
                                           @Context UriInfo context) {
         return performByPath(context, CREATE_OR_UPDATE, childData);
@@ -155,10 +156,9 @@ public class Paths extends API {
         return performByPath(context, DELETE, subElementsToDelete);
     }
 
-
     private List<PathSegment> getUsefulSegments(UriInfo context) {
-        final List<PathSegment> pathSegments = context.getPathSegments();
 
+        final List<PathSegment> pathSegments = context.getPathSegments();
         final List<PathSegment> usefulSegments = new ArrayList<PathSegment>(pathSegments.size());
 
         // skip all initial empty segments
@@ -197,6 +197,7 @@ public class Paths extends API {
     public Object upload(@PathParam("path") String path,
                          @FormDataParam("file") FormDataBodyPart part,
                          @Context UriInfo context) {
+
         final List<PathSegment> usefulSegments = getUsefulSegments(context);
         final ElementsProcessor processor = new ElementsProcessor(computePathUpTo(usefulSegments, usefulSegments.size()), "", "");
         Session session = null;
@@ -272,7 +273,6 @@ public class Paths extends API {
                 path.append("/").append(segment);
             }
         }
-
         final String result = path.toString();
         return !result.isEmpty() ? result : "/";
     }
