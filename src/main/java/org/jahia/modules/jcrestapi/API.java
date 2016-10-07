@@ -324,9 +324,9 @@ public class API {
                 final QueryResult queryResult = query.execute();
 
                 final NodeIterator nodes = queryResult.getNodes();
-                final List<JSONNode> result = new LinkedList<JSONNode>();
+                final List<JSONNode> result = new LinkedList<>();
+                final Filter filter = Utils.getFilter(context);
                 while (nodes.hasNext()) {
-                    final Filter filter = Utils.getFilter(context);
                     final Node resultNode = nodes.nextNode();
                     if (filter.acceptChild(resultNode)) {
                         JSONNode node = getFactory().createNode(resultNode, filter, 1);

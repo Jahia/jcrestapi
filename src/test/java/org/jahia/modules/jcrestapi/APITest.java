@@ -418,6 +418,16 @@ public class APITest extends JerseyTest {
     @Test
     public void testQuery() {
 
+        // create some children
+        // create nodes
+        final String nodeType = "nt:address";
+        final String name = "bar";
+
+        final int nodeNumber = 5;
+        for (int i = 0; i < nodeNumber; i++) {
+            createNode(nodeType, name + i);
+        }
+
         // query is disabled by default
         given()
                 .contentType("application/json")
@@ -432,26 +442,32 @@ public class APITest extends JerseyTest {
 
         given()
                 .contentType("application/json")
-                .body("{\"query\": \"SELECT * FROM [nt:base]\"}")
+                .body("{\"query\": \"SELECT * FROM [" + nodeType + "] as node order by name(node)\"}")
                 .queryParam("noLinks", "true")
                 .expect()
                 .statusCode(SC_OK)
                 .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
-                .body(".", hasSize(greaterThan(50)))
-                .body("[0].path", equalTo("/"))
+                .body(".", hasSize(nodeNumber))
+                .body("[0].path", equalTo("/bar0"))
+                .body("[1].path", equalTo("/bar1"))
+                .body("[2].path", equalTo("/bar2"))
+                .body("[3].path", equalTo("/bar3"))
+                .body("[4].path", equalTo("/bar4"))
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
 
+        final int limit = 3;
         given()
                 .contentType("application/json")
-                .body("{\"query\": \"SELECT * FROM [nt:base]\"," +
-                        "\"limit\": 10, " +
-                        "\"offset\" : 1}")
+                .body("{\"query\": \"SELECT * FROM [" + nodeType + "]\"," +
+                        "\"limit\": " + limit + ",\"offset\" : 1}")
                 .expect()
                 .statusCode(SC_OK)
                 .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
-                .body(".", hasSize(10))
-                .body("[0].path", not(equalTo("/")))
+                .body(".", hasSize(limit))
+                .body("[0].path", equalTo("/bar1"))
+                .body("[1].path", equalTo("/bar2"))
+                .body("[2].path", equalTo("/bar3"))
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
 
@@ -461,28 +477,24 @@ public class APITest extends JerseyTest {
         given()
                 .contentType("application/json")
                 .body("{\"queryName\": \"myQuery\"," +
-                        "\"parameters\": [ \"nt:%\" ], " +
-                        "\"limit\": 10, " +
-                        "\"offset\" : 1}")
+                        "\"parameters\": [ \"nt:add%\" ]}")
                 .expect()
                 .statusCode(SC_OK)
                 .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
-                .body(".", hasSize(10))
-                .body("[0].path", not(equalTo("/")))
+                .body(".", hasSize(1))
+                .body("[0].path", equalTo("/jcr:system/jcr:nodeTypes/nt:address"))
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
 
         given()
                 .contentType("application/json")
                 .body("{\"queryName\": \"myQueryNamedParameters\"," +
-                        "\"namedParameters\": { \"nodeTypeName\": \"nt:%\" }, " +
-                        "\"limit\": 10, " +
-                        "\"offset\" : 1}")
+                        "\"namedParameters\": { \"nodeTypeName\": \"nt:add%\" }}")
                 .expect()
                 .statusCode(SC_OK)
                 .contentType(Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON)
-                .body(".", hasSize(10))
-                .body("[0].path", not(equalTo("/")))
+                .body(".", hasSize(1))
+                .body("[0].path", equalTo("/jcr:system/jcr:nodeTypes/nt:address"))
                 .when()
                 .post(generateURL(API_DEFAULT_EN + "query"));
     }
