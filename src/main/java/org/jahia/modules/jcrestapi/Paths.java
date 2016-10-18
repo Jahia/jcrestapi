@@ -70,6 +70,7 @@ import java.util.List;
 public class Paths extends API {
 
     static final String MAPPING = "paths";
+    private static final String[] ALLOWED_METHODS = new String[]{"OPTIONS", "GET", "PUT", "POST", "DELETE"};
 
     /**
      * Records how many segments in API.API_PATH/{workspace}/{language}/Paths.MAPPING must be ignored to get actual path
@@ -123,9 +124,8 @@ public class Paths extends API {
         return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, operation, null, NodeAccessor.BY_PATH);
     }
 
-    @OPTIONS
-    public Object options() {
-        return Response.ok("Allow: OPTIONS,GET,PUT,POST,DELETE").build();
+    protected String[] allowedMethods() {
+        return ALLOWED_METHODS;
     }
 
     @GET

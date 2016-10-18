@@ -132,6 +132,7 @@ public class API {
     private static final String JCRESTAPI_COMMIT_ID = "jcrestapi.commit.id";
     private static final String JCRESTAPI_COMMIT_BRANCH = "jcrestapi.commit.branch";
     static final String JCRESTAPI_PROPERTIES = "jcrestapi.properties";
+    private static final String[] ALLOWED_METHODS = {"OPTIONS", "GET", "POST"};
 
     private static boolean queryDisabled;
     static final Set<String> excludedNodeTypes;
@@ -250,6 +251,15 @@ public class API {
         boolean old = local.get();
         local.set(newValue);
         return old;
+    }
+
+    @OPTIONS
+    public Object options() {
+        return Response.ok().allow(allowedMethods()).build();
+    }
+
+    protected String[] allowedMethods() {
+        return ALLOWED_METHODS;
     }
 
     /**
