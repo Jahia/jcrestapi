@@ -123,6 +123,11 @@ public class Paths extends API {
         return perform(workspace, language, computePathUpTo(usefulSegments, usefulSegments.size()), "", "", context, operation, null, NodeAccessor.BY_PATH);
     }
 
+    @OPTIONS
+    public Object options() {
+        return Response.ok("Allow: OPTIONS,GET,PUT,POST,DELETE").build();
+    }
+
     @GET
     @Path("/{path: .*}")
     @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})

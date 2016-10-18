@@ -54,6 +54,7 @@ import javax.jcr.Session;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
@@ -67,6 +68,11 @@ public class Nodes extends API {
 
     public Nodes(String workspace, String language, Repository repository, UriInfo context) {
         super(workspace, language, repository, context);
+    }
+
+    @OPTIONS
+    public Object options() {
+        return Response.ok("Allow: OPTIONS,GET,PUT,POST,DELETE").build();
     }
 
     @GET

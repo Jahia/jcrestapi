@@ -72,6 +72,11 @@ public class Types extends API {
         super(workspace, language, repository, context);
     }
 
+    @OPTIONS
+    public Object options() {
+        return Response.ok("Allow: OPTIONS,GET").build();
+    }
+
     @GET
     @Path("/{type}")
     @Produces({Utils.MEDIA_TYPE_APPLICATION_HAL_PLUS_JSON, MediaType.APPLICATION_JSON})
