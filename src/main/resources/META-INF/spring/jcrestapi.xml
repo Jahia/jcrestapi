@@ -11,8 +11,8 @@
         <property name="nodeTypesToSkip" value="${jahia.find.nodeTypesToSkip:jnt:passwordHistory,jnt:passwordHistoryEntry}"/>
     </bean>
 
-    <osgi:list id="osgiListPreparedQueries" availability="optional" interface="org.jahia.modules.jcrestapi.api.OsgiPreparedQuery"/>
     <bean id="preparedQueriesRegistry" class="org.jahia.modules.jcrestapi.PreparedQueriesRegistry" factory-method="getInstance">
-        <property name="osgiPreparedQueries" ref="osgiListPreparedQueries"/>
     </bean>
+
+    <osgi:service ref="preparedQueriesRegistry" interface="org.jahia.modules.jcrestapi.api.PreparedQueryService" ></osgi:service>
 </beans>

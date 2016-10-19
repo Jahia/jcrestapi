@@ -43,14 +43,12 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.jcrestapi.api.OsgiPreparedQuery;
 import org.jahia.modules.jcrestapi.api.PreparedQuery;
+import org.jahia.modules.jcrestapi.api.PreparedQueryService;
 import org.jahia.services.templates.JahiaModulesBeanPostProcessor;
 import org.springframework.beans.BeansException;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -58,10 +56,9 @@ import java.util.Map;
  * Two ways of register prepared queries:
  * - It automatically registers PreparedQuery that are declared in modules spring contexts.
  *   (old way, buggy since 7.2.0.0 because spring contexts can start independently, PreparedQuery could not be registered depending on module start up order)
- * - Use OsgiPreparedQueryImpl to expose a prepared query as an OSGI service it will be automatically handle by jcrestapi
- *   (new way, and recommended way to register prepared query since 7.2.0.0)
+ * - Use PreparedQueriesRegistry.addQuery to register a prepared query (new way, and recommended way to register prepared query since 7.2.0.0)
  */
-public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
+public class PreparedQueriesRegistry implements PreparedQueryService, JahiaModulesBeanPostProcessor {
     private final static PreparedQueriesRegistry INSTANCE = new PreparedQueriesRegistry();
 
     public static PreparedQueriesRegistry getInstance() {
@@ -69,11 +66,10 @@ public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
     }
 
     private Map<String, PreparedQuery> queries = new LinkedHashMap<String, PreparedQuery>();
-    private List<OsgiPreparedQuery> osgiPreparedQueries = new ArrayList<OsgiPreparedQuery>();
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof PreparedQuery && !(bean instanceof OsgiPreparedQuery)) {
+        if (bean instanceof PreparedQuery) {
             PreparedQuery preparedQuery = (PreparedQuery) bean;
             addQuery(preparedQuery);
         }
@@ -82,7 +78,7 @@ public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
 
     @Override
     public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
-        if (bean instanceof PreparedQuery && !(bean instanceof OsgiPreparedQuery)) {
+        if (bean instanceof PreparedQuery) {
             PreparedQuery preparedQuery = (PreparedQuery) bean;
             removeQuery(preparedQuery);
         }
@@ -115,22 +111,6 @@ public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
      * @return
      */
     public PreparedQuery getQuery(String name) {
-        // look in Post process beans
-        PreparedQuery query = queries.get(name);
-
-        // look in osgi beans
-        if(query == null) {
-            for (OsgiPreparedQuery osgiPreparedQuery : osgiPreparedQueries) {
-                if (osgiPreparedQuery.getName().equals(name)) {
-                    query = osgiPreparedQuery.transform();
-                }
-            }
-        }
-
-        return query;
-    }
-
-    public void setOsgiPreparedQueries(List<OsgiPreparedQuery> osgiPreparedQueries) {
-        this.osgiPreparedQueries = osgiPreparedQueries;
+        return queries.get(name);
     }
 }
