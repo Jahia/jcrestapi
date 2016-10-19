@@ -67,9 +67,14 @@ public class Types extends API {
 
     private static final String SELECTOR_NAME = "type";
     static final String MAPPING = "types";
+    private static final String[] ALLOWED_METHODS = new String[]{"OPTIONS", "GET"};
 
     public Types(String workspace, String language, Repository repository, UriInfo context) {
         super(workspace, language, repository, context);
+    }
+
+    protected String[] allowedMethods() {
+        return ALLOWED_METHODS;
     }
 
     @GET
