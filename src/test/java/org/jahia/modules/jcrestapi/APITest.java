@@ -416,6 +416,12 @@ public class APITest extends JerseyTest {
     }
 
     @Test
+    public void testOptions() {
+        expect().statusCode(SC_OK)
+                .when().options(getURLByPath(""));
+    }
+
+    @Test
     public void testQuery() {
 
         // create some children
