@@ -69,6 +69,7 @@ public class APIApplication extends ResourceConfig {
             }
         });
         property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
+        property(ServerProperties.WADL_FEATURE_DISABLE, true);
 
         // activates tracing of requests and responses and outputs log to /tmp/jersey.log
         /*property(ServerProperties.TRACING, "ALL");
