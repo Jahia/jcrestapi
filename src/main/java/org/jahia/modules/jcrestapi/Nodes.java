@@ -64,14 +64,9 @@ import java.util.List;
 public class Nodes extends API {
 
     static final String MAPPING = "nodes";
-    private static final String[] ALLOWED_METHODS = new String[]{"OPTIONS", "GET", "PUT", "POST", "DELETE"};
 
     public Nodes(String workspace, String language, Repository repository, UriInfo context) {
         super(workspace, language, repository, context);
-    }
-
-    protected String[] allowedMethods() {
-        return ALLOWED_METHODS;
     }
 
     @GET
