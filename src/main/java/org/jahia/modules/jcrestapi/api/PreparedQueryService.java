@@ -1,7 +1,7 @@
 package org.jahia.modules.jcrestapi.api;
 
 /**
- * TODO Comment me
+ * Service to handle prepared queries
  *
  * @author toto
  */
