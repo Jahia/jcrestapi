@@ -64,7 +64,7 @@ For a good (and not overly complex) overview of REST, please see
     - uses BOM from jaxrs-osgi-extender and json-generation modules to keep Jackson and Jersey versions in sync
 - v2.2.1-2.2.2:
     - Minor improvements
-- v2.2.3:
+- v2.3.0:
     - support for v1.3 of the API
 
 ### Goals
