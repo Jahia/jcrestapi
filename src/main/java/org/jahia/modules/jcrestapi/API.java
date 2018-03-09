@@ -160,7 +160,7 @@ public class API {
             @Override
             public boolean acceptChild(Node child) {
                 try {
-                    return !excludedNodeTypes.contains(child.getPrimaryNodeType().getName());
+                    return !excludedNodeTypes.contains(child.getPrimaryNodeType().getName()) && SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi.child",child);
                 } catch (RepositoryException e) {
                     throw new RuntimeException("Couldn't access primary node type of " + child, e);
                 }
@@ -449,7 +449,9 @@ public class API {
             session = getSession(workspace, language);
 
             final Node node = nodeAccessor.getNode(idOrPath, session);
-
+            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi."+operation, node)) {
+                throw new PathNotFoundException(node.getPath());
+            }
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 final Response response = accessor.perform(node, subElement, operation, data, context);

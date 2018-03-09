@@ -43,29 +43,6 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.jcr.Binary;
-import javax.jcr.Node;
-import javax.jcr.Repository;
-import javax.jcr.Session;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jahia.api.Constants;
@@ -75,6 +52,15 @@ import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONConstants;
 import org.jahia.modules.json.JSONItem;
 import org.jahia.modules.json.JSONNode;
+
+import javax.jcr.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Christophe Laprun
@@ -203,6 +189,10 @@ public class Paths extends API {
         try {
             session = getSession(workspace, language);
             final Node node = NodeAccessor.BY_PATH.getNode(idOrPath, session);
+
+            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi.upload",node)) {
+                throw new PathNotFoundException(node.getPath());
+            }
 
             // check that the node is a folder
             if (node.isNodeType(Constants.NT_FOLDER)) {

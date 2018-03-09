@@ -43,15 +43,14 @@
  */
 package org.jahia.modules.jcrestapi.links;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import javax.jcr.Item;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.SpringBeansAccess;
+import org.jahia.modules.jcrestapi.URIUtils;
+import org.jahia.modules.jcrestapi.json.APIObjectFactory;
+import org.jahia.modules.json.*;
+import org.jahia.modules.json.jcr.SessionAccess;
+
+import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.Version;
@@ -59,12 +58,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.jahia.modules.jcrestapi.API;
-import org.jahia.modules.jcrestapi.URIUtils;
-import org.jahia.modules.jcrestapi.json.APIObjectFactory;
-import org.jahia.modules.json.*;
-import org.jahia.modules.json.jcr.SessionAccess;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christophe Laprun
@@ -246,6 +242,9 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
         if (resolveReferences) {
             final Session session = SessionAccess.getCurrentSession().session;
             final Node node = session.getNodeByIdentifier(value);
+            if (!SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi.references",node)) {
+                return;
+            }
 
             if (references == null) {
                 references = new HashMap<String, JSONItem<? extends Item, APIDecorator>>(7);
