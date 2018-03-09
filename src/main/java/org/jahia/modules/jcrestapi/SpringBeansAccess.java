@@ -71,6 +71,8 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.jahia.modules.securityfilter.PermissionService;
+
 import javax.jcr.Repository;
 import java.util.Collections;
 import java.util.Set;
@@ -83,6 +85,7 @@ public final class SpringBeansAccess {
     private Repository repository;
     private boolean disableQuery = true;
     private Set<String> nodeTypesToSkip = Collections.emptySet();
+    private PermissionService permissionService;
 
     private SpringBeansAccess() {
     }
@@ -113,5 +116,13 @@ public final class SpringBeansAccess {
 
     public Set<String> getNodeTypesToSkip() {
         return nodeTypesToSkip;
+    }
+
+    public PermissionService getPermissionService() {
+        return permissionService;
+    }
+
+    public void setPermissionService(PermissionService permissionService) {
+        this.permissionService = permissionService;
     }
 }

@@ -91,6 +91,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.jcr.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Christophe Laprun
  */
@@ -210,6 +219,10 @@ public class Paths extends API {
         try {
             session = getSession(workspace, language);
             final Node node = NodeAccessor.BY_PATH.getNode(idOrPath, session);
+
+            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi.upload",node)) {
+                throw new PathNotFoundException(node.getPath());
+            }
 
             // check that the node is a folder
             if (node.isNodeType(Constants.NT_FOLDER)) {
