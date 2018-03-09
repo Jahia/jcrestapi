@@ -242,7 +242,7 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
         if (resolveReferences) {
             final Session session = SessionAccess.getCurrentSession().session;
             final Node node = session.getNodeByIdentifier(value);
-            if (!SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi.references",node)) {
+            if (!SpringBeansAccess.getInstance().hasPermission("jcrestapi.references",node)) {
                 return;
             }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * ==========================================================================================
  * =                   JAHIA'S DUAL LICENSING - IMPORTANT INFORMATION                       =
  * ==========================================================================================
@@ -45,7 +45,9 @@ package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.securityfilter.PermissionService;
 
+import javax.jcr.Node;
 import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
 import java.util.Collections;
 import java.util.Set;
 
@@ -96,5 +98,12 @@ public final class SpringBeansAccess {
 
     public void setPermissionService(PermissionService permissionService) {
         this.permissionService = permissionService;
+    }
+
+    public boolean hasPermission(String api, Node node) throws RepositoryException {
+        if (permissionService != null) {
+            return permissionService.hasPermission(api, node);
+        }
+        return true;
     }
 }
