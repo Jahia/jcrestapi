@@ -220,7 +220,7 @@ public class Paths extends API {
             session = getSession(workspace, language);
             final Node node = NodeAccessor.BY_PATH.getNode(idOrPath, session);
 
-            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi.upload",node)) {
+            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().hasPermission("jcrestapi.upload",node)) {
                 throw new PathNotFoundException(node.getPath());
             }
 
