@@ -44,6 +44,7 @@
 package org.jahia.modules.jcrestapi.links;
 
 import org.jahia.modules.jcrestapi.API;
+import org.jahia.modules.jcrestapi.SpringBeansAccess;
 import org.jahia.modules.jcrestapi.URIUtils;
 import org.jahia.modules.jcrestapi.json.APIObjectFactory;
 import org.jahia.modules.json.*;
@@ -248,6 +249,9 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
         if (resolveReferences) {
             final Session session = SessionAccess.getCurrentSession().session;
             final Node node = session.getNodeByIdentifier(value);
+            if (!SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi.references",node)) {
+                return;
+            }
 
             if (references == null) {
                 references = new HashMap<String, JSONItem<? extends Item, APIDecorator>>(7);

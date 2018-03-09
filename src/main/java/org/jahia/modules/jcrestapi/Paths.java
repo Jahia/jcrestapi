@@ -51,10 +51,7 @@ import org.jahia.modules.jcrestapi.json.APINode;
 import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONItem;
 
-import javax.jcr.Binary;
-import javax.jcr.Node;
-import javax.jcr.Repository;
-import javax.jcr.Session;
+import javax.jcr.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.BufferedInputStream;
@@ -207,6 +204,10 @@ public class Paths extends API {
         try {
             session = getSession(workspace, language);
             final Node node = NodeAccessor.BY_PATH.getNode(idOrPath, session);
+
+            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().getPermissionService().hasPermission("jcrestapi.upload",node)) {
+                throw new PathNotFoundException(node.getPath());
+            }
 
             // check that the node is a folder
             if (node.isNodeType(Constants.NT_FOLDER)) {
