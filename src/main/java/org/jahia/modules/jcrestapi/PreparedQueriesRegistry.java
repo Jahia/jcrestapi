@@ -1,6 +1,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.modules.jcrestapi.api.PreparedQuery;
+import org.jahia.modules.jcrestapi.api.PreparedQueryService;
 import org.jahia.services.templates.JahiaModulesBeanPostProcessor;
 import org.springframework.beans.BeansException;
 
@@ -11,7 +12,7 @@ import java.util.Map;
  * This class stores all prepared queries that will be usable by the query endpoint.
  * It automatically registers PreparedQuery that are declared in modules spring contexts.
  */
-public class PreparedQueriesRegistry implements JahiaModulesBeanPostProcessor {
+public class PreparedQueriesRegistry implements PreparedQueryService, JahiaModulesBeanPostProcessor {
     private final static PreparedQueriesRegistry INSTANCE = new PreparedQueriesRegistry();
 
     public static PreparedQueriesRegistry getInstance() {
