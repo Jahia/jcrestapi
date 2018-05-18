@@ -43,6 +43,9 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import org.apache.commons.fileupload.util.LimitedInputStream;
+import org.apache.jackrabbit.util.Text;
+import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jahia.api.Constants;
@@ -50,11 +53,13 @@ import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.jcrestapi.json.APINode;
 import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONItem;
+import org.jahia.settings.SettingsBean;
 
 import javax.jcr.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -85,11 +90,11 @@ public class Paths extends API {
         for (PathSegment segment : usefulSegments) {
             // check if segment is a sub-element marker
             String subElementType = segment.getPath();
-            ElementAccessor accessor = ACCESSORS.get(subElementType);
+            ElementAccessor<?, ?, ?> accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 String nodePath = computePathUpTo(usefulSegments, index);
                 String subElement = getSubElement(usefulSegments, index);
-                JSONItem converted;
+                JSONItem<?, ?> converted;
                 if (data != null) {
                     if (data instanceof String) {
                         String dataAsString = (String) data;
@@ -99,11 +104,10 @@ public class Paths extends API {
                             throw new APIException(e.getCause(), operation, NodeAccessor.BY_PATH.getType(), nodePath, subElementType, Collections.singletonList(subElement), data);
                         }
                     } else if (data instanceof List) {
-                        List<String> dataAsList = (List<String>) data;
+                        @SuppressWarnings("unchecked") List<String> dataAsList = (List<String>) data;
                         return performBatchDelete(workspace, language, nodePath, subElementType, dataAsList, context,
                                 NodeAccessor.BY_PATH);
-                    }
-                    else {
+                    } else {
                         throw new APIException(new IllegalArgumentException("Unknown payload type"), operation,
                                 NodeAccessor.BY_PATH.getType(), nodePath,
                                 subElementType, Collections.singletonList(subElement), data);
@@ -205,23 +209,31 @@ public class Paths extends API {
             session = getSession(workspace, language);
             final Node node = NodeAccessor.BY_PATH.getNode(idOrPath, session);
 
-            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().hasPermission("jcrestapi.upload",node)) {
+            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().hasPermission("jcrestapi.upload", node)) {
                 throw new PathNotFoundException(node.getPath());
             }
 
             // check that the node is a folder
             if (node.isNodeType(Constants.NT_FOLDER)) {
 
+                long maxFileSize = SettingsBean.getInstance().getJahiaFileUploadMaxSize();
+                ContentDisposition contentDisposition = part.getContentDisposition();
+
                 // get the file name
-                fileName = part.getContentDisposition().getFileName();
+                fileName = contentDisposition.getFileName();
                 boolean isUpdate = false;
                 if (fileName == null) {
                     // if we didn't get a file name for some reason, create one
                     fileName = node.getName() + System.currentTimeMillis();
                 } else {
+                    fileName = Text.escapeIllegalJcrChars(fileName);
                     // check if we've already have a child with the same name, in which case we want to update
                     // todo: support same name siblings?
                     isUpdate = node.hasNode(fileName);
+                }
+
+                if (maxFileSize > 0 && contentDisposition.getSize() > maxFileSize) {
+                    throw new IllegalArgumentException("The file " + fileName + " exceeds its maximum permitted size of " + maxFileSize + " bytes");
                 }
 
                 Node childNode;
@@ -245,6 +257,20 @@ public class Paths extends API {
                 }
 
                 InputStream stream = new BufferedInputStream(part.getEntityAs(InputStream.class));
+
+                if (maxFileSize > 0) {
+
+                    final String finalFileName = fileName;
+
+                    stream = new LimitedInputStream(stream, maxFileSize) {
+
+                        @Override
+                        protected void raiseError(long maxFileSize, long fileSize) throws IOException {
+                            throw new IllegalArgumentException("The file " + finalFileName + " exceeds its maximum permitted size of " + maxFileSize + " bytes");
+                        }
+                    };
+                }
+
                 Binary binary = session.getValueFactory().createBinary(stream);
                 contentNode.setProperty(Constants.JCR_DATA, binary);
                 contentNode.setProperty(Constants.JCR_MIMETYPE, part.getMediaType().toString());

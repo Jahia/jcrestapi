@@ -46,18 +46,21 @@ package org.jahia.modules.jcrestapi;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Christophe Laprun
  */
 @Provider
 public class APIExceptionMapper implements ExceptionMapper<APIException> {
-    public static final transient Logger LOGGER = org.slf4j.LoggerFactory.getLogger(API.class);
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(API.class);
 
     private Response.ResponseBuilder toResponse(RepositoryException exception) {
         if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {
@@ -81,12 +84,17 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
             builder = toResponse((RepositoryException) cause);
         } else if (cause instanceof UnsupportedOperationException) {
             builder = Response.status(Response.Status.METHOD_NOT_ALLOWED);
-        }
-        else {
+        } else if (cause instanceof IllegalArgumentException) {
+            builder = Response.status(Response.Status.BAD_REQUEST);
+        } else {
             builder = defaultResponse(cause);
         }
 
         final APIException.JSONError error = exception.getError();
-        return error != null ? builder.entity(error).build() : builder.build();
+        if (error == null) {
+            return builder.build();
+        } else {
+            return builder.type(MediaType.APPLICATION_JSON).entity(error).build();
+        }
     }
 }
