@@ -44,7 +44,7 @@
 package org.jahia.modules.jcrestapi;
 
 import org.apache.commons.fileupload.util.LimitedInputStream;
-import org.apache.jackrabbit.util.Text;
+import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -226,7 +226,9 @@ public class Paths extends API {
                     // if we didn't get a file name for some reason, create one
                     fileName = node.getName() + System.currentTimeMillis();
                 } else {
-                    fileName = Text.escapeIllegalJcrChars(fileName);
+                    if (StringUtils.containsAny(fileName, "%/:[]*|\t\r\n")) {
+                        throw new IllegalArgumentException("The file name " + fileName + " contains illegal characters");
+                    }
                     // check if we've already have a child with the same name, in which case we want to update
                     // todo: support same name siblings?
                     isUpdate = node.hasNode(fileName);
