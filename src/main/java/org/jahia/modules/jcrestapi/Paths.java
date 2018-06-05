@@ -53,7 +53,6 @@ import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.jcrestapi.json.APINode;
 import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONItem;
-import org.jahia.settings.SettingsBean;
 
 import javax.jcr.*;
 import javax.ws.rs.*;
@@ -216,7 +215,7 @@ public class Paths extends API {
             // check that the node is a folder
             if (node.isNodeType(Constants.NT_FOLDER)) {
 
-                long maxFileSize = SettingsBean.getInstance().getJahiaFileUploadMaxSize();
+                long maxFileSize = SpringBeansAccess.getInstance().getRestFileUploadMaxSize();
                 ContentDisposition contentDisposition = part.getContentDisposition();
 
                 // get the file name

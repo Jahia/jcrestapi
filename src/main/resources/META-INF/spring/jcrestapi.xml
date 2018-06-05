@@ -10,6 +10,7 @@
         <property name="queryDisabled" value="${jahia.find.disabled:true}"/>
         <property name="nodeTypesToSkip" value="${jahia.find.nodeTypesToSkip:jnt:passwordHistory,jnt:passwordHistoryEntry}"/>
         <property name="permissionService" ref="permissionService"/>
+        <property name="restFileUploadMaxSize" value="#{jahiaProperties['jahiaFileUploadMaxSize.jcrestapi'] != null ? jahiaProperties['jahiaFileUploadMaxSize.jcrestapi'] : jahiaProperties['jahiaFileUploadMaxSize']}"/>
     </bean>
 
     <bean id="preparedQueriesRegistry" class="org.jahia.modules.jcrestapi.PreparedQueriesRegistry" factory-method="getInstance">

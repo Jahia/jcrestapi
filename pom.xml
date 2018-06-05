@@ -139,6 +139,7 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>1.3.2</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Jersey -->
@@ -319,6 +320,7 @@
                             javax.xml.bind.annotation.adapters,
                             javax.ws.rs.*,
                             org.apache.commons.lang,
+                            org.apache.commons.fileupload.*,
                             org.glassfish.hk2.*,
                             org.glassfish.jersey.server,
                             org.glassfish.jersey.media.multipart.*,
