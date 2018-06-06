@@ -60,8 +60,6 @@ public final class SpringBeansAccess {
     private boolean disableQuery = true;
     private Set<String> nodeTypesToSkip = Collections.emptySet();
     private PermissionService permissionService;
-    private long restFileUploadMaxSize;
-
     private SpringBeansAccess() {
     }
 
@@ -106,13 +104,5 @@ public final class SpringBeansAccess {
             return permissionService.hasPermission(api, node);
         }
         return true;
-    }
-
-    public long getRestFileUploadMaxSize() {
-        return restFileUploadMaxSize;
-    }
-
-    public void setRestFileUploadMaxSize(long restFileUploadMaxSize) {
-        this.restFileUploadMaxSize = restFileUploadMaxSize;
     }
 }
