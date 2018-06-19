@@ -156,7 +156,10 @@ public final class URIUtils {
 
     public static String addModulesContextTo(String uriAsString, UriInfo context) {
         String baseUri = context.getBaseUri().toASCIIString();
-        return (baseUri.endsWith("/") ? baseUri.substring(0, baseUri.length() - 1) : baseUri) + uriAsString;
+        if (baseUri.endsWith("/")) {
+            baseUri = baseUri.substring(0, baseUri.length() - 1);
+        }
+        return baseUri + uriAsString;
     }
 
     public static void setBaseURI(String baseURI) {
