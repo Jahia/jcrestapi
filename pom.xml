@@ -369,7 +369,7 @@
                     <skipTests>${skipTests}</skipTests>
                     <forkCount>1C</forkCount>
                     <reuseForks>true</reuseForks>
-                    <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+                    <argLine>-Xmx1024m</argLine>
                     <!--<excludes>
                         <exclude>**/*IT.java</exclude>
                     </excludes>-->
