@@ -193,7 +193,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-backports-compat23</artifactId>
-            <version>2.3.5</version>
+            <version>2.5.6</version>
             <scope>test</scope>
         </dependency>
         <dependency>
