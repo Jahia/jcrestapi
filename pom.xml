@@ -306,7 +306,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Jahia-Depends>default,jaxrs-osgi-extender</Jahia-Depends>
+                        <Jahia-Depends>default,jaxrs-osgi-extender,security-filter</Jahia-Depends>
                         <Jahia-Module-Type>system</Jahia-Module-Type>
                         <Private-Package>
                             org.jahia.modules.jcrestapi.*
