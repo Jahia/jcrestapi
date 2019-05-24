@@ -69,7 +69,7 @@ import java.util.Map;
 @XmlAccessorType(XmlAccessType.NONE)
 public class APIDecorator implements JSONDecorator<APIDecorator> {
 
-    public static final String JCR__PROPERTY_DEFINITION = "jcr__propertyDefinition";
+    public static final String JCR_PROPERTY_DEFINITION = "jcr__propertyDefinition";
 
     private Map<String, JSONLink> links;
     private Map<String, JSONItem<? extends Item, APIDecorator>> references;
@@ -170,7 +170,7 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
 
             // if we only have one property definition, we're done
             if (numberOfPropertyDefinitions == 1) {
-                return URIUtils.getChildURI(parentName, JCR__PROPERTY_DEFINITION, false);
+                return URIUtils.getChildURI(parentName, JCR_PROPERTY_DEFINITION, false);
             } else {
                 // we need to figure out which property definition matches ours in the array
                 int index = 1; // JCR indexes start at 1
@@ -182,7 +182,7 @@ public class APIDecorator implements JSONDecorator<APIDecorator> {
                     }
                 }
                 // create the indexed escaped link, if index = 1, no need for an index
-                return URIUtils.getChildURI(parentName, Names.escape(JCR__PROPERTY_DEFINITION, index), false);
+                return URIUtils.getChildURI(parentName, Names.escape(JCR_PROPERTY_DEFINITION, index), false);
             }
         }
     }
