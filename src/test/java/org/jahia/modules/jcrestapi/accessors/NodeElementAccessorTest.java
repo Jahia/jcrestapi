@@ -95,13 +95,13 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
         final Object entity = response.getEntity();
-        assertThat(entity instanceof JSONNode);
+        assertThat(entity instanceof JSONNode).isTrue();
 
         JSONNode jsonNode = (JSONNode) entity;
         // check that the return JSONNode is the same as the one we called perform on
         assertThat(jsonNode.getId()).isEqualTo(node.getIdentifier());
 
-        assertThat(jsonNode.getDecorator() instanceof APIDecorator);
+        assertThat(jsonNode.getDecorator() instanceof APIDecorator).isTrue();
         APIDecorator apiDecorator = (APIDecorator) jsonNode.getDecorator();
         final Map<String, JSONLink> links = apiDecorator.getLinks();
         assertThat(links).containsKeys(API.ABSOLUTE, API.SELF, API.PARENT);
@@ -141,26 +141,26 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
 
             assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
             final Object entity = response.getEntity();
-            assertThat(entity instanceof JSONNode);
+            assertThat(entity instanceof JSONNode).isTrue();
 
             JSONNode jsonNode = (JSONNode) entity;
             // check that the return JSONNode is the same as the one we called perform on
             assertThat(jsonNode.getId()).isEqualTo(node.getIdentifier());
 
-            assertThat(jsonNode.getDecorator() instanceof APIDecorator);
+            assertThat(jsonNode.getDecorator() instanceof APIDecorator).isTrue();
 
             JSONProperty jsonProperty = jsonNode.getProperty(Mocks.REF_PROPERTY + "1");
             assertThat(jsonProperty).isNotNull();
             assertThat(jsonProperty.isMultiValued()).isFalse();
             assertThat(jsonProperty.getValue()).isEqualTo(Mocks.NODE_ID + "2");
             assertThat(jsonProperty.getDecorator()).isNotNull();
-            assertThat(jsonProperty.getDecorator() instanceof APIDecorator);
+            assertThat(jsonProperty.getDecorator() instanceof APIDecorator).isTrue();
             APIDecorator propertyAPIDecorator = (APIDecorator) jsonProperty.getDecorator();
             assertThat(propertyAPIDecorator.getReferences()).isNotNull();
             Map<String, JSONItem<? extends Item, APIDecorator>> references = propertyAPIDecorator.getReferences();
             assertThat(references).hasSize(1);
             assertThat(references).containsKey(Mocks.NODE_ID + "2");
-            assertThat(references.get(Mocks.NODE_ID + "2") instanceof JSONNode);
+            assertThat(references.get(Mocks.NODE_ID + "2") instanceof JSONNode).isTrue();
             JSONNode referencedNode = (JSONNode) references.get(Mocks.NODE_ID + "2");
             assertThat(referencedNode.getId()).isEqualTo(Mocks.NODE_ID + "2");
             assertThat(referencedNode.getName()).isEqualTo(Mocks.NODE_NAME + "2");
@@ -188,17 +188,17 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
             jsonProperty = jsonNode.getProperty(Mocks.REF_PROPERTY + "2");
             assertThat(jsonProperty).isNotNull();
             assertThat(jsonProperty.isMultiValued()).isTrue();
-            assertThat(jsonProperty.getValue() instanceof String[]);
+            assertThat(jsonProperty.getValue() instanceof String[]).isTrue();
             assertThat(jsonProperty.getDecorator()).isNotNull();
-            assertThat(jsonProperty.getDecorator() instanceof APIDecorator);
+            assertThat(jsonProperty.getDecorator() instanceof APIDecorator).isTrue();
             propertyAPIDecorator = (APIDecorator) jsonProperty.getDecorator();
             assertThat(propertyAPIDecorator.getReferences()).isNotNull();
             references = propertyAPIDecorator.getReferences();
             assertThat(references).hasSize(2);
             assertThat(references).containsKey(Mocks.NODE_ID + "2");
-            assertThat(references.get(Mocks.NODE_ID + "2") instanceof JSONNode);
+            assertThat(references.get(Mocks.NODE_ID + "2") instanceof JSONNode).isTrue();
             assertThat(references).containsKey(Mocks.NODE_ID + "3");
-            assertThat(references.get(Mocks.NODE_ID + "3") instanceof JSONNode);
+            assertThat(references.get(Mocks.NODE_ID + "3") instanceof JSONNode).isTrue();
             referencedNode = (JSONNode) references.get(Mocks.NODE_ID + "2");
             assertThat(referencedNode.getId()).isEqualTo(Mocks.NODE_ID + "2");
             assertThat(referencedNode.getName()).isEqualTo(Mocks.NODE_NAME + "2");
@@ -232,7 +232,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
 
             assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
             final Object entity = response.getEntity();
-            assertThat(entity instanceof JSONNode);
+            assertThat(entity instanceof JSONNode).isTrue();
             JSONNode jsonNode = (JSONNode) entity;
 
             assertThat(jsonNode.getDecorator()).isNull();
@@ -257,7 +257,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
         Object entity = response.getEntity();
-        assertThat(entity instanceof JSONNode);
+        assertThat(entity instanceof JSONNode).isTrue();
         JSONNode jsonNode = (JSONNode) entity;
 
         assertThat(jsonNode).isNotNull();
@@ -272,7 +272,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
 
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.OK);
         entity = response.getEntity();
-        assertThat(entity instanceof JSONNode);
+        assertThat(entity instanceof JSONNode).isTrue();
         jsonNode = (JSONNode) entity;
 
         assertThat(jsonNode).isNotNull();
