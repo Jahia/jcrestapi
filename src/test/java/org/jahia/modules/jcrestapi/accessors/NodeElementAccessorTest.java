@@ -188,7 +188,7 @@ public class NodeElementAccessorTest extends ElementAccessorTest<JSONSubElementC
             jsonProperty = jsonNode.getProperty(Mocks.REF_PROPERTY + "2");
             assertThat(jsonProperty).isNotNull();
             assertThat(jsonProperty.isMultiValued()).isTrue();
-            assertThat(jsonProperty.getValue() instanceof String[]).isTrue();
+            assertThat(jsonProperty.getValue() instanceof Object[]).isTrue();
             assertThat(jsonProperty.getDecorator()).isNotNull();
             assertThat(jsonProperty.getDecorator() instanceof APIDecorator).isTrue();
             propertyAPIDecorator = (APIDecorator) jsonProperty.getDecorator();
