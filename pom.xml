@@ -77,6 +77,7 @@
         <assertj.version>1.6.0</assertj.version>
         <jmockit.version>1.17</jmockit.version>
         <skipTests>true</skipTests>
+        <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
     </properties>
 
     <scm>
