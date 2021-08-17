@@ -49,7 +49,7 @@
     <parent>
         <artifactId>jahia-modules</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>8.0.0.0</version>
+        <version>8.1.0.0-SNAPSHOT</version>
         <relativePath />
     </parent>
     <artifactId>jcrestapi</artifactId>
@@ -58,19 +58,6 @@
     <packaging>bundle</packaging>
     <description>Module implementing a RESTful API to access JCR data.</description>
 
-    <!-- Import dependencies from jaxrs-osgi-extender for Jersey and related, json-generation for Jackson -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.jahia.modules</groupId>
-                <artifactId>jaxrs-osgi-extender-bom</artifactId>
-                <version>2.0.4</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <properties>
         <slf4j.version>1.6.6</slf4j.version>
         <mockito.version>1.9.5</mockito.version>
@@ -78,6 +65,7 @@
         <jmockit.version>1.17</jmockit.version>
         <skipTests>true</skipTests>
         <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
+        <jahia-module-signature>MCwCFCatEnlMsFX7g/q0lY9Pl36fINEiAhQiQSN7J+hAjIye6nNEEhoZjDZLeQ==</jahia-module-signature>
     </properties>
 
     <scm>
@@ -148,12 +136,14 @@
         <dependency>
             <groupId>org.glassfish.jersey.bundles</groupId>
             <artifactId>jaxrs-ri</artifactId>
+            <version>${jersey.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
             <scope>provided</scope>
+            <version>${jersey.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -161,11 +151,13 @@
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-jdk-http</artifactId>
             <scope>test</scope>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.test-framework</groupId>
             <artifactId>jersey-test-framework-core</artifactId>
             <scope>test</scope>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -338,7 +330,6 @@
                         <!--<JAX-RS-Classes>$(classes;ANNOTATION;javax.ws.rs.Path)</JAX-RS-Classes>-->
                         <JAX-RS-Alias>/api/jcr/v1</JAX-RS-Alias>
                         <JAX-RS-Application>org.jahia.modules.jcrestapi.APIApplication</JAX-RS-Application>
-                        <Jahia-Signature>MCwCFDpw0cLfKlvXYaYYwPUmsQeW/pExAhQMKT3dGlM5XizaK8nPK93H2F7R7Q==</Jahia-Signature>
                     </instructions>
                 </configuration>
             </plugin>
