@@ -17,5 +17,5 @@
 
     <osgi:service ref="preparedQueriesRegistry" interface="org.jahia.modules.jcrestapi.api.PreparedQueryService" ></osgi:service>
 
-    <osgi:reference id="permissionService" interface="org.jahia.modules.securityfilter.PermissionService" ></osgi:reference>
+    <osgi:reference id="permissionService" interface="org.jahia.bundles.securityfilter.PermissionService" ></osgi:reference>
 </beans>

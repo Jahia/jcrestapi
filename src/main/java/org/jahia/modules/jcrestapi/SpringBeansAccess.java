@@ -43,7 +43,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
-import org.jahia.modules.securityfilter.PermissionService;
+import org.jahia.bundles.securityfilter.PermissionService;
 
 import javax.jcr.Node;
 import javax.jcr.Repository;
