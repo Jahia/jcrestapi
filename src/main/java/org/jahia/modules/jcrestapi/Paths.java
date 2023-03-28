@@ -53,6 +53,7 @@ import org.jahia.modules.jcrestapi.accessors.ElementAccessor;
 import org.jahia.modules.jcrestapi.json.APINode;
 import org.jahia.modules.json.Filter;
 import org.jahia.modules.json.JSONItem;
+import org.jahia.services.content.JCRContentUtils;
 import org.jahia.settings.SettingsBean;
 
 import javax.jcr.*;
@@ -229,6 +230,7 @@ public class Paths extends API {
                     if (StringUtils.containsAny(fileName, "%/:[]*|\t\r\n")) {
                         throw new IllegalArgumentException("The file name " + fileName + " contains illegal characters");
                     }
+                    fileName = JCRContentUtils.escapeLocalNodeName(fileName);
                     // check if we've already have a child with the same name, in which case we want to update
                     // todo: support same name siblings?
                     isUpdate = node.hasNode(fileName);
