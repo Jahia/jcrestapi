@@ -65,7 +65,7 @@
         <jmockit.version>1.17</jmockit.version>
         <skipTests>true</skipTests>
         <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
-        <jahia-module-signature>MCwCFCatEnlMsFX7g/q0lY9Pl36fINEiAhQiQSN7J+hAjIye6nNEEhoZjDZLeQ==</jahia-module-signature>
+        <jahia-module-signature>MCwCFGUzZPKGIPMEQsXs71dpfJlwqlI5AhRcLGDqKIAhppvoqnfUwk6XBhvj0A==</jahia-module-signature>
     </properties>
 
     <scm>
