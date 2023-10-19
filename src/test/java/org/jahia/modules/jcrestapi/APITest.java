@@ -44,8 +44,6 @@
 package org.jahia.modules.jcrestapi;
 
 import com.jayway.restassured.http.ContentType;
-import mockit.Mock;
-import mockit.MockUp;
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.core.TransientRepository;
 import org.apache.jackrabbit.core.config.ConfigurationException;
@@ -197,25 +195,15 @@ public class APITest extends JerseyTest {
 
     @Test
     public void checkAutomaticallyNamedChildren() throws Exception {
-        // need write access to repository
-
-        // using jmockit to provide a SettingsBean instance that returns a sane max name size without having to configure the whole bean
-        new MockUp<SettingsBean>() {
-
-            @Mock
-            public SettingsBean getInstance() throws IOException {
-                return new SettingsBean(null, new Properties(), null) {
-
-                    @Override
-                    public int getMaxNameSize() {
-                        return 32;
-                    }
-                };
+        new SettingsBean(null, new Properties(), null) {
+            @Override
+            public int getMaxNameSize() {
+                return 32;
             }
         };
 
         final String nodeType = "nt:address";
-        final String generatedNodeName = JCRContentUtils.generateNodeName(nodeType);
+        final String generatedNodeName = JCRContentUtils.generateNodeName(nodeType, 32);
         final String first = given().body("{\"type\": \"" + nodeType + "\"}")
                 .contentType(ContentType.JSON)
                 .when()

@@ -43,8 +43,6 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
-import mockit.Mock;
-import mockit.MockUp;
 import org.jahia.modules.jcrestapi.API;
 import org.jahia.modules.jcrestapi.Mocks;
 import org.jahia.modules.jcrestapi.URIUtils;
@@ -86,13 +84,7 @@ public abstract class ElementAccessorTest<C extends JSONSubElementContainer<APID
     public void setUp() throws RepositoryException {
         // fake session, at least to get access to a workspace name and language code for URIUtils
         final Session mockSession = Mocks.createMockSession();
-
-        new MockUp<SessionAccess>() {
-            @Mock
-            public SessionAccess.SessionInfo getCurrentSession() {
-                return new SessionAccess.SessionInfo(mockSession, WORKSPACE, LANGUAGE);
-            }
-        };
+        SessionAccess.setCurrentSession(mockSession, WORKSPACE, LANGUAGE);
 
         // set base URI for absolute links
         context = Mocks.createMockUriInfo(false, null);
