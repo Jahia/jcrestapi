@@ -1,14 +1,14 @@
 package org.jahia.modules.jcrestapi;
 
 import org.jahia.osgi.BundleUtils;
-import org.jahia.settings.SettingsBean;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
@@ -21,13 +21,17 @@ import java.util.concurrent.TimeUnit;
  * A filter that logs deprecation warnings for deprecated REST API endpoints.
  */
 @Provider
-public class JCRRestAPIDeprecationFilter implements ContainerRequestFilter {
+public class JCRRestAPIDeprecationFilter implements ContainerResponseFilter {
 
     public static final Logger logger = LoggerFactory.getLogger(JCRRestAPIDeprecationFilter.class);
     private static final Map<String, Long> loggedPaths = new ConcurrentHashMap<>();
 
     @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+        // Always send deprecation header:
+        responseContext.getHeaders().add("Deprecation", true);
+
+        // Log deprecation warning if needed:
         ConfigurationAdmin configAdmin = BundleUtils.getOsgiService(ConfigurationAdmin.class, null);
         long logAgainThreshold = TimeUnit.HOURS.toMillis(24); // default re-log every 24 hours
 
