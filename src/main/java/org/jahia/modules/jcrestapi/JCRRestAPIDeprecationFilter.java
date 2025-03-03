@@ -28,8 +28,9 @@ import java.util.concurrent.TimeUnit;
 @Priority(Priorities.USER)
 public class JCRRestAPIDeprecationFilter implements ContainerResponseFilter {
 
-    public static final Logger logger = LoggerFactory.getLogger(JCRRestAPIDeprecationFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(JCRRestAPIDeprecationFilter.class);
     private static final Map<String, Long> loggedPaths = new ConcurrentHashMap<>();
+    private static final long DEFAULT_LOG_AGAIN_THRESHOLD = TimeUnit.HOURS.toMillis(24); // default re-log every 24 hours
 
     @Context
     private UriInfo uriInfo;
@@ -45,7 +46,7 @@ public class JCRRestAPIDeprecationFilter implements ContainerResponseFilter {
         // Load the config, aware that the implementation is a bit dirty and not OSGi compliant,
         // but it's ok, remember that we are in deprecated code.
         ConfigurationAdmin configAdmin = BundleUtils.getOsgiService(ConfigurationAdmin.class, null);
-        long logAgainThreshold = TimeUnit.HOURS.toMillis(24); // default re-log every 24 hours
+        long logAgainThreshold = DEFAULT_LOG_AGAIN_THRESHOLD;
         if (configAdmin != null) {
             Configuration configuration = configAdmin.getConfiguration("org.jahia.modules.jcrestapi");
             if (configuration.getProperties() != null) {
@@ -70,11 +71,13 @@ public class JCRRestAPIDeprecationFilter implements ContainerResponseFilter {
         Long lastLogged = loggedPaths.get(cacheKey);
         long now = Instant.now().toEpochMilli();
 
-        // Log the deprecation warning if it's the first time or if the threshold has been reached
-        if (lastLogged == null || now - lastLogged >= logAgainThreshold) {
-            logger.warn("JCR REST API is deprecated. Received a {} request to endpoint: [{}]. " +
-                    "Please refer to the GraphQL API for supported alternatives.", requestContext.getMethod(),
-                    uriInfo.getBaseUri().getPath() + uriInfo.getPath());
+        // Log the deprecation warning if it's the first time or if the threshold has been reached or debug log level is enabled
+        if (lastLogged == null || now - lastLogged >= logAgainThreshold || logger.isDebugEnabled()) {
+            logger.warn("Received a request to endpoint: [/modules/api/jcr/v1/...]. JCR REST API is deprecated, please refer to the GraphQL API for supported alternatives." +
+                    " (Enable debug log level for more details on the request)");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Deprecated JCR REST API call received: [{}]: {}", requestContext.getMethod(), uriInfo.getBaseUri().getPath() + uriInfo.getPath());
+            }
             loggedPaths.put(cacheKey, now);
         }
     }
