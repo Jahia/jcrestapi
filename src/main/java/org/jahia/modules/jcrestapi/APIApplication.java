@@ -56,6 +56,11 @@ import javax.jcr.Repository;
  * @author Christophe Laprun
  */
 public class APIApplication extends ResourceConfig {
+    /**
+     * System property that can be used to disable the registration of {@link JCRRestAPIDeprecationFilter}.
+     */
+    public static final String SYS_PROP_DEPRECATION_FILTER_DISABLED = "jahia.JCRRestAPIDeprecationFilter.disabled";
+
     public APIApplication() {
         this(RepositoryFactory.class);
     }
@@ -68,7 +73,9 @@ public class APIApplication extends ResourceConfig {
                 bindFactory(repositoryFactoryClass).to(Repository.class);
             }
         });
-        register(JCRRestAPIDeprecationFilter.class);
+        if (!Boolean.getBoolean(SYS_PROP_DEPRECATION_FILTER_DISABLED)) {
+            register(JCRRestAPIDeprecationFilter.class);
+        }
         property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
         property(ServerProperties.WADL_FEATURE_DISABLE, true);
 

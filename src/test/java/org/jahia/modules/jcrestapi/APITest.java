@@ -73,6 +73,7 @@ import static com.jayway.restassured.RestAssured.expect;
 import static com.jayway.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.*;
+import static org.jahia.modules.jcrestapi.APIApplication.SYS_PROP_DEPRECATION_FILTER_DISABLED;
 
 /**
  * @author Christophe Laprun
@@ -104,6 +105,7 @@ public class APITest extends JerseyTest {
                 destroyRepository();
             }
         });
+        System.setProperty(SYS_PROP_DEPRECATION_FILTER_DISABLED, "true");
     }
 
     @AfterClass
@@ -117,6 +119,7 @@ public class APITest extends JerseyTest {
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
+        System.clearProperty(SYS_PROP_DEPRECATION_FILTER_DISABLED);
     }
 
     @Before
