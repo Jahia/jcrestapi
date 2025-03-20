@@ -63,7 +63,6 @@
         <mockito.version>1.9.5</mockito.version>
         <assertj.version>1.6.0</assertj.version>
         <jahia.plugin.version>6.9</jahia.plugin.version>
-        <skipTests>true</skipTests>
         <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
         <jahia-module-signature>MCwCFANxZZVlPcY4e9Jt/MnQoqjDoaGRAhRgz7ig2JHpAzkeRbbFChohe0G8BA==</jahia-module-signature>
     </properties>
@@ -348,7 +347,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.17</version>
                 <configuration>
-                    <skipTests>${skipTests}</skipTests>
                     <forkCount>1C</forkCount>
                     <reuseForks>true</reuseForks>
                     <argLine>-Xmx1024m</argLine>
