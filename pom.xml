@@ -54,7 +54,7 @@
     </parent>
     <artifactId>jcrestapi</artifactId>
     <name>Jahia RESTful JCR Access</name>
-    <version>3.3.0</version>
+    <version>3.4.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <description>Module implementing a RESTful API to access JCR data.</description>
 
@@ -71,7 +71,7 @@
         <connection>scm:git:git@github.com:Jahia/jcrestapi.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/jcrestapi.git</developerConnection>
         <url>http://git@github.com:Jahia/jcrestapi.git</url>
-        <tag>3_3_0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
