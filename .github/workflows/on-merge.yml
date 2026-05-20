@@ -1,11 +1,11 @@
 # This workflow is triggered every time a change is pushed to any branches
 # Github actions command reference: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
-name: On merge to master
+name: On merge to main
 
 on:
   push:
     branches:
-      - master
+      - main
       - /feature-.*/
       - /[0-9]_[0-9]_x/
       - /[0-9]_x/
@@ -38,7 +38,6 @@ jobs:
         with:
           nexus_username: ${{ secrets.NEXUS_USERNAME }}
           nexus_password: ${{ secrets.NEXUS_PASSWORD }}
-          module_id: jcrestapi
           mvn_settings_filepath: '.github/maven.settings.xml'
 
   sbom:
@@ -57,7 +56,7 @@ jobs:
   publish:
     name: Publish module
     needs: build
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     container:
       image: jahia/cimg-mvn-cache:ga_cimg_openjdk_8.0.312-node
