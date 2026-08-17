@@ -334,6 +334,7 @@ public class APITest extends JerseyTest {
 
         given().body("[\"" + name + "\"]")
                 .contentType(ContentType.JSON)
+                .redirects().follow(false)
                 .when()
                 .delete(getURLByPath("children/"))
                 .then()
@@ -345,8 +346,12 @@ public class APITest extends JerseyTest {
         SpringBeansAccess.getInstance().setPermissionService(null);
         given().body("[\"" + name + "\"]")
                 .contentType(ContentType.JSON)
+                .redirects().follow(false)
                 .when()
-                .delete(getURLByPath("children/"));
+                .delete(getURLByPath("children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
         assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
     }
 
@@ -359,8 +364,11 @@ public class APITest extends JerseyTest {
 
         denyOnlyTheDeleteOperation();
 
+        // the refusal is read without following the redirect: the node's own URL answers 404 once the node is gone, so
+        // a followed redirect would report the refused status on a request that in fact deleted the node
         given().body("[\"" + name + "\"]")
                 .contentType(ContentType.JSON)
+                .redirects().follow(false)
                 .when()
                 .delete(generateURL(getURIById(id)))
                 .then()
@@ -372,8 +380,12 @@ public class APITest extends JerseyTest {
         SpringBeansAccess.getInstance().setPermissionService(null);
         given().body("[\"" + name + "\"]")
                 .contentType(ContentType.JSON)
+                .redirects().follow(false)
                 .when()
-                .delete(generateURL(getURIById(id)));
+                .delete(generateURL(getURIById(id)))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
         assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
     }
 
