@@ -397,12 +397,14 @@ public class API {
      * Checks that the given node is exposed by the API for the given operation: its primary type must not be one of the
      * excluded types, and the caller's scope must allow that operation on it.
      *
+     * <p>Package-visible so that the subclasses answering a route apply the same rule as this class.
+     *
      * @param node      the node the request resolved to
      * @param operation the operation about to be performed on that node
      * @throws PathNotFoundException if the node is not exposed by the API
      * @throws RepositoryException   if the node's primary type or path cannot be read
      */
-    private void checkNodeIsInScope(Node node, String operation) throws RepositoryException {
+    void checkNodeIsInScope(Node node, String operation) throws RepositoryException {
         if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName())
                 || !SpringBeansAccess.getInstance().hasPermission("jcrestapi." + operation, node)) {
             throw new PathNotFoundException(node.getPath());
