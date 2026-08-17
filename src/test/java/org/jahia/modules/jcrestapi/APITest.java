@@ -53,6 +53,7 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.jahia.modules.jcrestapi.api.PreparedQuery;
 import org.jahia.modules.json.Names;
 import org.jahia.services.content.JCRContentUtils;
+import org.jahia.services.securityfilter.PermissionService;
 import org.jahia.settings.SettingsBean;
 import org.junit.*;
 
@@ -74,6 +75,13 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.*;
 import static org.jahia.modules.jcrestapi.APIApplication.SYS_PROP_DEPRECATION_FILTER_DISABLED;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Christophe Laprun
@@ -151,6 +159,7 @@ public class APITest extends JerseyTest {
 
     @After
     public void afterEach() {
+        SpringBeansAccess.getInstance().setPermissionService(null);
         session.logout();
     }
 
@@ -290,6 +299,105 @@ public class APITest extends JerseyTest {
                 .get(urlByPath);
     }
 
+    @Test
+    public void deleteShouldBeRefusedOnANodeTheScopeDoesNotAllow() throws Exception {
+
+        final String name = "singleScoped";
+        createNode("nt:address", name);
+
+        denyOnlyTheDeleteOperation();
+
+        given().when()
+                .delete(getURLByPath("children/" + name))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still be there once the operation is refused", rootHasChild(name));
+
+        // the same request goes through once the scope allows the operation again
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().when()
+                .delete(getURLByPath("children/" + name))
+                .then()
+                .assertThat()
+                .statusCode(SC_NO_CONTENT);
+        assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
+    }
+
+    @Test
+    public void batchDeleteShouldBeRefusedOnANodeTheScopeDoesNotAllow() throws Exception {
+
+        final String name = "batchScoped";
+        createNode("nt:address", name);
+
+        denyOnlyTheDeleteOperation();
+
+        given().body("[\"" + name + "\"]")
+                .contentType(ContentType.JSON)
+                .when()
+                .delete(getURLByPath("children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still be there once the operation is refused", rootHasChild(name));
+
+        // the same request goes through once the scope allows the operation again
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"" + name + "\"]")
+                .contentType(ContentType.JSON)
+                .when()
+                .delete(getURLByPath("children/"));
+        assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
+    }
+
+    @Test
+    public void batchDeleteOfTheNodeItselfShouldBeRefusedOnANodeTheScopeDoesNotAllow() throws Exception {
+
+        // a batch payload sent on the node itself, i.e. with no sub-element type, deletes that very node
+        final String name = "batchScopedItself";
+        final String id = createNode("nt:address", name);
+
+        denyOnlyTheDeleteOperation();
+
+        given().body("[\"" + name + "\"]")
+                .contentType(ContentType.JSON)
+                .when()
+                .delete(generateURL(getURIById(id)))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still be there once the operation is refused", rootHasChild(name));
+
+        // the same request goes through once the scope allows the operation again
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"" + name + "\"]")
+                .contentType(ContentType.JSON)
+                .when()
+                .delete(generateURL(getURIById(id)));
+        assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
+    }
+
+    /**
+     * Installs a permission service that allows every operation but the delete one, so that a refused delete cannot be
+     * confused with a node the test can no longer read.
+     */
+    private void denyOnlyTheDeleteOperation() throws RepositoryException {
+
+        final PermissionService permissionService = mock(PermissionService.class);
+        when(permissionService.hasPermission(anyString(), any(Node.class))).thenReturn(true);
+        when(permissionService.hasPermission(eq("jcrestapi." + API.DELETE), any(Node.class))).thenReturn(false);
+        SpringBeansAccess.getInstance().setPermissionService(permissionService);
+    }
+
+    /**
+     * Reads the repository back through the test's own session rather than through the API, so that the result does not
+     * depend on what the API is allowed to return.
+     */
+    private boolean rootHasChild(String name) throws RepositoryException {
+        session.refresh(false);
+        return session.getRootNode().hasNode(name);
+    }
+
     private Object[] createChildrenAssertions(String nodeType, String urlByPath, String... childNames) {
         if (childNames != null) {
             final Object[] result = new Object[childNames.length * 8];
@@ -309,8 +417,8 @@ public class APITest extends JerseyTest {
         return null;
     }
 
-    private void createNode(String nodeType, String name) {
-        given().body("{\"type\": \"" + nodeType + "\"}")
+    private String createNode(String nodeType, String name) {
+        return given().body("{\"type\": \"" + nodeType + "\"}")
                 .contentType(ContentType.JSON)
                 .when()
                 .post(getURLByPath("children/" + name))
@@ -321,7 +429,7 @@ public class APITest extends JerseyTest {
                         "name", equalTo(name),
                         "type", equalTo(nodeType),
                         "id", notNullValue()
-                );
+                ).extract().path("id");
     }
 
     @Test

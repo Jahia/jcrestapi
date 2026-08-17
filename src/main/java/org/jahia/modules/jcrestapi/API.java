@@ -394,6 +394,22 @@ public class API {
     }
 
     /**
+     * Checks that the given node is exposed by the API for the given operation: its primary type must not be one of the
+     * excluded types, and the caller's scope must allow that operation on it.
+     *
+     * @param node      the node the request resolved to
+     * @param operation the operation about to be performed on that node
+     * @throws PathNotFoundException if the node is not exposed by the API
+     * @throws RepositoryException   if the node's primary type or path cannot be read
+     */
+    private void checkNodeIsInScope(Node node, String operation) throws RepositoryException {
+        if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName())
+                || !SpringBeansAccess.getInstance().hasPermission("jcrestapi." + operation, node)) {
+            throw new PathNotFoundException(node.getPath());
+        }
+    }
+
+    /**
      * Performs a batch delete of all specified sub-element types identified by the given list of sub-elements. Note that this method could actually
      * be extended to include other types of batch operations.
      *
@@ -420,6 +436,7 @@ public class API {
             subElementType = processor.getSubElementType();
 
             final Node node = nodeAccessor.getNode(parentIdOrPath, session);
+            checkNodeIsInScope(node, DELETE);
 
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
@@ -458,9 +475,8 @@ public class API {
             session = getSession(workspace, language);
 
             final Node node = nodeAccessor.getNode(idOrPath, session);
-            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().hasPermission("jcrestapi."+operation, node)) {
-                throw new PathNotFoundException(node.getPath());
-            }
+            checkNodeIsInScope(node, operation);
+
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 final Response response = accessor.perform(node, subElement, operation, data, context);
