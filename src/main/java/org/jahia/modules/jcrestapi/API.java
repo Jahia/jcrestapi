@@ -394,6 +394,31 @@ public class API {
     }
 
     /**
+     * Checks the node a children deletion will remove, and not only the node the request resolved to.
+     *
+     * <p>{@code ChildrenElementAccessor.delete} removes {@code node.getNode(subElement)}, so the node that
+     * leaves the repository is the child. {@link #checkNodeIsInScope(Node, String)} on the resolved node says
+     * nothing about that child: one whose own primary type is excluded, or whose own path the caller's scope
+     * refuses, would still be removed. Both shapes of the delete route resolve their child here, so both
+     * answer for the node they remove.
+     *
+     * <p>A name that matches no child is left to the accessor, which reports it the same way as before.
+     *
+     * <p>Deletion only. Reading or writing a sub-element is a wider question than the node being removed,
+     * and a children listing already filters on {@code jcrestapi.child} through {@link #NODE_FILTER}.
+     *
+     * @param node       the node the request resolved to
+     * @param subElement the name of the child the request will remove
+     * @throws PathNotFoundException if the child is not exposed by the API
+     * @throws RepositoryException   if the child's primary type or path cannot be read
+     */
+    private void checkChildIsInScope(Node node, String subElement) throws RepositoryException {
+        if (subElement != null && !subElement.isEmpty() && node.hasNode(subElement)) {
+            checkNodeIsInScope(node.getNode(subElement), DELETE);
+        }
+    }
+
+    /**
      * Checks that the given sub-element is a plain name, and not a relative path.
      *
      * <p>The batch overload of {@link ElementAccessor#perform(Node, java.util.List, String, java.util.List,
@@ -465,8 +490,12 @@ public class API {
             final Node node = nodeAccessor.getNode(parentIdOrPath, session);
             checkNodeIsInScope(node, DELETE);
             if (subElements != null) {
+                final boolean children = JSONConstants.CHILDREN.equals(subElementType);
                 for (String subElement : subElements) {
                     checkIsPlainName(subElement);
+                    if (children) {
+                        checkChildIsInScope(node, subElement);
+                    }
                 }
             }
 
@@ -508,6 +537,9 @@ public class API {
 
             final Node node = nodeAccessor.getNode(idOrPath, session);
             checkNodeIsInScope(node, operation);
+            if (DELETE.equals(operation) && JSONConstants.CHILDREN.equals(subElementType)) {
+                checkChildIsInScope(node, subElement);
+            }
 
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {

@@ -410,6 +410,75 @@ public class APITest extends JerseyTest {
         assertTrue("the target should still be there", rootHasChild("escapeVictim"));
     }
 
+
+    @Test
+    public void singleDeleteShouldBeRefusedOnAChildTheScopeDoesNotAllow() throws Exception {
+
+        // the scope allows the operation on the parent the request resolves to, and refuses it on the child
+        makeParentAndChild("scopedParentA", "scopedChildA");
+        denyTheDeleteOperationOnlyOn("/scopedParentA/scopedChildA");
+
+        given().when()
+                .delete(getURLByPath("scopedParentA/children/scopedChildA"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the child should still be there once the operation is refused",
+                hasGrandChild("scopedParentA", "scopedChildA"));
+
+        // the same request goes through once the scope allows the operation on the child too
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().when()
+                .delete(getURLByPath("scopedParentA/children/scopedChildA"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NO_CONTENT);
+        assertFalse("the child should be gone once the operation is allowed",
+                hasGrandChild("scopedParentA", "scopedChildA"));
+    }
+
+    @Test
+    public void batchDeleteShouldBeRefusedOnAChildTheScopeDoesNotAllow() throws Exception {
+
+        makeParentAndChild("scopedParentB", "scopedChildB");
+        denyTheDeleteOperationOnlyOn("/scopedParentB/scopedChildB");
+
+        given().body("[\"scopedChildB\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("scopedParentB/children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the child should still be there once the operation is refused",
+                hasGrandChild("scopedParentB", "scopedChildB"));
+
+        // the same request goes through once the scope allows the operation on the child too
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"scopedChildB\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("scopedParentB/children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the child should be gone once the operation is allowed",
+                hasGrandChild("scopedParentB", "scopedChildB"));
+    }
+
+    private void makeParentAndChild(String parent, String child) throws RepositoryException {
+        session.refresh(false);
+        session.getRootNode().addNode(parent, "nt:unstructured").addNode(child, "nt:unstructured");
+        session.save();
+    }
+
+    private boolean hasGrandChild(String parent, String child) throws RepositoryException {
+        session.refresh(false);
+        return session.getRootNode().hasNode(parent) && session.getRootNode().getNode(parent).hasNode(child);
+    }
+
     /**
      * Installs a permission service that allows the delete operation everywhere but on one node path.
      */
