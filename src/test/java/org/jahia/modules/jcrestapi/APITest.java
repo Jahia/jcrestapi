@@ -392,8 +392,13 @@ public class APITest extends JerseyTest {
     }
 
 
+    /**
+     * A name reaches {@code Node.getNode(String)}, which resolves a relative path, so a name can reach a node
+     * that is not below the one the request targets. What holds is that the scope is checked on the node the
+     * request removes. Case contributed by baptistegrimaud in review.
+     */
     @Test
-    public void batchDeleteShouldNotEscapeTheResolvedNodeThroughARelativeSubElementName() throws Exception {
+    public void batchDeleteShouldCheckTheScopeOfANodeNamedThroughARelativePath() throws Exception {
 
         createNode("nt:address", "escapeSource");
         createNode("nt:address", "escapeVictim");
@@ -407,9 +412,57 @@ public class APITest extends JerseyTest {
                 .then()
                 .assertThat()
                 .statusCode(SC_NOT_FOUND);
-        assertTrue("the target should still be there", rootHasChild("escapeVictim"));
+        assertTrue("the target should still be there once its own scope refuses the operation",
+                rootHasChild("escapeVictim"));
+
+        // the same request goes through once the scope allows the operation on the target itself
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"../escapeVictim\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("escapeSource/children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the target should be gone once its own scope allows the operation",
+                rootHasChild("escapeVictim"));
     }
 
+    /**
+     * Removing a deeper node in one request is what a name carrying a path is for, so it keeps working and the
+     * scope is checked on that deeper node.
+     */
+    @Test
+    public void batchDeleteShouldRemoveADeeperNodeNamedThroughAPath() throws Exception {
+
+        makeParentAndChild("deepParent", "deepChild");
+        denyTheDeleteOperationOnlyOn("/deepParent/deepChild");
+
+        given().body("[\"deepParent/deepChild\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the deeper node should still be there once its own scope refuses the operation",
+                hasGrandChild("deepParent", "deepChild"));
+
+        // the same request goes through once the scope allows the operation on that node
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"deepParent/deepChild\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the deeper node should be gone once its own scope allows the operation",
+                hasGrandChild("deepParent", "deepChild"));
+    }
 
     @Test
     public void singleDeleteShouldBeRefusedOnAChildTheScopeDoesNotAllow() throws Exception {

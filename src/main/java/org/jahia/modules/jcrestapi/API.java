@@ -402,6 +402,12 @@ public class API {
      * refuses, would still be removed. Both shapes of the delete route resolve their child here, so both
      * answer for the node they remove.
      *
+     * <p>The name resolves the way {@link Node#getNode(String)} resolves it, as a <em>relative path</em>
+     * rather than a name, so {@code ../sibling} names a node outside this one. That is deliberate: the
+     * check resolves through the same call the accessor removes through, so the node checked here is the
+     * node removed there whatever shape the name takes. Refusing the shape instead would refuse
+     * {@code folder/child}, which is how a caller removes a deeper node in one request.
+     *
      * <p>A name that matches no child is left to the accessor, which reports it the same way as before.
      *
      * <p>Deletion only. Reading or writing a sub-element is a wider question than the node being removed,
@@ -415,31 +421,6 @@ public class API {
     private void checkChildIsInScope(Node node, String subElement) throws RepositoryException {
         if (subElement != null && !subElement.isEmpty() && node.hasNode(subElement)) {
             checkNodeIsInScope(node.getNode(subElement), DELETE);
-        }
-    }
-
-    /**
-     * Checks that the given sub-element is a plain name, and not a relative path.
-     *
-     * <p>The batch overload of {@link ElementAccessor#perform(Node, java.util.List, String, java.util.List,
-     * UriInfo)} passes each name straight to {@link Node#getNode(String)}, which resolves a <em>relative
-     * path</em>: {@code a/b} and {@code ../sibling} are valid arguments there. A name carrying a path
-     * would therefore reach a node other than the one {@link #checkNodeIsInScope(Node, String)} approved.
-     * The single-element routes cannot express one, because a sub-element reaches them as a single URI
-     * segment.
-     *
-     * <p>The three refused shapes are the whole of JCR's relative-path syntax, so what remains is a name.
-     * Refusing shapes rather than allowing characters is deliberate: a JCR name accepts a namespace
-     * prefix ({@code jcr:content}), a space, and a same-name-sibling index ({@code child[2]}), so an
-     * allow-list would refuse names this API is expected to carry.
-     *
-     * @param subElement the name of a sub-element the request asks to operate on
-     * @throws PathNotFoundException if the sub-element is a path rather than a name
-     */
-    private static void checkIsPlainName(String subElement) throws PathNotFoundException {
-        if (subElement != null
-                && (subElement.indexOf('/') >= 0 || ".".equals(subElement) || "..".equals(subElement))) {
-            throw new PathNotFoundException(subElement);
         }
     }
 
@@ -489,13 +470,9 @@ public class API {
 
             final Node node = nodeAccessor.getNode(parentIdOrPath, session);
             checkNodeIsInScope(node, DELETE);
-            if (subElements != null) {
-                final boolean children = JSONConstants.CHILDREN.equals(subElementType);
+            if (subElements != null && JSONConstants.CHILDREN.equals(subElementType)) {
                 for (String subElement : subElements) {
-                    checkIsPlainName(subElement);
-                    if (children) {
-                        checkChildIsInScope(node, subElement);
-                    }
+                    checkChildIsInScope(node, subElement);
                 }
             }
 
