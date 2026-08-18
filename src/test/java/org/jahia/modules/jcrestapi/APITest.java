@@ -53,6 +53,9 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.jahia.modules.jcrestapi.api.PreparedQuery;
 import org.jahia.modules.json.Names;
 import org.jahia.services.content.JCRContentUtils;
+import org.jahia.services.securityfilter.PermissionService;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.jahia.settings.SettingsBean;
 import org.junit.*;
 
@@ -74,6 +77,13 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.*;
 import static org.jahia.modules.jcrestapi.APIApplication.SYS_PROP_DEPRECATION_FILTER_DISABLED;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Christophe Laprun
@@ -151,6 +161,7 @@ public class APITest extends JerseyTest {
 
     @After
     public void afterEach() {
+        SpringBeansAccess.getInstance().setPermissionService(null);
         session.logout();
     }
 
@@ -290,6 +301,275 @@ public class APITest extends JerseyTest {
                 .get(urlByPath);
     }
 
+    @Test
+    public void deleteShouldBeRefusedOnANodeTheScopeDoesNotAllow() throws Exception {
+
+        final String name = "singleScoped";
+        createNode("nt:address", name);
+
+        denyOnlyTheDeleteOperation();
+
+        given().when()
+                .delete(getURLByPath("children/" + name))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still be there once the operation is refused", rootHasChild(name));
+
+        // the same request goes through once the scope allows the operation again
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().when()
+                .delete(getURLByPath("children/" + name))
+                .then()
+                .assertThat()
+                .statusCode(SC_NO_CONTENT);
+        assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
+    }
+
+    @Test
+    public void batchDeleteShouldBeRefusedOnANodeTheScopeDoesNotAllow() throws Exception {
+
+        final String name = "batchScoped";
+        createNode("nt:address", name);
+
+        denyOnlyTheDeleteOperation();
+
+        given().body("[\"" + name + "\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still be there once the operation is refused", rootHasChild(name));
+
+        // the same request goes through once the scope allows the operation again
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"" + name + "\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
+    }
+
+    @Test
+    public void batchDeleteOfTheNodeItselfShouldBeRefusedOnANodeTheScopeDoesNotAllow() throws Exception {
+
+        // a batch payload sent on the node itself, i.e. with no sub-element type, deletes that very node
+        final String name = "batchScopedItself";
+        final String id = createNode("nt:address", name);
+
+        denyOnlyTheDeleteOperation();
+
+        // the refusal is read without following the redirect: the node's own URL answers 404 once the node is gone, so
+        // a followed redirect would report the refused status on a request that in fact deleted the node
+        given().body("[\"" + name + "\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(generateURL(getURIById(id)))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still be there once the operation is refused", rootHasChild(name));
+
+        // the same request goes through once the scope allows the operation again
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"" + name + "\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(generateURL(getURIById(id)))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
+    }
+
+
+    /**
+     * A name reaches {@code Node.getNode(String)}, which resolves a relative path, so a name can reach a node
+     * that is not below the one the request targets. What holds is that the scope is checked on the node the
+     * request removes. Case contributed by baptistegrimaud in review.
+     */
+    @Test
+    public void batchDeleteShouldCheckTheScopeOfANodeNamedThroughARelativePath() throws Exception {
+
+        createNode("nt:address", "escapeSource");
+        createNode("nt:address", "escapeVictim");
+        denyTheDeleteOperationOnlyOn("/escapeVictim");
+
+        given().body("[\"../escapeVictim\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("escapeSource/children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the target should still be there once its own scope refuses the operation",
+                rootHasChild("escapeVictim"));
+
+        // the same request goes through once the scope allows the operation on the target itself
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"../escapeVictim\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("escapeSource/children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the target should be gone once its own scope allows the operation",
+                rootHasChild("escapeVictim"));
+    }
+
+    /**
+     * Removing a deeper node in one request is what a name carrying a path is for, so it keeps working and the
+     * scope is checked on that deeper node.
+     */
+    @Test
+    public void batchDeleteShouldRemoveADeeperNodeNamedThroughAPath() throws Exception {
+
+        makeParentAndChild("deepParent", "deepChild");
+        denyTheDeleteOperationOnlyOn("/deepParent/deepChild");
+
+        given().body("[\"deepParent/deepChild\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the deeper node should still be there once its own scope refuses the operation",
+                hasGrandChild("deepParent", "deepChild"));
+
+        // the same request goes through once the scope allows the operation on that node
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"deepParent/deepChild\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the deeper node should be gone once its own scope allows the operation",
+                hasGrandChild("deepParent", "deepChild"));
+    }
+
+    @Test
+    public void singleDeleteShouldBeRefusedOnAChildTheScopeDoesNotAllow() throws Exception {
+
+        // the scope allows the operation on the parent the request resolves to, and refuses it on the child
+        makeParentAndChild("scopedParentA", "scopedChildA");
+        denyTheDeleteOperationOnlyOn("/scopedParentA/scopedChildA");
+
+        given().when()
+                .delete(getURLByPath("scopedParentA/children/scopedChildA"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the child should still be there once the operation is refused",
+                hasGrandChild("scopedParentA", "scopedChildA"));
+
+        // the same request goes through once the scope allows the operation on the child too
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().when()
+                .delete(getURLByPath("scopedParentA/children/scopedChildA"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NO_CONTENT);
+        assertFalse("the child should be gone once the operation is allowed",
+                hasGrandChild("scopedParentA", "scopedChildA"));
+    }
+
+    @Test
+    public void batchDeleteShouldBeRefusedOnAChildTheScopeDoesNotAllow() throws Exception {
+
+        makeParentAndChild("scopedParentB", "scopedChildB");
+        denyTheDeleteOperationOnlyOn("/scopedParentB/scopedChildB");
+
+        given().body("[\"scopedChildB\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("scopedParentB/children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the child should still be there once the operation is refused",
+                hasGrandChild("scopedParentB", "scopedChildB"));
+
+        // the same request goes through once the scope allows the operation on the child too
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().body("[\"scopedChildB\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("scopedParentB/children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the child should be gone once the operation is allowed",
+                hasGrandChild("scopedParentB", "scopedChildB"));
+    }
+
+    private void makeParentAndChild(String parent, String child) throws RepositoryException {
+        session.refresh(false);
+        session.getRootNode().addNode(parent, "nt:unstructured").addNode(child, "nt:unstructured");
+        session.save();
+    }
+
+    private boolean hasGrandChild(String parent, String child) throws RepositoryException {
+        session.refresh(false);
+        return session.getRootNode().hasNode(parent) && session.getRootNode().getNode(parent).hasNode(child);
+    }
+
+    /**
+     * Installs a permission service that allows the delete operation everywhere but on one node path.
+     */
+    private void denyTheDeleteOperationOnlyOn(final String deniedPath) throws RepositoryException {
+
+        final PermissionService permissionService = mock(PermissionService.class);
+        when(permissionService.hasPermission(anyString(), any(Node.class))).thenAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                final String api = (String) invocation.getArguments()[0];
+                final Node node = (Node) invocation.getArguments()[1];
+                return !(("jcrestapi." + API.DELETE).equals(api) && deniedPath.equals(node.getPath()));
+            }
+        });
+        SpringBeansAccess.getInstance().setPermissionService(permissionService);
+    }
+
+    /**
+     * Installs a permission service that allows every operation but the delete one, so that a refused delete cannot be
+     * confused with a node the test can no longer read.
+     */
+    private void denyOnlyTheDeleteOperation() throws RepositoryException {
+
+        final PermissionService permissionService = mock(PermissionService.class);
+        when(permissionService.hasPermission(anyString(), any(Node.class))).thenReturn(true);
+        when(permissionService.hasPermission(eq("jcrestapi." + API.DELETE), any(Node.class))).thenReturn(false);
+        SpringBeansAccess.getInstance().setPermissionService(permissionService);
+    }
+
+    /**
+     * Reads the repository back through the test's own session rather than through the API, so that the result does not
+     * depend on what the API is allowed to return.
+     */
+    private boolean rootHasChild(String name) throws RepositoryException {
+        session.refresh(false);
+        return session.getRootNode().hasNode(name);
+    }
+
     private Object[] createChildrenAssertions(String nodeType, String urlByPath, String... childNames) {
         if (childNames != null) {
             final Object[] result = new Object[childNames.length * 8];
@@ -309,8 +589,8 @@ public class APITest extends JerseyTest {
         return null;
     }
 
-    private void createNode(String nodeType, String name) {
-        given().body("{\"type\": \"" + nodeType + "\"}")
+    private String createNode(String nodeType, String name) {
+        return given().body("{\"type\": \"" + nodeType + "\"}")
                 .contentType(ContentType.JSON)
                 .when()
                 .post(getURLByPath("children/" + name))
@@ -321,7 +601,7 @@ public class APITest extends JerseyTest {
                         "name", equalTo(name),
                         "type", equalTo(nodeType),
                         "id", notNullValue()
-                );
+                ).extract().path("id");
     }
 
     @Test
