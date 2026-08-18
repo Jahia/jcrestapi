@@ -54,6 +54,8 @@ import org.jahia.modules.jcrestapi.api.PreparedQuery;
 import org.jahia.modules.json.Names;
 import org.jahia.services.content.JCRContentUtils;
 import org.jahia.services.securityfilter.PermissionService;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.jahia.settings.SettingsBean;
 import org.junit.*;
 
@@ -387,6 +389,42 @@ public class APITest extends JerseyTest {
                 .assertThat()
                 .statusCode(SC_SEE_OTHER);
         assertFalse("the node should be gone once the operation is allowed", rootHasChild(name));
+    }
+
+
+    @Test
+    public void batchDeleteShouldNotEscapeTheResolvedNodeThroughARelativeSubElementName() throws Exception {
+
+        createNode("nt:address", "escapeSource");
+        createNode("nt:address", "escapeVictim");
+        denyTheDeleteOperationOnlyOn("/escapeVictim");
+
+        given().body("[\"../escapeVictim\"]")
+                .contentType(ContentType.JSON)
+                .redirects().follow(false)
+                .when()
+                .delete(getURLByPath("escapeSource/children/"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the target should still be there", rootHasChild("escapeVictim"));
+    }
+
+    /**
+     * Installs a permission service that allows the delete operation everywhere but on one node path.
+     */
+    private void denyTheDeleteOperationOnlyOn(final String deniedPath) throws RepositoryException {
+
+        final PermissionService permissionService = mock(PermissionService.class);
+        when(permissionService.hasPermission(anyString(), any(Node.class))).thenAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                final String api = (String) invocation.getArguments()[0];
+                final Node node = (Node) invocation.getArguments()[1];
+                return !(("jcrestapi." + API.DELETE).equals(api) && deniedPath.equals(node.getPath()));
+            }
+        });
+        SpringBeansAccess.getInstance().setPermissionService(permissionService);
     }
 
     /**

@@ -394,6 +394,31 @@ public class API {
     }
 
     /**
+     * Checks that the given sub-element is a plain name, and not a relative path.
+     *
+     * <p>The batch overload of {@link ElementAccessor#perform(Node, java.util.List, String, java.util.List,
+     * UriInfo)} passes each name straight to {@link Node#getNode(String)}, which resolves a <em>relative
+     * path</em>: {@code a/b} and {@code ../sibling} are valid arguments there. A name carrying a path
+     * would therefore reach a node other than the one {@link #checkNodeIsInScope(Node, String)} approved.
+     * The single-element routes cannot express one, because a sub-element reaches them as a single URI
+     * segment.
+     *
+     * <p>The three refused shapes are the whole of JCR's relative-path syntax, so what remains is a name.
+     * Refusing shapes rather than allowing characters is deliberate: a JCR name accepts a namespace
+     * prefix ({@code jcr:content}), a space, and a same-name-sibling index ({@code child[2]}), so an
+     * allow-list would refuse names this API is expected to carry.
+     *
+     * @param subElement the name of a sub-element the request asks to operate on
+     * @throws PathNotFoundException if the sub-element is a path rather than a name
+     */
+    private static void checkIsPlainName(String subElement) throws PathNotFoundException {
+        if (subElement != null
+                && (subElement.indexOf('/') >= 0 || ".".equals(subElement) || "..".equals(subElement))) {
+            throw new PathNotFoundException(subElement);
+        }
+    }
+
+    /**
      * Checks that the given node is exposed by the API for the given operation: its primary type must not be one of the
      * excluded types, and the caller's scope must allow that operation on it.
      *
@@ -439,6 +464,11 @@ public class API {
 
             final Node node = nodeAccessor.getNode(parentIdOrPath, session);
             checkNodeIsInScope(node, DELETE);
+            if (subElements != null) {
+                for (String subElement : subElements) {
+                    checkIsPlainName(subElement);
+                }
+            }
 
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
