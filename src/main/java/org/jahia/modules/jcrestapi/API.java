@@ -394,6 +394,55 @@ public class API {
     }
 
     /**
+     * Checks the node a children deletion will remove, and not only the node the request resolved to.
+     *
+     * <p>{@code ChildrenElementAccessor.delete} removes {@code node.getNode(subElement)}, so the node that
+     * leaves the repository is the child. {@link #checkNodeIsInScope(Node, String)} on the resolved node says
+     * nothing about that child: one whose own primary type is excluded, or whose own path the caller's scope
+     * refuses, would still be removed. Both shapes of the delete route resolve their child here, so both
+     * answer for the node they remove.
+     *
+     * <p>The name resolves the way {@link Node#getNode(String)} resolves it, as a <em>relative path</em>
+     * rather than a name, so {@code ../sibling} names a node outside this one. That is deliberate: the
+     * check resolves through the same call the accessor removes through, so the node checked here is the
+     * node removed there whatever shape the name takes. Refusing the shape instead would refuse
+     * {@code folder/child}, which is how a caller removes a deeper node in one request.
+     *
+     * <p>A name that matches no child is left to the accessor, which reports it the same way as before.
+     *
+     * <p>Deletion only. Reading or writing a sub-element is a wider question than the node being removed,
+     * and a children listing already filters on {@code jcrestapi.child} through {@link #NODE_FILTER}.
+     *
+     * @param node       the node the request resolved to
+     * @param subElement the name of the child the request will remove
+     * @throws PathNotFoundException if the child is not exposed by the API
+     * @throws RepositoryException   if the child's primary type or path cannot be read
+     */
+    private void checkChildIsInScope(Node node, String subElement) throws RepositoryException {
+        if (subElement != null && !subElement.isEmpty() && node.hasNode(subElement)) {
+            checkNodeIsInScope(node.getNode(subElement), DELETE);
+        }
+    }
+
+    /**
+     * Checks that the given node is exposed by the API for the given operation: its primary type must not be one of the
+     * excluded types, and the caller's scope must allow that operation on it.
+     *
+     * <p>Package-visible so that the subclasses answering a route apply the same rule as this class.
+     *
+     * @param node      the node the request resolved to
+     * @param operation the operation about to be performed on that node
+     * @throws PathNotFoundException if the node is not exposed by the API
+     * @throws RepositoryException   if the node's primary type or path cannot be read
+     */
+    void checkNodeIsInScope(Node node, String operation) throws RepositoryException {
+        if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName())
+                || !SpringBeansAccess.getInstance().hasPermission("jcrestapi." + operation, node)) {
+            throw new PathNotFoundException(node.getPath());
+        }
+    }
+
+    /**
      * Performs a batch delete of all specified sub-element types identified by the given list of sub-elements. Note that this method could actually
      * be extended to include other types of batch operations.
      *
@@ -420,6 +469,12 @@ public class API {
             subElementType = processor.getSubElementType();
 
             final Node node = nodeAccessor.getNode(parentIdOrPath, session);
+            checkNodeIsInScope(node, DELETE);
+            if (subElements != null && JSONConstants.CHILDREN.equals(subElementType)) {
+                for (String subElement : subElements) {
+                    checkChildIsInScope(node, subElement);
+                }
+            }
 
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
@@ -458,9 +513,11 @@ public class API {
             session = getSession(workspace, language);
 
             final Node node = nodeAccessor.getNode(idOrPath, session);
-            if (excludedNodeTypes.contains(node.getPrimaryNodeType().getName()) || !SpringBeansAccess.getInstance().hasPermission("jcrestapi."+operation, node)) {
-                throw new PathNotFoundException(node.getPath());
+            checkNodeIsInScope(node, operation);
+            if (DELETE.equals(operation) && JSONConstants.CHILDREN.equals(subElementType)) {
+                checkChildIsInScope(node, subElement);
             }
+
             final ElementAccessor accessor = ACCESSORS.get(subElementType);
             if (accessor != null) {
                 final Response response = accessor.perform(node, subElement, operation, data, context);
