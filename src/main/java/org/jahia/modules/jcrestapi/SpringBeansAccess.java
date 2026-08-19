@@ -61,6 +61,7 @@ public final class SpringBeansAccess {
     private Set<String> nodeTypesToSkip = Collections.emptySet();
     private Set<String> restrictedProperties = Collections.emptySet();
     private Set<String> restrictedMixins = Collections.emptySet();
+    private Set<String> restrictedNodeTypes = Collections.emptySet();
     private PermissionService permissionService;
     private SpringBeansAccess() {
     }
@@ -107,6 +108,14 @@ public final class SpringBeansAccess {
 
     public Set<String> getRestrictedMixins() {
         return restrictedMixins;
+    }
+
+    public void setRestrictedNodeTypes(String restrictedNodeTypes) {
+        this.restrictedNodeTypes = Utils.split(restrictedNodeTypes);
+    }
+
+    public Set<String> getRestrictedNodeTypes() {
+        return restrictedNodeTypes;
     }
 
     public PermissionService getPermissionService() {

@@ -43,6 +43,8 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.PropertyDefinition;
 
 import org.jahia.modules.jcrestapi.SpringBeansAccess;
@@ -51,13 +53,14 @@ import org.jahia.modules.jcrestapi.SpringBeansAccess;
  * Defines which JCR properties and mixins the accessors may write.
  *
  * <p>An accessor takes the name to write from the request itself: from a JSON key under {@code properties} or
- * {@code mixins}, or from the last segment of the URL. This API is for content, so the names that carry the
- * repository's own user, group and access-control model are out of its scope. Those are maintained through their
- * dedicated services, which apply the validation a generic write cannot.</p>
+ * {@code mixins}, from the node type of a child to create, or from the last segment of the URL. This API is for
+ * content, so the names that carry the repository's own user, group and access-control model are out of its scope.
+ * Those are maintained through their dedicated services, which apply the validation a generic write cannot.</p>
  *
  * <p>Which names are out of scope is configurable, with a restrictive default:
- * {@code jahia.api.jcr.restrictedProperties} and {@code jahia.api.jcr.restrictedMixins}. Reading is unaffected: a
- * restricted property is still returned by a {@code GET}.</p>
+ * {@code jahia.api.jcr.restrictedProperties}, {@code jahia.api.jcr.restrictedMixins} and
+ * {@code jahia.api.jcr.restrictedNodeTypes}. Reading is unaffected: a restricted property is still returned by a
+ * {@code GET}. Modifying an existing node is unaffected by the node-type list, which governs creation.</p>
  *
  * <p>The answer depends on the name and the node type alone, never on the caller or on the session the write runs
  * under, so it is the same however the request reached the accessor.</p>
@@ -105,5 +108,30 @@ public final class WriteRestrictions {
     public static boolean isRestrictedMixin(String mixinName) {
         return mixinName != null
                 && SpringBeansAccess.getInstance().getRestrictedMixins().contains(mixinName);
+    }
+
+    /**
+     * Whether the given node may not be created through this API
+     * ({@code jahia.api.jcr.restrictedNodeTypes}).
+     *
+     * <p>The question is asked of the node the repository built, and not of the type name the request sent, for two
+     * reasons. {@link Node#isNodeType(String)} answers for a subtype as well as for the type itself. And a request
+     * that sends no type at all still gets a type, which the parent's child-node definition supplies.</p>
+     *
+     * @param node the node the request has just created
+     * @return {@code true} if the node must not be created through this API
+     * @throws RepositoryException if the node's types cannot be read
+     */
+    public static boolean isRestrictedNode(Node node) throws RepositoryException {
+        if (node == null) {
+            return false;
+        }
+
+        for (String restricted : SpringBeansAccess.getInstance().getRestrictedNodeTypes()) {
+            if (node.isNodeType(restricted)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
