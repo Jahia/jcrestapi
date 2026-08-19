@@ -585,6 +585,100 @@ public class APITest extends JerseyTest {
         assertTrue("the allowed node should carry its new name", hasGrandChild(parent, "renameAllowedDone"));
     }
 
+    /**
+     * The new name resolves as a relative path, so a name such as {@code ../sibling/name} lands the node under
+     * another parent. The rename is answered by that parent's own scope. Containment is not enforced, which is
+     * deliberate: moving a node under another parent is what such a name is for.
+     */
+    @Test
+    public void renameShouldCheckTheScopeOfTheParentTheNodeMovesUnder() throws Exception {
+
+        final String parent = "renameDestParent";
+        final String name = "renameDestChild";
+        final String other = "renameDestOther";
+        final String id = createChildNode(parent, name);
+        createNode("nt:unstructured", other);
+
+        denyTheMoveOperationOnlyOn("/" + other);
+
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/..%2F" + other + "%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still carry its name once the destination refuses the operation",
+                hasGrandChild(parent, name));
+        assertFalse("the node should not have landed under the destination", hasGrandChild(other, "moved"));
+
+        // the same request goes through once the destination's own scope allows the operation
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/..%2F" + other + "%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the node should have left its parent", hasGrandChild(parent, name));
+        assertTrue("the node should have landed under the destination", hasGrandChild(other, "moved"));
+    }
+
+    /**
+     * A name may reach a parent deeper in the tree, and that deeper node is the one the scope answers for.
+     */
+    @Test
+    public void renameShouldMoveANodeUnderADeeperParentNamedThroughAPath() throws Exception {
+
+        final String parent = "renameDeepParent";
+        final String name = "renameDeepChild";
+        final String id = createChildNode(parent, name);
+        createChildNode("renameDeepOther", "deep");
+
+        denyTheMoveOperationOnlyOn("/renameDeepOther/deep");
+
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/..%2FrenameDeepOther%2Fdeep%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still carry its name", hasGrandChild(parent, name));
+
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/..%2FrenameDeepOther%2Fdeep%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        session.refresh(false);
+        assertTrue("the node should have landed under the deeper parent",
+                session.getRootNode().getNode("renameDeepOther").getNode("deep").hasNode("moved"));
+    }
+
+    /**
+     * A name of {@code .} carries no separator and still lands the node beside its own parent, so the node it
+     * lands under is the one above. The scope answers for that node too.
+     */
+    @Test
+    public void renameShouldCheckTheScopeWhenANameLandsTheNodeBesideItsOwnParent() throws Exception {
+
+        final String parent = "renameDotParent";
+        final String name = "renameDotChild";
+        final String id = createChildNode(parent, name);
+
+        denyTheMoveOperationOnlyOn("/");
+
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/."))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still carry its name once the root refuses the operation",
+                hasGrandChild(parent, name));
+    }
+
     private void makeParentAndChild(String parent, String child) throws RepositoryException {
         session.refresh(false);
         session.getRootNode().addNode(parent, "nt:unstructured").addNode(child, "nt:unstructured");
