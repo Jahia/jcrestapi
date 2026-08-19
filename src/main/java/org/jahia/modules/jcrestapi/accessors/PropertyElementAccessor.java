@@ -44,6 +44,7 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import java.util.List;
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
@@ -70,14 +71,17 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
     static Property setPropertyOnNode(String escapedName, JSONProperty jsonProperty, Node node) throws RepositoryException {
         final String propName = Names.unescape(escapedName);
 
-        final Integer type = getTypeOfPropertyOnNode(propName, node);
+        final PropertyDefinition definition = getPropertyDefinitionOnNode(propName, node);
 
-        if (type == null) {
+        if (definition == null) {
             // we have a property name for which we don't have a type, so ignore the property
             // todo: error reporting?
             return null;
         }
 
+        checkPropertyIsWritable(propName, definition);
+
+        final Integer type = definition.getRequiredType();
         final Object value = jsonProperty.getValue();
         // are we looking at a multi-valued property?
         if (value instanceof Object[] || value instanceof List) {
@@ -87,19 +91,29 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
         }
     }
 
-    static Integer getTypeOfPropertyOnNode(String propName, Node node) throws RepositoryException {
-        PropertyDefinition propType;
+    /**
+     * Answers a request that names a mixin out of this API's scope with an error, so the caller knows the change did
+     * not happen.
+     *
+     * @param propName   the unescaped property name the request asks to write
+     * @param definition the applicable property definition
+     * @throws AccessDeniedException if the property is restricted
+     */
+    static void checkPropertyIsWritable(String propName, PropertyDefinition definition) throws AccessDeniedException {
+        if (WriteRestrictions.isRestrictedProperty(propName, definition)) {
+            throw new AccessDeniedException("Property " + propName + " cannot be written through this API");
+        }
+    }
 
+    static PropertyDefinition getPropertyDefinitionOnNode(String propName, Node node) throws RepositoryException {
         if (node instanceof JCRNodeWrapper) {
             JCRNodeWrapper wrapper = (JCRNodeWrapper) node;
-            propType = wrapper.getApplicablePropertyDefinition(propName);
-        } else {
-            final NodeType type = node.getPrimaryNodeType();
-            final PropertyDefinition[] propertyDefinitions = type.getPropertyDefinitions();
-            propType = getPropertyDefinitionFrom(propName, propertyDefinitions);
+            return wrapper.getApplicablePropertyDefinition(propName);
         }
 
-        return propType == null ? null : propType.getRequiredType();
+        final NodeType type = node.getPrimaryNodeType();
+        final PropertyDefinition[] propertyDefinitions = type.getPropertyDefinitions();
+        return getPropertyDefinitionFrom(propName, propertyDefinitions);
     }
 
     public static PropertyDefinition getPropertyDefinitionFrom(String propName, PropertyDefinition[] propertyDefinitions) {
@@ -125,6 +139,8 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
 
     @Override
     protected void delete(Node node, String subElement) throws RepositoryException {
+        final String propName = Names.unescape(subElement);
+        checkPropertyIsWritable(propName, getPropertyDefinitionOnNode(propName, node));
         node.setProperty(subElement, (Value) null);
     }
 

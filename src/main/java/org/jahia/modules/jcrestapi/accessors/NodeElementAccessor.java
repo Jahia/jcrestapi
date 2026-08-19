@@ -56,11 +56,15 @@ import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONProperty;
 import org.jahia.modules.json.JSONSubElementContainer;
 import org.jahia.modules.json.Names;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Christophe Laprun
  */
 public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer<APIDecorator>, JSONNode<APIDecorator>, JSONNode> {
+    private static final Logger logger = LoggerFactory.getLogger(NodeElementAccessor.class);
+
     @Override
     protected Object getElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         return getFactory().createNode(node, Utils.getFilter(context), Utils.getDepthFrom(context, 1));
@@ -94,6 +98,18 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         throw new UnsupportedOperationException("Cannot call getSeeOtherURIAsString on NodeElementAccessor");
     }
 
+    /**
+     * Applies the given representation to the given node: its mixins, its properties, then its children, recursively.
+     *
+     * <p>A representation is what a {@code GET} returns, so a client may send back a whole node it has just read. A
+     * mixin or a property this API may not write is therefore skipped here, and the rest of the representation is
+     * applied. The sub-element routes, where the request names one mixin or one property in the URL, refuse it
+     * instead.</p>
+     *
+     * @param node     the node to apply the representation to
+     * @param jsonNode the representation, may be {@code null}
+     * @throws RepositoryException if the node cannot be written
+     */
     public static void initNodeFrom(Node node, JSONNode<APIDecorator> jsonNode) throws RepositoryException {
         if (jsonNode != null) {
             // mixins
@@ -101,6 +117,10 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
             if (mixins != null) {
                 for (String mixinName : mixins.keySet()) {
                     mixinName = Names.unescape(mixinName);
+                    if (WriteRestrictions.isRestrictedMixin(mixinName)) {
+                        logger.warn("Ignoring mixin {} requested on {} (see jahia.api.jcr.restrictedMixins)", mixinName, node.getPath());
+                        continue;
+                    }
                     node.addMixin(mixinName);
                 }
             }
@@ -112,6 +132,11 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
 
                 // set the properties
                 for (Map.Entry<String, JSONProperty<APIDecorator>> entry : properties) {
+                    final String propName = Names.unescape(entry.getKey());
+                    if (WriteRestrictions.isRestrictedProperty(propName, PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node))) {
+                        logger.warn("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
+                        continue;
+                    }
                     PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
                 }
             }

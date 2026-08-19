@@ -59,6 +59,8 @@ public final class SpringBeansAccess {
     private Repository repository;
     private boolean disableQuery = true;
     private Set<String> nodeTypesToSkip = Collections.emptySet();
+    private Set<String> restrictedProperties = Collections.emptySet();
+    private Set<String> restrictedMixins = Collections.emptySet();
     private PermissionService permissionService;
     private SpringBeansAccess() {
     }
@@ -89,6 +91,22 @@ public final class SpringBeansAccess {
 
     public Set<String> getNodeTypesToSkip() {
         return nodeTypesToSkip;
+    }
+
+    public void setRestrictedProperties(String restrictedProperties) {
+        this.restrictedProperties = Utils.split(restrictedProperties);
+    }
+
+    public Set<String> getRestrictedProperties() {
+        return restrictedProperties;
+    }
+
+    public void setRestrictedMixins(String restrictedMixins) {
+        this.restrictedMixins = Utils.split(restrictedMixins);
+    }
+
+    public Set<String> getRestrictedMixins() {
+        return restrictedMixins;
     }
 
     public PermissionService getPermissionService() {

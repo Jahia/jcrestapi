@@ -43,6 +43,7 @@
  */
 package org.jahia.modules.jcrestapi;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -65,6 +66,9 @@ public class APIExceptionMapper implements ExceptionMapper<APIException> {
     private Response.ResponseBuilder toResponse(RepositoryException exception) {
         if (exception instanceof ItemNotFoundException || exception instanceof PathNotFoundException) {
             return Response.status(Response.Status.NOT_FOUND);
+        }
+        if (exception instanceof AccessDeniedException) {
+            return Response.status(Response.Status.FORBIDDEN);
         }
         return defaultResponse(exception);
     }

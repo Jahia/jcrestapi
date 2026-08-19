@@ -43,6 +43,7 @@
  */
 package org.jahia.modules.jcrestapi.accessors;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
@@ -75,6 +76,7 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins<APIDecorato
 
     @Override
     protected void delete(Node node, String subElement) throws RepositoryException {
+        checkMixinIsWritable(subElement);
         node.removeMixin(subElement);
     }
 
@@ -83,6 +85,8 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins<APIDecorato
         if(subElement == null || subElement.isEmpty()) {
             throw new UnsupportedOperationException("Cannot create an automatically named mixin");
         }
+
+        checkMixinIsWritable(subElement);
 
         // if the node doesn't already have the mixin, add it
         final boolean isCreation = !node.isNodeType(subElement);
@@ -102,6 +106,19 @@ public class MixinElementAccessor extends ElementAccessor<JSONMixins<APIDecorato
     @Override
     protected String getSeeOtherURIAsString(Node node) {
         return URIUtils.getURIForMixins(node);
+    }
+
+    /**
+     * Answers a request that names a mixin out of this API's scope with an error, so the caller knows the change did
+     * not happen.
+     *
+     * @param mixinName the mixin type name the request asks to add or remove
+     * @throws AccessDeniedException if the mixin is restricted
+     */
+    private static void checkMixinIsWritable(String mixinName) throws AccessDeniedException {
+        if (WriteRestrictions.isRestrictedMixin(mixinName)) {
+            throw new AccessDeniedException("Mixin " + mixinName + " cannot be added or removed through this API");
+        }
     }
 
     private NodeType getMixin(Node node, String subElement) throws RepositoryException {
