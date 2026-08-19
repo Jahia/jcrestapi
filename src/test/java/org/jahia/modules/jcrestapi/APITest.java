@@ -521,6 +521,70 @@ public class APITest extends JerseyTest {
                 hasGrandChild("scopedParentB", "scopedChildB"));
     }
 
+    @Test
+    public void renameShouldBeRefusedOnANodeTheScopeDoesNotAllow() throws Exception {
+
+        final String parent = "renameScopedParent";
+        final String name = "renameScoped";
+        final String newName = "renameScopedDone";
+        final String id = createChildNode(parent, name);
+
+        denyOnlyTheMoveOperation();
+
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/" + newName))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still carry its name once the operation is refused", hasGrandChild(parent, name));
+        assertFalse("the node should not carry its new name once the operation is refused", hasGrandChild(parent, newName));
+
+        // the same request goes through once the scope allows the operation again
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/" + newName))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the node should have left its name once the operation is allowed", hasGrandChild(parent, name));
+        assertTrue("the node should carry its new name once the operation is allowed", hasGrandChild(parent, newName));
+    }
+
+    /**
+     * The scope is checked on the node the request resolves to, so a scope that refuses the move on one node leaves
+     * the same request on another node alone.
+     */
+    @Test
+    public void renameShouldBeRefusedOnTheNodeTheRequestResolvesTo() throws Exception {
+
+        final String parent = "renameResolvedParent";
+        final String refusedName = "renameRefused";
+        final String allowedName = "renameAllowed";
+        final String refusedId = createChildNode(parent, refusedName);
+        final String allowedId = createChildNode(parent, allowedName);
+
+        denyTheMoveOperationOnlyOn("/" + parent + "/" + refusedName);
+
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(refusedId) + "/moveto/renameRefusedDone"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the refused node should still carry its name", hasGrandChild(parent, refusedName));
+
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(allowedId) + "/moveto/renameAllowedDone"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the allowed node should have left its name", hasGrandChild(parent, allowedName));
+        assertTrue("the allowed node should carry its new name", hasGrandChild(parent, "renameAllowedDone"));
+    }
+
     private void makeParentAndChild(String parent, String child) throws RepositoryException {
         session.refresh(false);
         session.getRootNode().addNode(parent, "nt:unstructured").addNode(child, "nt:unstructured");
@@ -558,6 +622,50 @@ public class APITest extends JerseyTest {
         final PermissionService permissionService = mock(PermissionService.class);
         when(permissionService.hasPermission(anyString(), any(Node.class))).thenReturn(true);
         when(permissionService.hasPermission(eq("jcrestapi." + API.DELETE), any(Node.class))).thenReturn(false);
+        SpringBeansAccess.getInstance().setPermissionService(permissionService);
+    }
+
+    /**
+     * Creates a node under the given parent, creating that parent first, and returns the identifier of the child.
+     */
+    private String createChildNode(String parent, String name) {
+        createNode("nt:unstructured", parent);
+        return given().body("{\"type\": \"nt:unstructured\"}")
+                .contentType(ContentType.JSON)
+                .when()
+                .post(getURLByPath(parent + "/children/" + name))
+                .then()
+                .assertThat()
+                .body("name", equalTo(name), "id", notNullValue())
+                .extract().path("id");
+    }
+
+    /**
+     * Installs a permission service that allows every operation but the move one, so that a refused rename cannot be
+     * confused with a node the test can no longer read.
+     */
+    private void denyOnlyTheMoveOperation() throws RepositoryException {
+
+        final PermissionService permissionService = mock(PermissionService.class);
+        when(permissionService.hasPermission(anyString(), any(Node.class))).thenReturn(true);
+        when(permissionService.hasPermission(eq("jcrestapi." + API.MOVE), any(Node.class))).thenReturn(false);
+        SpringBeansAccess.getInstance().setPermissionService(permissionService);
+    }
+
+    /**
+     * Installs a permission service that allows the move operation everywhere but on one node path.
+     */
+    private void denyTheMoveOperationOnlyOn(final String deniedPath) throws RepositoryException {
+
+        final PermissionService permissionService = mock(PermissionService.class);
+        when(permissionService.hasPermission(anyString(), any(Node.class))).thenAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                final String api = (String) invocation.getArguments()[0];
+                final Node node = (Node) invocation.getArguments()[1];
+                return !(("jcrestapi." + API.MOVE).equals(api) && deniedPath.equals(node.getPath()));
+            }
+        });
         SpringBeansAccess.getInstance().setPermissionService(permissionService);
     }
 

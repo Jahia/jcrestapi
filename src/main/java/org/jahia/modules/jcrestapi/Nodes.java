@@ -170,6 +170,18 @@ public class Nodes extends API {
         return perform(workspace, language, id, subElementType, subElement, context, DELETE, null);
     }
 
+    /**
+     * Renames the node the request resolves to, and answers it the way the rest of the API answers a node: the node's
+     * primary type must be one the API exposes, and the caller's scope must allow the move on it.
+     *
+     * <p>The new name is a name rather than a path, so the node keeps its parent and the rename reaches no node other
+     * than the one named by the request path. That is why the resolved node is the only one checked here.
+     *
+     * @param id      the identifier of the node to rename
+     * @param newName the name the node takes
+     * @param context a UriInfo instance, automatically injected, providing context about the request URI
+     * @return a Response ready to be sent to the client
+     */
     @POST
     @Path("/{id}/moveto/{newName}")
     public Object renameNode(@PathParam("id") String id,
@@ -179,6 +191,7 @@ public class Nodes extends API {
         try {
             session = getSession(workspace, language);
             final Node node = session.getNodeByIdentifier(id);
+            checkNodeIsInScope(node, MOVE);
             session.move(node.getPath(), node.getParent().getPath() + "/" + newName);
             session.save();
             return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id), context);
