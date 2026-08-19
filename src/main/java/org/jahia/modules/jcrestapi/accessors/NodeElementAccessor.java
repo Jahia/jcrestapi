@@ -143,18 +143,39 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
 
         for (Map.Entry<String, JSONProperty<APIDecorator>> entry : jsonProperties.entrySet()) {
             final String propName = Names.unescape(entry.getKey());
-            if (WriteRestrictions.isRestrictedPropertyName(propName)) {
-                logger.warn("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
-                continue;
-            }
-            final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node);
-            if (definition != null && definition.isProtected()) {
-                // a representation a client read back carries several of these, so this is the expected case
-                logger.debug("Ignoring property {} requested on {}: its node type maintains it", propName, node.getPath());
+            if (isPropertyOutOfScope(node, propName)) {
                 continue;
             }
             PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
         }
+    }
+
+    /**
+     * Whether the given property is out of this API's scope, logging the reason it is.
+     *
+     * <p>Each reason logs at its own level. A name on the configured list logs {@code WARN} and names that list,
+     * because an operator edits the list to change the outcome. A definition the node type declares
+     * {@code protected} logs {@code DEBUG}: a representation a client read back carries several of them, and the
+     * configured list does not govern them.</p>
+     *
+     * @param node     the node the representation is applied to
+     * @param propName the unescaped property name the representation carries
+     * @return {@code true} if the property is left out of the write
+     * @throws RepositoryException if the node's definitions or path cannot be read
+     */
+    private static boolean isPropertyOutOfScope(Node node, String propName) throws RepositoryException {
+        if (WriteRestrictions.isRestrictedPropertyName(propName)) {
+            logger.warn("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
+            return true;
+        }
+
+        final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node);
+        if (definition != null && definition.isProtected()) {
+            logger.debug("Ignoring property {} requested on {}: its node type maintains it", propName, node.getPath());
+            return true;
+        }
+
+        return false;
     }
 
     /**
