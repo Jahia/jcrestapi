@@ -44,7 +44,6 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import java.util.Map;
-import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriInfo;
@@ -111,44 +110,53 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
      * @throws RepositoryException if the node cannot be written
      */
     public static void initNodeFrom(Node node, JSONNode<APIDecorator> jsonNode) throws RepositoryException {
-        if (jsonNode != null) {
-            // mixins
-            final Map<String, JSONMixin<APIDecorator>> mixins = jsonNode.getMixins();
-            if (mixins != null) {
-                for (String mixinName : mixins.keySet()) {
-                    mixinName = Names.unescape(mixinName);
-                    if (WriteRestrictions.isRestrictedMixin(mixinName)) {
-                        logger.warn("Ignoring mixin {} requested on {} (see jahia.api.jcr.restrictedMixins)", mixinName, node.getPath());
-                        continue;
-                    }
-                    node.addMixin(mixinName);
-                }
-            }
+        if (jsonNode == null) {
+            return;
+        }
 
-            // properties
-            final Map<String, JSONProperty<APIDecorator>> jsonProperties = jsonNode.getProperties();
-            if (jsonProperties != null) {
-                final Set<Map.Entry<String, JSONProperty<APIDecorator>>> properties = jsonProperties.entrySet();
+        addMixinsTo(node, jsonNode.getMixins());
+        setPropertiesOn(node, jsonNode.getProperties());
+        addChildrenTo(node, jsonNode.getChildren());
+    }
 
-                // set the properties
-                for (Map.Entry<String, JSONProperty<APIDecorator>> entry : properties) {
-                    final String propName = Names.unescape(entry.getKey());
-                    if (WriteRestrictions.isRestrictedProperty(propName, PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node))) {
-                        logger.warn("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
-                        continue;
-                    }
-                    PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
-                }
-            }
+    private static void addMixinsTo(Node node, Map<String, JSONMixin<APIDecorator>> mixins) throws RepositoryException {
+        if (mixins == null) {
+            return;
+        }
 
-            // children
-            final Map<String, JSONNode<APIDecorator>> children = jsonNode.getChildren();
-            if (children != null) {
-                for (JSONNode<APIDecorator> jsonChild : children.values()) {
-                    final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
-                    initNodeFrom(child, jsonChild);
-                }
+        for (String escapedName : mixins.keySet()) {
+            final String mixinName = Names.unescape(escapedName);
+            if (WriteRestrictions.isRestrictedMixin(mixinName)) {
+                logger.warn("Ignoring mixin {} requested on {} (see jahia.api.jcr.restrictedMixins)", mixinName, node.getPath());
+                continue;
             }
+            node.addMixin(mixinName);
+        }
+    }
+
+    private static void setPropertiesOn(Node node, Map<String, JSONProperty<APIDecorator>> jsonProperties) throws RepositoryException {
+        if (jsonProperties == null) {
+            return;
+        }
+
+        for (Map.Entry<String, JSONProperty<APIDecorator>> entry : jsonProperties.entrySet()) {
+            final String propName = Names.unescape(entry.getKey());
+            if (WriteRestrictions.isRestrictedProperty(propName, PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node))) {
+                logger.warn("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
+                continue;
+            }
+            PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
+        }
+    }
+
+    private static void addChildrenTo(Node node, Map<String, JSONNode<APIDecorator>> children) throws RepositoryException {
+        if (children == null) {
+            return;
+        }
+
+        for (JSONNode<APIDecorator> jsonChild : children.values()) {
+            final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
+            initNodeFrom(child, jsonChild);
         }
     }
 }
