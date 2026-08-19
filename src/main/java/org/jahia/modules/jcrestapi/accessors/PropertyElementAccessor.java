@@ -73,13 +73,14 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
 
         final PropertyDefinition definition = getPropertyDefinitionOnNode(propName, node);
 
+        // ahead of the null-definition return, so a restricted name is answered the same way on every node type
+        checkPropertyIsWritable(propName, definition);
+
         if (definition == null) {
             // we have a property name for which we don't have a type, so ignore the property
             // todo: error reporting?
             return null;
         }
-
-        checkPropertyIsWritable(propName, definition);
 
         final Integer type = definition.getRequiredType();
         final Object value = jsonProperty.getValue();
