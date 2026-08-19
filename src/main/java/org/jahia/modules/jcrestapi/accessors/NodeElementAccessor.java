@@ -44,6 +44,7 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import java.util.Map;
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriInfo;
@@ -55,6 +56,7 @@ import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONProperty;
 import org.jahia.modules.json.JSONSubElementContainer;
 import org.jahia.modules.json.Names;
+import javax.jcr.nodetype.PropertyDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,11 +143,33 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
 
         for (Map.Entry<String, JSONProperty<APIDecorator>> entry : jsonProperties.entrySet()) {
             final String propName = Names.unescape(entry.getKey());
-            if (WriteRestrictions.isRestrictedProperty(propName, PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node))) {
+            if (WriteRestrictions.isRestrictedPropertyName(propName)) {
                 logger.warn("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
                 continue;
             }
+            final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node);
+            if (definition != null && definition.isProtected()) {
+                // a representation a client read back carries several of these, so this is the expected case
+                logger.debug("Ignoring property {} requested on {}: its node type maintains it", propName, node.getPath());
+                continue;
+            }
             PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
+        }
+    }
+
+    /**
+     * Answers a request that creates a node out of this API's scope with an error, so the caller knows the node was
+     * not created. The check runs on the created node, before the session is saved, so nothing reaches the
+     * repository.
+     *
+     * @param node the node the request has just created
+     * @throws AccessDeniedException if the node's type is restricted
+     * @throws RepositoryException   if the node's types or path cannot be read
+     */
+    static void checkNodeIsWritable(Node node) throws RepositoryException {
+        if (WriteRestrictions.isRestrictedNode(node)) {
+            throw new AccessDeniedException("A node of type " + node.getPrimaryNodeType().getName()
+                    + " cannot be created through this API");
         }
     }
 
@@ -156,6 +180,7 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
 
         for (JSONNode<APIDecorator> jsonChild : children.values()) {
             final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
+            checkNodeIsWritable(child);
             initNodeFrom(child, jsonChild);
         }
     }
