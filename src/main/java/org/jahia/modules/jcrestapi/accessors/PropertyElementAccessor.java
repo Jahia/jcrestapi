@@ -140,8 +140,8 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
 
     @Override
     protected void delete(Node node, String subElement) throws RepositoryException {
-        final String propName = Names.unescape(subElement);
-        checkPropertyIsWritable(propName, getPropertyDefinitionOnNode(propName, node));
+        // subElement reaches the accessor already unescaped (ElementsProcessor), so the check names the string the write uses
+        checkPropertyIsWritable(subElement, getPropertyDefinitionOnNode(subElement, node));
         node.setProperty(subElement, (Value) null);
     }
 
