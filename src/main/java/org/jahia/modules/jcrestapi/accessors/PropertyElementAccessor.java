@@ -93,7 +93,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
     }
 
     /**
-     * Answers a request that names a mixin out of this API's scope with an error, so the caller knows the change did
+     * Answers a request that names a property out of this API's scope with an error, so the caller knows the change did
      * not happen.
      *
      * @param propName   the unescaped property name the request asks to write
