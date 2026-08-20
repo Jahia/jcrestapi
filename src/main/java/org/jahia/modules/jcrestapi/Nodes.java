@@ -195,7 +195,7 @@ public class Nodes extends API {
             final Node node = session.getNodeByIdentifier(id);
             checkNodeIsInScope(node, MOVE);
             checkDestinationIsInScope(node, newName);
-            session.move(node.getPath(), node.getParent().getPath() + "/" + newName);
+            session.move(node.getPath(), getDestinationPath(node, newName));
             session.save();
             return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id), context);
         } catch (Exception e) {
@@ -227,9 +227,24 @@ public class Nodes extends API {
      */
     private void checkDestinationIsInScope(Node node, String newName) throws RepositoryException {
         final Node sourceParent = node.getParent();
-        final Node destinationParent = node.getSession().getNode(sourceParent.getPath() + "/" + newName + "/..");
+        final Node destinationParent = node.getSession().getNode(getDestinationPath(node, newName) + "/..");
         if (!destinationParent.isSame(sourceParent)) {
             checkNodeIsInScope(destinationParent, MOVE);
         }
+    }
+
+    /**
+     * Builds the path a rename moves the node to. The new name resolves relative to the node's parent, so it is joined
+     * to that parent's path. The root node's path is the separator on its own, so joining a name to it directly leaves
+     * an empty segment in the path, and JCR refuses such a path.
+     *
+     * @param node    the node the request resolved to
+     * @param newName the name the node takes, resolved relative to that node's parent
+     * @return the absolute path the node moves to
+     * @throws RepositoryException if the node's parent cannot be read
+     */
+    private static String getDestinationPath(Node node, String newName) throws RepositoryException {
+        final String parentPath = node.getParent().getPath();
+        return ("/".equals(parentPath) ? "" : parentPath) + "/" + newName;
     }
 }
