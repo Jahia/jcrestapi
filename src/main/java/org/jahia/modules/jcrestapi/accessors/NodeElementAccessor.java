@@ -129,7 +129,7 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         for (String escapedName : mixins.keySet()) {
             final String mixinName = Names.unescape(escapedName);
             if (WriteRestrictions.isRestrictedMixin(mixinName)) {
-                logger.warn("Ignoring mixin {} requested on {} (see jahia.api.jcr.restrictedMixins)", mixinName, node.getPath());
+                logger.info("Ignoring mixin {} requested on {} (see jahia.api.jcr.restrictedMixins)", mixinName, node.getPath());
                 continue;
             }
             node.addMixin(mixinName);
@@ -153,10 +153,11 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
     /**
      * Whether the given property is out of this API's scope, logging the reason it is.
      *
-     * <p>Each reason logs at its own level. A name on the configured list logs {@code WARN} and names that list,
+     * <p>Each reason logs at its own level. A name on the configured list logs {@code INFO} and names that list,
      * because an operator edits the list to change the outcome. A definition the node type declares
      * {@code protected} logs {@code DEBUG}: a representation a client read back carries several of them, and the
-     * configured list does not govern them.</p>
+     * configured list does not govern them. The whole-node route resends names the client read back rather than
+     * chose, so neither reason is logged at {@code WARN} here.</p>
      *
      * @param node     the node the representation is applied to
      * @param propName the unescaped property name the representation carries
@@ -165,7 +166,7 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
      */
     private static boolean isPropertyOutOfScope(Node node, String propName) throws RepositoryException {
         if (WriteRestrictions.isRestrictedPropertyName(propName)) {
-            logger.warn("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
+            logger.info("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
             return true;
         }
 
