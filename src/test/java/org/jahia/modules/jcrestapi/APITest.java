@@ -679,6 +679,40 @@ public class APITest extends JerseyTest {
                 hasGrandChild(parent, name));
     }
 
+    /**
+     * A rename that keeps the node under its own parent reaches no node the request has not already answered for, so
+     * the parent's own scope is not asked. Were it asked, a scope that covers a node without covering its container
+     * would stop renaming that node, and the shipped {@code access_category} scope has exactly that shape.
+     */
+    @Test
+    public void renameShouldNotAnswerForTheParentWhenTheNodeKeepsIt() throws Exception {
+
+        final String parent = "renameKeepParent";
+        final String name = "renameKeepChild";
+        final String id = createChildNode(parent, name);
+        final String outsideId = createChildNode("renameKeepOther", "renameKeepOutsider");
+
+        denyTheMoveOperationOnlyOn("/" + parent);
+
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/renameKeepDone"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertTrue("a plain rename should go through while only the parent's scope refuses the operation",
+                hasGrandChild(parent, "renameKeepDone"));
+
+        // the same scope does refuse a rename that lands a node under that parent, so the arm above is not vacuous
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(outsideId) + "/moveto/..%2F" + parent + "%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertFalse("a rename landing a node under that parent should be refused", hasGrandChild(parent, "moved"));
+    }
+
     private void makeParentAndChild(String parent, String child) throws RepositoryException {
         session.refresh(false);
         session.getRootNode().addNode(parent, "nt:unstructured").addNode(child, "nt:unstructured");
