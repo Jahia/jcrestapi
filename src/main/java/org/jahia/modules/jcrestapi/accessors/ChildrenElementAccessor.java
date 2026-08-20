@@ -112,6 +112,8 @@ public class ChildrenElementAccessor extends ElementAccessor<JSONChildren<APIDec
             } else {
                 newOrToUpdate = node.addNode(subElement, type);
             }
+
+            NodeElementAccessor.checkNodeIsWritable(newOrToUpdate);
         }
 
         NodeElementAccessor.initNodeFrom(newOrToUpdate, nodeData);

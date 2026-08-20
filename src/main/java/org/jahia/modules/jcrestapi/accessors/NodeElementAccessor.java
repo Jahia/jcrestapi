@@ -44,7 +44,7 @@
 package org.jahia.modules.jcrestapi.accessors;
 
 import java.util.Map;
-import java.util.Set;
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.UriInfo;
@@ -56,11 +56,16 @@ import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONProperty;
 import org.jahia.modules.json.JSONSubElementContainer;
 import org.jahia.modules.json.Names;
+import javax.jcr.nodetype.PropertyDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Christophe Laprun
  */
 public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer<APIDecorator>, JSONNode<APIDecorator>, JSONNode> {
+    private static final Logger logger = LoggerFactory.getLogger(NodeElementAccessor.class);
+
     @Override
     protected Object getElement(Node node, String subElement, UriInfo context) throws RepositoryException {
         return getFactory().createNode(node, Utils.getFilter(context), Utils.getDepthFrom(context, 1));
@@ -94,36 +99,111 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         throw new UnsupportedOperationException("Cannot call getSeeOtherURIAsString on NodeElementAccessor");
     }
 
+    /**
+     * Applies the given representation to the given node: its mixins, its properties, then its children, recursively.
+     *
+     * <p>A representation is what a {@code GET} returns, so a client may send back a whole node it has just read. A
+     * mixin or a property this API may not write is therefore skipped here, and the rest of the representation is
+     * applied. The sub-element routes, where the request names one mixin or one property in the URL, refuse it
+     * instead.</p>
+     *
+     * @param node     the node to apply the representation to
+     * @param jsonNode the representation, may be {@code null}
+     * @throws RepositoryException if the node cannot be written
+     */
     public static void initNodeFrom(Node node, JSONNode<APIDecorator> jsonNode) throws RepositoryException {
-        if (jsonNode != null) {
-            // mixins
-            final Map<String, JSONMixin<APIDecorator>> mixins = jsonNode.getMixins();
-            if (mixins != null) {
-                for (String mixinName : mixins.keySet()) {
-                    mixinName = Names.unescape(mixinName);
-                    node.addMixin(mixinName);
-                }
-            }
+        if (jsonNode == null) {
+            return;
+        }
 
-            // properties
-            final Map<String, JSONProperty<APIDecorator>> jsonProperties = jsonNode.getProperties();
-            if (jsonProperties != null) {
-                final Set<Map.Entry<String, JSONProperty<APIDecorator>>> properties = jsonProperties.entrySet();
+        addMixinsTo(node, jsonNode.getMixins());
+        setPropertiesOn(node, jsonNode.getProperties());
+        addChildrenTo(node, jsonNode.getChildren());
+    }
 
-                // set the properties
-                for (Map.Entry<String, JSONProperty<APIDecorator>> entry : properties) {
-                    PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
-                }
-            }
+    private static void addMixinsTo(Node node, Map<String, JSONMixin<APIDecorator>> mixins) throws RepositoryException {
+        if (mixins == null) {
+            return;
+        }
 
-            // children
-            final Map<String, JSONNode<APIDecorator>> children = jsonNode.getChildren();
-            if (children != null) {
-                for (JSONNode<APIDecorator> jsonChild : children.values()) {
-                    final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
-                    initNodeFrom(child, jsonChild);
-                }
+        for (String escapedName : mixins.keySet()) {
+            final String mixinName = Names.unescape(escapedName);
+            if (WriteRestrictions.isRestrictedMixin(mixinName)) {
+                logger.info("Ignoring mixin {} requested on {} (see jahia.api.jcr.restrictedMixins)", mixinName, node.getPath());
+                continue;
             }
+            node.addMixin(mixinName);
+        }
+    }
+
+    private static void setPropertiesOn(Node node, Map<String, JSONProperty<APIDecorator>> jsonProperties) throws RepositoryException {
+        if (jsonProperties == null) {
+            return;
+        }
+
+        for (Map.Entry<String, JSONProperty<APIDecorator>> entry : jsonProperties.entrySet()) {
+            final String propName = Names.unescape(entry.getKey());
+            if (isPropertyOutOfScope(node, propName)) {
+                continue;
+            }
+            PropertyElementAccessor.setPropertyOnNode(entry.getKey(), entry.getValue(), node);
+        }
+    }
+
+    /**
+     * Whether the given property is out of this API's scope, logging the reason it is.
+     *
+     * <p>Each reason logs at its own level. A name on the configured list logs {@code INFO} and names that list,
+     * because an operator edits the list to change the outcome. A definition the node type declares
+     * {@code protected} logs {@code DEBUG}: a representation a client read back carries several of them, and the
+     * configured list does not govern them. The whole-node route resends names the client read back rather than
+     * chose, so neither reason is logged at {@code WARN} here.</p>
+     *
+     * @param node     the node the representation is applied to
+     * @param propName the unescaped property name the representation carries
+     * @return {@code true} if the property is left out of the write
+     * @throws RepositoryException if the node's definitions or path cannot be read
+     */
+    private static boolean isPropertyOutOfScope(Node node, String propName) throws RepositoryException {
+        if (WriteRestrictions.isRestrictedPropertyName(propName)) {
+            logger.info("Ignoring property {} requested on {} (see jahia.api.jcr.restrictedProperties)", propName, node.getPath());
+            return true;
+        }
+
+        final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node);
+        if (definition != null && definition.isProtected()) {
+            logger.debug("Ignoring property {} requested on {}: its node type maintains it", propName, node.getPath());
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Answers a request that creates a node out of this API's scope with an error, so the caller knows the node was
+     * not created. The check runs on the created node, before the session is saved, so nothing reaches the
+     * repository.
+     *
+     * @param node the node the request has just created
+     * @throws AccessDeniedException if the node's type is restricted
+     * @throws RepositoryException   if the node's types or path cannot be read
+     */
+    static void checkNodeIsWritable(Node node) throws RepositoryException {
+        if (WriteRestrictions.isRestrictedNode(node)) {
+            throw new AccessDeniedException("A node of type " + node.getPrimaryNodeType().getName()
+                    + " cannot be created through this API");
+        }
+    }
+
+    private static void addChildrenTo(Node node, Map<String, JSONNode<APIDecorator>> children) throws RepositoryException {
+        if (children == null) {
+            return;
+        }
+
+        for (JSONNode<APIDecorator> jsonChild : children.values()) {
+            final Node child = node.addNode(jsonChild.getName(), jsonChild.getTypeName());
+            checkNodeIsWritable(child);
+            initNodeFrom(child, jsonChild);
         }
     }
 }
