@@ -59,6 +59,11 @@ public final class WriteRestrictions {
      * Whether the given mixin may not be added or removed through this API
      * ({@code jahia.api.jcr.restrictedMixins}).
      *
+     * <p>The match is on the exact type name. This differs from {@link #isRestrictedNode(Node)}, which asks
+     * {@link Node#isNodeType(String)} and so answers for a subtype as well as for the type itself. A mixin that a
+     * custom module declares as a subtype of a restricted mixin is therefore not matched here. No mixin in the
+     * definitions Jahia ships declares a restricted mixin as its supertype.</p>
+     *
      * @param mixinName the mixin type name the request asks to add or remove
      * @return {@code true} if the mixin must not be added or removed
      */
