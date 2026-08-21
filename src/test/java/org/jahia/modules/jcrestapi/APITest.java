@@ -713,6 +713,46 @@ public class APITest extends JerseyTest {
         assertFalse("a rename landing a node under that parent should be refused", hasGrandChild(parent, "moved"));
     }
 
+    /**
+     * The root node's path is the separator on its own, so joining a name to it must not leave an empty segment in
+     * the path the rename moves the node to. A node whose parent is the root renames the way a deeper node does.
+     */
+    @Test
+    public void renameShouldMoveANodeWhoseParentIsTheRoot() throws Exception {
+
+        final String name = "renameAtRoot";
+        final String newName = "renameAtRootDone";
+        final String id = createNode("nt:unstructured", name);
+
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/" + newName))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the node should have left its name", rootHasChild(name));
+        assertTrue("the node should carry its new name", rootHasChild(newName));
+    }
+
+    @Test
+    public void renameShouldMoveANodeWhoseParentIsNotTheRoot() throws Exception {
+
+        final String parent = "renameDeeperParent";
+        final String name = "renameDeeper";
+        final String newName = "renameDeeperDone";
+        makeParentAndChild(parent, name);
+        final String id = session.getRootNode().getNode(parent).getNode(name).getIdentifier();
+
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/" + newName))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the node should have left its name", hasGrandChild(parent, name));
+        assertTrue("the node should carry its new name", hasGrandChild(parent, newName));
+    }
+
     private void makeParentAndChild(String parent, String child) throws RepositoryException {
         session.refresh(false);
         session.getRootNode().addNode(parent, "nt:unstructured").addNode(child, "nt:unstructured");
