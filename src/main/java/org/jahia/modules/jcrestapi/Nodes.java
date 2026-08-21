@@ -49,7 +49,9 @@ import org.jahia.modules.json.JSONNode;
 import org.jahia.modules.json.JSONProperty;
 
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -170,6 +172,18 @@ public class Nodes extends API {
         return perform(workspace, language, id, subElementType, subElement, context, DELETE, null);
     }
 
+    /**
+     * Renames the node the request resolves to, and answers it the way the rest of the API answers a node: the node's
+     * primary type must be one the API exposes, and the caller's scope must allow the move on it.
+     *
+     * <p>The new name resolves as a relative path, so a name such as {@code ../sibling/name} lands the node under
+     * another parent. A rename that changes the node's parent therefore answers for that parent too.
+     *
+     * @param id      the identifier of the node to rename
+     * @param newName the name the node takes
+     * @param context a UriInfo instance, automatically injected, providing context about the request URI
+     * @return a Response ready to be sent to the client
+     */
     @POST
     @Path("/{id}/moveto/{newName}")
     public Object renameNode(@PathParam("id") String id,
@@ -179,6 +193,8 @@ public class Nodes extends API {
         try {
             session = getSession(workspace, language);
             final Node node = session.getNodeByIdentifier(id);
+            checkNodeIsInScope(node, MOVE);
+            checkDestinationIsInScope(node, newName);
             session.move(node.getPath(), node.getParent().getPath() + "/" + newName);
             session.save();
             return ElementAccessor.getSeeOtherResponse(URIUtils.getIdURI(id), context);
@@ -186,6 +202,34 @@ public class Nodes extends API {
             throw new APIException(e);
         } finally {
             closeSession(session);
+        }
+    }
+
+    /**
+     * Checks that the node a rename lands the node under is exposed by the API, when that is not the node's own
+     * parent.
+     *
+     * <p>The new name resolves the way a JCR path resolves, as a <em>relative path</em> rather than a name, so
+     * {@code ../sibling/name} lands the node under another parent and {@code .} lands it beside its own parent. The
+     * destination is therefore resolved here through the same path {@link Session#move} builds, with {@code /..}
+     * appended so that JCR answers with the node that gains the child. The node checked is the node the move
+     * reaches, whatever shape the name takes, and containment is deliberately not enforced: moving a node under
+     * another parent is what such a name is for.
+     *
+     * <p>A name that keeps the node under its own parent reaches no node the request has not already answered for,
+     * so it is left alone. A name that resolves to no node, or to no node at all above the root, is left to JCR,
+     * which reports it the same way as before.
+     *
+     * @param node    the node the request resolved to
+     * @param newName the name the node takes, resolved relative to that node's parent
+     * @throws PathNotFoundException if the node the rename lands the node under is not exposed by the API
+     * @throws RepositoryException   if that node cannot be read
+     */
+    private void checkDestinationIsInScope(Node node, String newName) throws RepositoryException {
+        final Node sourceParent = node.getParent();
+        final Node destinationParent = node.getSession().getNode(sourceParent.getPath() + "/" + newName + "/..");
+        if (!destinationParent.isSame(sourceParent)) {
+            checkNodeIsInScope(destinationParent, MOVE);
         }
     }
 }

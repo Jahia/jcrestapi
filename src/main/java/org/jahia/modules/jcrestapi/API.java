@@ -85,6 +85,7 @@ public class API {
     public static final String CREATE_OR_UPDATE = "createOrUpdate";
     public static final String READ = "read";
     public static final String UPLOAD = "upload";
+    public static final String MOVE = "move";
     public static final String AS_JSON_STRING = "asJSONString";
 
     static final String API_PATH = "/api/jcr/v1";

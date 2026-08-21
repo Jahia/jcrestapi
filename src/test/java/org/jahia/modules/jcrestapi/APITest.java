@@ -521,6 +521,198 @@ public class APITest extends JerseyTest {
                 hasGrandChild("scopedParentB", "scopedChildB"));
     }
 
+    @Test
+    public void renameShouldBeRefusedOnANodeTheScopeDoesNotAllow() throws Exception {
+
+        final String parent = "renameScopedParent";
+        final String name = "renameScoped";
+        final String newName = "renameScopedDone";
+        final String id = createChildNode(parent, name);
+
+        denyOnlyTheMoveOperation();
+
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/" + newName))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still carry its name once the operation is refused", hasGrandChild(parent, name));
+        assertFalse("the node should not carry its new name once the operation is refused", hasGrandChild(parent, newName));
+
+        // the same request goes through once the scope allows the operation again
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/" + newName))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the node should have left its name once the operation is allowed", hasGrandChild(parent, name));
+        assertTrue("the node should carry its new name once the operation is allowed", hasGrandChild(parent, newName));
+    }
+
+    /**
+     * The scope is checked on the node the request resolves to, so a scope that refuses the move on one node leaves
+     * the same request on another node alone.
+     */
+    @Test
+    public void renameShouldBeRefusedOnTheNodeTheRequestResolvesTo() throws Exception {
+
+        final String parent = "renameResolvedParent";
+        final String refusedName = "renameRefused";
+        final String allowedName = "renameAllowed";
+        final String refusedId = createChildNode(parent, refusedName);
+        final String allowedId = createChildNode(parent, allowedName);
+
+        denyTheMoveOperationOnlyOn("/" + parent + "/" + refusedName);
+
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(refusedId) + "/moveto/renameRefusedDone"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the refused node should still carry its name", hasGrandChild(parent, refusedName));
+
+        given().redirects().follow(false)
+                .when()
+                .post(generateURL(getURIById(allowedId) + "/moveto/renameAllowedDone"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the allowed node should have left its name", hasGrandChild(parent, allowedName));
+        assertTrue("the allowed node should carry its new name", hasGrandChild(parent, "renameAllowedDone"));
+    }
+
+    /**
+     * The new name resolves as a relative path, so a name such as {@code ../sibling/name} lands the node under
+     * another parent. The rename is answered by that parent's own scope. Containment is not enforced, which is
+     * deliberate: moving a node under another parent is what such a name is for.
+     */
+    @Test
+    public void renameShouldCheckTheScopeOfTheParentTheNodeMovesUnder() throws Exception {
+
+        final String parent = "renameDestParent";
+        final String name = "renameDestChild";
+        final String other = "renameDestOther";
+        final String id = createChildNode(parent, name);
+        createNode("nt:unstructured", other);
+
+        denyTheMoveOperationOnlyOn("/" + other);
+
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/..%2F" + other + "%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still carry its name once the destination refuses the operation",
+                hasGrandChild(parent, name));
+        assertFalse("the node should not have landed under the destination", hasGrandChild(other, "moved"));
+
+        // the same request goes through once the destination's own scope allows the operation
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/..%2F" + other + "%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertFalse("the node should have left its parent", hasGrandChild(parent, name));
+        assertTrue("the node should have landed under the destination", hasGrandChild(other, "moved"));
+    }
+
+    /**
+     * A name may reach a parent deeper in the tree, and that deeper node is the one the scope answers for.
+     */
+    @Test
+    public void renameShouldMoveANodeUnderADeeperParentNamedThroughAPath() throws Exception {
+
+        final String parent = "renameDeepParent";
+        final String name = "renameDeepChild";
+        final String id = createChildNode(parent, name);
+        createChildNode("renameDeepOther", "deep");
+
+        denyTheMoveOperationOnlyOn("/renameDeepOther/deep");
+
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/..%2FrenameDeepOther%2Fdeep%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still carry its name", hasGrandChild(parent, name));
+
+        SpringBeansAccess.getInstance().setPermissionService(null);
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/..%2FrenameDeepOther%2Fdeep%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        session.refresh(false);
+        assertTrue("the node should have landed under the deeper parent",
+                session.getRootNode().getNode("renameDeepOther").getNode("deep").hasNode("moved"));
+    }
+
+    /**
+     * A name of {@code .} carries no separator and still lands the node beside its own parent, so the node it
+     * lands under is the one above. The scope answers for that node too.
+     */
+    @Test
+    public void renameShouldCheckTheScopeWhenANameLandsTheNodeBesideItsOwnParent() throws Exception {
+
+        final String parent = "renameDotParent";
+        final String name = "renameDotChild";
+        final String id = createChildNode(parent, name);
+
+        denyTheMoveOperationOnlyOn("/");
+
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/."))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertTrue("the node should still carry its name once the root refuses the operation",
+                hasGrandChild(parent, name));
+    }
+
+    /**
+     * A rename that keeps the node under its own parent reaches no node the request has not already answered for, so
+     * the parent's own scope is not asked. Were it asked, a scope that covers a node without covering its container
+     * would stop renaming that node, and the shipped {@code access_category} scope has exactly that shape.
+     */
+    @Test
+    public void renameShouldNotAnswerForTheParentWhenTheNodeKeepsIt() throws Exception {
+
+        final String parent = "renameKeepParent";
+        final String name = "renameKeepChild";
+        final String id = createChildNode(parent, name);
+        final String outsideId = createChildNode("renameKeepOther", "renameKeepOutsider");
+
+        denyTheMoveOperationOnlyOn("/" + parent);
+
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(id) + "/moveto/renameKeepDone"))
+                .then()
+                .assertThat()
+                .statusCode(SC_SEE_OTHER);
+        assertTrue("a plain rename should go through while only the parent's scope refuses the operation",
+                hasGrandChild(parent, "renameKeepDone"));
+
+        // the same scope does refuse a rename that lands a node under that parent, so the arm above is not vacuous
+        given().redirects().follow(false).urlEncodingEnabled(false)
+                .when()
+                .post(generateURL(getURIById(outsideId) + "/moveto/..%2F" + parent + "%2Fmoved"))
+                .then()
+                .assertThat()
+                .statusCode(SC_NOT_FOUND);
+        assertFalse("a rename landing a node under that parent should be refused", hasGrandChild(parent, "moved"));
+    }
+
     private void makeParentAndChild(String parent, String child) throws RepositoryException {
         session.refresh(false);
         session.getRootNode().addNode(parent, "nt:unstructured").addNode(child, "nt:unstructured");
@@ -558,6 +750,50 @@ public class APITest extends JerseyTest {
         final PermissionService permissionService = mock(PermissionService.class);
         when(permissionService.hasPermission(anyString(), any(Node.class))).thenReturn(true);
         when(permissionService.hasPermission(eq("jcrestapi." + API.DELETE), any(Node.class))).thenReturn(false);
+        SpringBeansAccess.getInstance().setPermissionService(permissionService);
+    }
+
+    /**
+     * Creates a node under the given parent, creating that parent first, and returns the identifier of the child.
+     */
+    private String createChildNode(String parent, String name) {
+        createNode("nt:unstructured", parent);
+        return given().body("{\"type\": \"nt:unstructured\"}")
+                .contentType(ContentType.JSON)
+                .when()
+                .post(getURLByPath(parent + "/children/" + name))
+                .then()
+                .assertThat()
+                .body("name", equalTo(name), "id", notNullValue())
+                .extract().path("id");
+    }
+
+    /**
+     * Installs a permission service that allows every operation but the move one, so that a refused rename cannot be
+     * confused with a node the test can no longer read.
+     */
+    private void denyOnlyTheMoveOperation() throws RepositoryException {
+
+        final PermissionService permissionService = mock(PermissionService.class);
+        when(permissionService.hasPermission(anyString(), any(Node.class))).thenReturn(true);
+        when(permissionService.hasPermission(eq("jcrestapi." + API.MOVE), any(Node.class))).thenReturn(false);
+        SpringBeansAccess.getInstance().setPermissionService(permissionService);
+    }
+
+    /**
+     * Installs a permission service that allows the move operation everywhere but on one node path.
+     */
+    private void denyTheMoveOperationOnlyOn(final String deniedPath) throws RepositoryException {
+
+        final PermissionService permissionService = mock(PermissionService.class);
+        when(permissionService.hasPermission(anyString(), any(Node.class))).thenAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                final String api = (String) invocation.getArguments()[0];
+                final Node node = (Node) invocation.getArguments()[1];
+                return !(("jcrestapi." + API.MOVE).equals(api) && deniedPath.equals(node.getPath()));
+            }
+        });
         SpringBeansAccess.getInstance().setPermissionService(permissionService);
     }
 
