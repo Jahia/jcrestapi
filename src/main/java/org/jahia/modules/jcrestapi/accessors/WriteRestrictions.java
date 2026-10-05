@@ -1,10 +1,18 @@
 package org.jahia.modules.jcrestapi.accessors;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
+import org.jahia.api.Constants;
 import org.jahia.modules.jcrestapi.SpringBeansAccess;
+import org.jahia.services.content.JCRNodeWrapper;
+import org.jahia.services.sites.SitesSettings;
 
 /**
  * Defines which JCR properties and mixins the accessors may write.
@@ -19,8 +27,17 @@ import org.jahia.modules.jcrestapi.SpringBeansAccess;
  * {@code jahia.api.jcr.restrictedNodeTypes}. Reading is unaffected: a restricted property is still returned by a
  * {@code GET}. Modifying an existing node is unaffected by the node-type list, which governs creation.</p>
  *
- * <p>The answer depends on the name and the node type alone, never on the caller or on the session the write runs
- * under, so it is the same however the request reached the accessor.</p>
+ * <p>A property whose definition is {@code protected} is out of scope too, unless it is one of
+ * {@link #SITE_LANGUAGE_PROPERTIES} on a site, or {@code jahia.api.jcr.additionalWritableProtectedProperties} names
+ * it. That key adds to the built-in names, where the three keys above replace their default.</p>
+ *
+ * <p>Deleting a property follows the same rule as writing it, because a deletion writes a {@code null} value. A site
+ * language property is the exception: it is never deleted through this API, because the repository rules that keep
+ * the languages of the sites consistent react to a value being set, and not to a property being removed.</p>
+ *
+ * <p>The answer depends on the name and the node type alone, so it is the same however the request reached the
+ * accessor. The one exception is a site language property, which also asks whether the caller holds
+ * {@link #SITE_LANGUAGES_PERMISSION} on the site.</p>
  */
 public final class WriteRestrictions {
 
@@ -29,18 +46,114 @@ public final class WriteRestrictions {
     }
 
     /**
+     * The {@code protected} properties of {@code jnt:virtualsite} that the Languages screen of the site settings writes
+     * through this API. They stay writable on a site, for a caller who holds {@link #SITE_LANGUAGES_PERMISSION} there,
+     * unless {@code jahia.api.jcr.restrictedProperties} names them.
+     */
+    public static final Set<String> SITE_LANGUAGE_PROPERTIES = Collections.unmodifiableSet(new HashSet<String>(
+            Arrays.asList(SitesSettings.DEFAULT_LANGUAGE, SitesSettings.LANGUAGES, SitesSettings.MANDATORY_LANGUAGES,
+                    SitesSettings.INACTIVE_LANGUAGES, SitesSettings.INACTIVE_LIVE_LANGUAGES,
+                    SitesSettings.MIX_LANGUAGES_ACTIVE, SitesSettings.ALLOWS_UNLISTED_LANGUAGES)));
+
+    /**
+     * The permission that the Languages screen of the site settings requires. The site settings module defines it, so
+     * on a Jahia without that module no caller holds it, and a site language property is refused like any other
+     * {@code protected} property.
+     */
+    public static final String SITE_LANGUAGES_PERMISSION = "siteAdminLanguages";
+
+    /**
      * Whether the given property may not be written through this API: its name is configured as restricted, or its node
-     * type declares the definition {@code protected}.
+     * type declares the definition {@code protected} and the name is not writable
+     * ({@link #isRestrictedProtectedProperty(Node, String, PropertyDefinition)}).
      *
-     * <p>A {@code protected} definition is maintained by the repository itself, so a request is never a legitimate
-     * source for it.</p>
-     *
+     * @param node         the node the request writes to, may be {@code null}
      * @param propertyName the unescaped property name the request asks to write
      * @param definition   the applicable property definition, may be {@code null}
      * @return {@code true} if the property must not be written
+     * @throws RepositoryException if the node's types cannot be read
      */
-    public static boolean isRestrictedProperty(String propertyName, PropertyDefinition definition) {
-        return isRestrictedPropertyName(propertyName) || (definition != null && definition.isProtected());
+    public static boolean isRestrictedProperty(Node node, String propertyName, PropertyDefinition definition)
+            throws RepositoryException {
+        return isRestrictedPropertyName(propertyName) || isRestrictedProtectedProperty(node, propertyName, definition);
+    }
+
+    /**
+     * Whether the given property may not be deleted through this API: it may not be written
+     * ({@link #isRestrictedProperty(Node, String, PropertyDefinition)}), or it is a site language property
+     * ({@link #isSiteLanguageProperty(Node, String, PropertyDefinition)}).
+     *
+     * @param node         the node the request deletes from, may be {@code null}
+     * @param propertyName the unescaped property name the request asks to delete
+     * @param definition   the applicable property definition, may be {@code null}
+     * @return {@code true} if the property must not be deleted
+     * @throws RepositoryException if the node's types cannot be read
+     */
+    public static boolean isRestrictedPropertyRemoval(Node node, String propertyName, PropertyDefinition definition)
+            throws RepositoryException {
+        return isRestrictedProperty(node, propertyName, definition)
+                || isSiteLanguageProperty(node, propertyName, definition);
+    }
+
+    /**
+     * Whether the given definition is {@code protected} and its name is not writable.
+     *
+     * <p>A {@code protected} definition is out of scope by default. A name stays writable in two cases:</p>
+     * <ul>
+     *     <li>it is a site language property ({@link #isSiteLanguageProperty(Node, String, PropertyDefinition)}), and
+     *     the caller holds {@link #SITE_LANGUAGES_PERMISSION} on the node;</li>
+     *     <li>{@code jahia.api.jcr.additionalWritableProtectedProperties} names it, on any node type and for any
+     *     caller. That key only adds names, so an empty value leaves the site language properties writable. Listing
+     *     one of {@link #SITE_LANGUAGE_PROPERTIES} there has no effect: only the first case makes those writable.</li>
+     * </ul>
+     *
+     * <p>Neither case overrides {@link #isRestrictedPropertyName(String)}, which
+     * {@link #isRestrictedProperty(Node, String, PropertyDefinition)} asks first.</p>
+     *
+     * @param node         the node the request writes to, may be {@code null}
+     * @param propertyName the unescaped property name the request asks to write
+     * @param definition   the applicable property definition, may be {@code null}
+     * @return {@code true} if the definition is {@code protected} and the name is not writable
+     * @throws RepositoryException if the node's types cannot be read
+     */
+    public static boolean isRestrictedProtectedProperty(Node node, String propertyName, PropertyDefinition definition)
+            throws RepositoryException {
+        if (definition == null || !definition.isProtected()) {
+            return false;
+        }
+        if (SITE_LANGUAGE_PROPERTIES.contains(propertyName)) {
+            return !isSiteLanguageProperty(node, propertyName, definition) || !holdsSiteLanguagesPermission(node);
+        }
+        return !SpringBeansAccess.getInstance().getAdditionalWritableProtectedProperties().contains(propertyName);
+    }
+
+    /**
+     * Whether the given property is one of {@link #SITE_LANGUAGE_PROPERTIES} on a site: the node is a
+     * {@code jnt:virtualsite}, and that type declares the definition. A translation node of a site resolves its
+     * definitions from the site, so the node's own type is asked as well.
+     *
+     * @param node         the node the request writes to, may be {@code null}
+     * @param propertyName the unescaped property name the request asks to write
+     * @param definition   the applicable property definition, may be {@code null}
+     * @return {@code true} if the property is a language property of a site
+     * @throws RepositoryException if the node's types cannot be read
+     */
+    public static boolean isSiteLanguageProperty(Node node, String propertyName, PropertyDefinition definition)
+            throws RepositoryException {
+        if (node == null || definition == null || !SITE_LANGUAGE_PROPERTIES.contains(propertyName)) {
+            return false;
+        }
+        final NodeType declaringType = definition.getDeclaringNodeType();
+        return declaringType != null && declaringType.isNodeType(Constants.JAHIANT_VIRTUALSITE)
+                && node.isNodeType(Constants.JAHIANT_VIRTUALSITE);
+    }
+
+    /**
+     * Whether the caller holds {@link #SITE_LANGUAGES_PERMISSION} on the given node. Only a Jahia node answers a Jahia
+     * permission, so any other node answers {@code false}.
+     */
+    private static boolean holdsSiteLanguagesPermission(Node node) {
+        return node instanceof JCRNodeWrapper && ((JCRNodeWrapper) node).hasPermission(SITE_LANGUAGES_PERMISSION);
     }
 
     /**

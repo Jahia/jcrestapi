@@ -12,6 +12,7 @@
         <property name="restrictedProperties" value="${jahia.api.jcr.restrictedProperties:j:password,j:external,j:externalSource,j:accountLocked,j:invalidateSessionTime,j:publicProperties,j:principal,j:aceType,j:roles,j:permissionNames,j:privilegedAccess,j:member,j:inherit,j:policy}"/>
         <property name="restrictedMixins" value="${jahia.api.jcr.restrictedMixins:jmix:accessControlled,jmix:mountPointFactory}"/>
         <property name="restrictedNodeTypes" value="${jahia.api.jcr.restrictedNodeTypes:jnt:user,jnt:group,jnt:member,jnt:ace,jnt:acl,jnt:role,jnt:permission,jnt:passwordHistory,jnt:passwordHistoryEntry,jnt:passwordPolicy,jnt:externalPermissions,jnt:mountPoint}"/>
+        <property name="additionalWritableProtectedProperties" value="${jahia.api.jcr.additionalWritableProtectedProperties:}"/>
         <property name="permissionService" ref="permissionService"/>
     </bean>
 

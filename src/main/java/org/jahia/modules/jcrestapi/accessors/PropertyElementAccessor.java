@@ -74,7 +74,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
         final PropertyDefinition definition = getPropertyDefinitionOnNode(propName, node);
 
         // ahead of the null-definition return, so a restricted name is answered the same way on every node type
-        checkPropertyIsWritable(propName, definition);
+        checkPropertyIsWritable(node, propName, definition);
 
         if (definition == null) {
             // we have a property name for which we don't have a type, so ignore the property
@@ -96,13 +96,37 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
      * Answers a request that names a property out of this API's scope with an error, so the caller knows the change did
      * not happen.
      *
+     * @param node       the node the request writes to
      * @param propName   the unescaped property name the request asks to write
      * @param definition the applicable property definition
      * @throws AccessDeniedException if the property is restricted
+     * @throws RepositoryException   if the node's types cannot be read
      */
-    static void checkPropertyIsWritable(String propName, PropertyDefinition definition) throws AccessDeniedException {
-        if (WriteRestrictions.isRestrictedProperty(propName, definition)) {
-            throw new AccessDeniedException("Property " + propName + " cannot be written through this API");
+    static void checkPropertyIsWritable(Node node, String propName, PropertyDefinition definition) throws RepositoryException {
+        if (!WriteRestrictions.isRestrictedProperty(node, propName, definition)) {
+            return;
+        }
+        if (!WriteRestrictions.isRestrictedPropertyName(propName)
+                && WriteRestrictions.isSiteLanguageProperty(node, propName, definition)) {
+            throw new AccessDeniedException("Property " + propName + " can only be written by a user who holds the "
+                    + WriteRestrictions.SITE_LANGUAGES_PERMISSION + " permission on the site");
+        }
+        throw new AccessDeniedException("Property " + propName + " cannot be written through this API");
+    }
+
+    /**
+     * Answers a request that deletes a property out of this API's scope with an error, so the caller knows the property
+     * is still there.
+     *
+     * @param node       the node the request deletes from
+     * @param propName   the unescaped property name the request asks to delete
+     * @param definition the applicable property definition
+     * @throws AccessDeniedException if the property may not be deleted
+     * @throws RepositoryException   if the node's types cannot be read
+     */
+    static void checkPropertyIsRemovable(Node node, String propName, PropertyDefinition definition) throws RepositoryException {
+        if (WriteRestrictions.isRestrictedPropertyRemoval(node, propName, definition)) {
+            throw new AccessDeniedException("Property " + propName + " cannot be deleted through this API");
         }
     }
 
@@ -141,7 +165,7 @@ public class PropertyElementAccessor extends ElementAccessor<JSONProperties<APID
     @Override
     protected void delete(Node node, String subElement) throws RepositoryException {
         // subElement reaches the accessor already unescaped (ElementsProcessor), so the check names the string the write uses
-        checkPropertyIsWritable(subElement, getPropertyDefinitionOnNode(subElement, node));
+        checkPropertyIsRemovable(node, subElement, getPropertyDefinitionOnNode(subElement, node));
         node.setProperty(subElement, (Value) null);
     }
 
