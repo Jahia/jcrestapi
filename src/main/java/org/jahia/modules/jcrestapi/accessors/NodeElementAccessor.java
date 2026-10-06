@@ -172,9 +172,9 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
 
         final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node);
         if (WriteRestrictions.isRestrictedProtectedProperty(node, propName, definition)) {
-            if (WriteRestrictions.isSiteLanguageProperty(node, propName, definition)) {
-                logger.debug("Ignoring property {} requested on {}: writing it requires the "
-                        + WriteRestrictions.SITE_LANGUAGES_PERMISSION + " permission on the site", propName, node.getPath());
+            if (WriteRestrictions.SITE_LANGUAGE_PROPERTIES.contains(propName)) {
+                logger.debug("Ignoring property {} requested on {}: it is only writable on a site, by a user who holds the "
+                        + WriteRestrictions.SITE_LANGUAGES_PERMISSION + " permission there", propName, node.getPath());
             } else {
                 logger.debug("Ignoring property {} requested on {}: its node type declares it protected (see jahia.api.jcr.additionalWritableProtectedProperties)", propName, node.getPath());
             }

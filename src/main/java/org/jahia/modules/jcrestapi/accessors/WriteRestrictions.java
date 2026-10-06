@@ -128,9 +128,10 @@ public final class WriteRestrictions {
     }
 
     /**
-     * Whether the given property is one of {@link #SITE_LANGUAGE_PROPERTIES} on a site: the node is a
-     * {@code jnt:virtualsite}, and that type declares the definition. A translation node of a site resolves its
-     * definitions from the site, so the node's own type is asked as well.
+     * Whether the given property is one of {@link #SITE_LANGUAGE_PROPERTIES} on a site: the node's primary type is
+     * {@code jnt:virtualsite}, and that type declares the definition. The primary type is compared rather than asked
+     * with {@link Node#isNodeType(String)}, because {@code jnt:module} extends {@code jnt:virtualsite}. A translation
+     * node of a site resolves its definitions from the site, so the node's own type is asked as well.
      *
      * @param node         the node the request writes to, may be {@code null}
      * @param propertyName the unescaped property name the request asks to write
@@ -145,7 +146,7 @@ public final class WriteRestrictions {
         }
         final NodeType declaringType = definition.getDeclaringNodeType();
         return declaringType != null && declaringType.isNodeType(Constants.JAHIANT_VIRTUALSITE)
-                && node.isNodeType(Constants.JAHIANT_VIRTUALSITE);
+                && Constants.JAHIANT_VIRTUALSITE.equals(node.getPrimaryNodeType().getName());
     }
 
     /**

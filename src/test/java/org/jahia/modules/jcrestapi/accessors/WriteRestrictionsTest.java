@@ -161,10 +161,19 @@ public class WriteRestrictionsTest {
     @Test
     public void aSiteLanguagePropertyIsRestrictedOnANodeThatIsNotASite() throws RepositoryException {
         // a translation node of a site resolves its definitions from the site, so the definition alone would pass
-        final JCRNodeWrapper translation = siteNode(true);
+        final JCRNodeWrapper translation = withPrimaryType(siteNode(true), "jnt:translation");
         when(translation.isNodeType(Constants.JAHIANT_VIRTUALSITE)).thenReturn(false);
 
         assertThat(WriteRestrictions.isRestrictedProperty(translation, SITE_LANGUAGE_PROPERTY, siteDefinition())).isTrue();
+    }
+
+    @Test
+    public void aSiteLanguagePropertyIsRestrictedOnAModuleNode() throws RepositoryException {
+        // jnt:module extends jnt:virtualsite, so a module node is a node of that type without being a site
+        final JCRNodeWrapper module = withPrimaryType(siteNode(true), "jnt:module");
+
+        assertThat(WriteRestrictions.isRestrictedProperty(module, SITE_LANGUAGE_PROPERTY, siteDefinition())).isTrue();
+        assertThat(WriteRestrictions.isRestrictedPropertyRemoval(module, SITE_LANGUAGE_PROPERTY, siteDefinition())).isTrue();
     }
 
     @Test
@@ -177,8 +186,9 @@ public class WriteRestrictionsTest {
 
     @Test
     public void aSiteLanguagePropertyIsRestrictedWhenTheCallerCannotBeAsked() throws RepositoryException {
-        // the permission is a Jahia permission, so only a Jahia node can answer it
-        assertThat(WriteRestrictions.isRestrictedProperty(nodeDeclaring(), SITE_LANGUAGE_PROPERTY, siteDefinition())).isTrue();
+        // the permission is a Jahia permission, so only a Jahia node can answer it, even when the node is a site
+        final Node plainSite = nodeOfType(Constants.JAHIANT_VIRTUALSITE);
+        assertThat(WriteRestrictions.isRestrictedProperty(plainSite, SITE_LANGUAGE_PROPERTY, siteDefinition())).isTrue();
         assertThat(WriteRestrictions.isRestrictedProperty(null, SITE_LANGUAGE_PROPERTY, siteDefinition())).isTrue();
     }
 
@@ -560,7 +570,7 @@ public class WriteRestrictionsTest {
      * caller holds the permission of the Languages screen on it when {@code mayManageLanguages} is {@code true}.
      */
     private static JCRNodeWrapper siteNode(boolean mayManageLanguages, String... protectedNames) throws RepositoryException {
-        final JCRNodeWrapper site = mock(JCRNodeWrapper.class);
+        final JCRNodeWrapper site = withPrimaryType(mock(JCRNodeWrapper.class), Constants.JAHIANT_VIRTUALSITE);
         when(site.getPath()).thenReturn("/sites/site");
         when(site.isNodeType(Constants.JAHIANT_VIRTUALSITE)).thenReturn(true);
         when(site.hasPermission(WriteRestrictions.SITE_LANGUAGES_PERMISSION)).thenReturn(mayManageLanguages);
@@ -573,6 +583,16 @@ public class WriteRestrictionsTest {
             when(site.getApplicablePropertyDefinition(protectedName)).thenReturn(definition);
         }
         return site;
+    }
+
+    /**
+     * Makes the given Jahia node report the given primary type.
+     */
+    private static JCRNodeWrapper withPrimaryType(JCRNodeWrapper node, String typeName) throws RepositoryException {
+        final ExtendedNodeType primaryType = mock(ExtendedNodeType.class);
+        when(primaryType.getName()).thenReturn(typeName);
+        when(node.getPrimaryNodeType()).thenReturn(primaryType);
+        return node;
     }
 
     /**
