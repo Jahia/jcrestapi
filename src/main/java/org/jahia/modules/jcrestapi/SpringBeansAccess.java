@@ -62,6 +62,7 @@ public final class SpringBeansAccess {
     private Set<String> restrictedProperties = Collections.emptySet();
     private Set<String> restrictedMixins = Collections.emptySet();
     private Set<String> restrictedNodeTypes = Collections.emptySet();
+    private Set<String> additionalWritableProtectedProperties = Collections.emptySet();
     private PermissionService permissionService;
     private SpringBeansAccess() {
     }
@@ -116,6 +117,14 @@ public final class SpringBeansAccess {
 
     public Set<String> getRestrictedNodeTypes() {
         return restrictedNodeTypes;
+    }
+
+    public void setAdditionalWritableProtectedProperties(String additionalWritableProtectedProperties) {
+        this.additionalWritableProtectedProperties = Utils.split(additionalWritableProtectedProperties);
+    }
+
+    public Set<String> getAdditionalWritableProtectedProperties() {
+        return additionalWritableProtectedProperties;
     }
 
     public PermissionService getPermissionService() {

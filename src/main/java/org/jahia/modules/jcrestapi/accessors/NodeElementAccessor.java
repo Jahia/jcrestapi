@@ -155,9 +155,9 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
      *
      * <p>Each reason logs at its own level. A name on the configured list logs {@code INFO} and names that list,
      * because an operator edits the list to change the outcome. A definition the node type declares
-     * {@code protected} logs {@code DEBUG}: a representation a client read back carries several of them, and the
-     * configured list does not govern them. The whole-node route resends names the client read back rather than
-     * chose, so neither reason is logged at {@code WARN} here.</p>
+     * {@code protected}, whose name is not writable ({@link WriteRestrictions#isRestrictedProtectedProperty}), logs
+     * {@code DEBUG}: a representation a client read back carries several of them. The whole-node route resends names
+     * the client read back rather than chose, so neither reason is logged at {@code WARN} here.</p>
      *
      * @param node     the node the representation is applied to
      * @param propName the unescaped property name the representation carries
@@ -171,8 +171,13 @@ public class NodeElementAccessor extends ElementAccessor<JSONSubElementContainer
         }
 
         final PropertyDefinition definition = PropertyElementAccessor.getPropertyDefinitionOnNode(propName, node);
-        if (definition != null && definition.isProtected()) {
-            logger.debug("Ignoring property {} requested on {}: its node type maintains it", propName, node.getPath());
+        if (WriteRestrictions.isRestrictedProtectedProperty(node, propName, definition)) {
+            if (WriteRestrictions.SITE_LANGUAGE_PROPERTIES.contains(propName)) {
+                logger.debug("Ignoring property {} requested on {}: it is only writable on a site, by a user who holds the "
+                        + WriteRestrictions.SITE_LANGUAGES_PERMISSION + " permission there", propName, node.getPath());
+            } else {
+                logger.debug("Ignoring property {} requested on {}: its node type declares it protected (see jahia.api.jcr.additionalWritableProtectedProperties)", propName, node.getPath());
+            }
             return true;
         }
 
