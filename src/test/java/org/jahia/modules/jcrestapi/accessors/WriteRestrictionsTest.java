@@ -337,6 +337,21 @@ public class WriteRestrictionsTest {
     }
 
     @Test
+    public void writingARestrictedSiteLanguagePropertyByNameGetsTheGenericRefusal() throws RepositoryException, IOException {
+        // the configured list refused the name, so the permission is not what the caller lacks
+        SpringBeansAccess.getInstance().setRestrictedProperties(RESTRICTED_PROPERTY + "," + SITE_LANGUAGE_PROPERTY);
+        final Node node = siteNode(true);
+
+        try {
+            PropertyElementAccessor.setPropertyOnNode(escape(SITE_LANGUAGE_PROPERTY), valueFor(SITE_LANGUAGE_PROPERTY), node);
+            fail("writing " + SITE_LANGUAGE_PROPERTY + " should have been refused, because the configured list names it");
+        } catch (AccessDeniedException expected) {
+            assertThat(expected.getMessage()).doesNotContain(WriteRestrictions.SITE_LANGUAGES_PERMISSION);
+            verify(node, never()).setProperty(eq(SITE_LANGUAGE_PROPERTY), anyString(), anyInt());
+        }
+    }
+
+    @Test
     public void writingAProtectedPropertyThatIsNotWritableByNameIsRefused() throws RepositoryException, IOException {
         final Node node = declare(nodeDeclaring(), true, PROTECTED_PROPERTY);
 
