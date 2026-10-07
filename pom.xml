@@ -64,7 +64,7 @@
         <assertj.version>1.6.0</assertj.version>
         <jahia.plugin.version>6.9</jahia.plugin.version>
         <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
-        <jahia-module-signature>MCwCFF4596DE14rzG311vgXQmhtNBhTFAhR/oo/gQCEq9o9NnUIQquyfvK+Eow==</jahia-module-signature>
+        <jahia-module-signature>MCwCFC7Mon5R1lkTXGUD6GOhUx87dDtYAhR0h1b92k9kpu4QKXHjZ9I/UVHe8Q==</jahia-module-signature>
     </properties>
 
     <scm>
