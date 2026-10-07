@@ -1,6 +1,12 @@
 # jcrestapi Changelog
 
-## 0.0.1
+## 3.4.1
+
+* Fixed the Languages screen of the site settings so it saves its changes again.
+
+  The JCR REST API writes the language settings of a site again for a user who may manage the languages of that site. It still refuses the other properties that their node type declares `protected`. To let the API write another protected property, list its name in `jahia.api.jcr.additionalWritableProtectedProperties` in `jahia.properties`. Any user who may write a node can then write and delete that property, on every node type.
+
+## 3.4.0
 
 * Restricted deletions in the JCR REST API to the nodes it is configured to expose.
 
@@ -15,10 +21,6 @@
   A rename is now answered against the node it renames, the way every other operation of this API already is. A request is refused when the API does not expose that node. Grant the move permission for the JCR REST API on that node, or remove the node's type from `jahia.find.nodeTypesToSkip` in `jahia.properties`. The rename operation is named `move`. A site that grants the whole `jcrestapi` API needs no change, and that is what the authorization configuration Jahia ships does. A site whose authorization configuration lists the operations of this API one by one must add `jcrestapi.move` to keep the rename endpoint working.
 
   A rename that moves the node under a different parent is answered against that parent as well. The new name is resolved as a relative path, so a name such as `../folder/name` moves the node rather than renaming it in place. Such a request is refused when the API does not expose the parent the node lands under.
-
-* Fixed the Languages screen of the site settings so it saves its changes again.
-
-  The JCR REST API writes the language settings of a site again for a user who may manage the languages of that site. It still refuses the other properties that their node type declares `protected`. To let the API write another protected property, list its name in `jahia.api.jcr.additionalWritableProtectedProperties` in `jahia.properties`. Any user who may write a node can then write and delete that property, on every node type.
 
 * Fixed the rename route of the JCR REST API for a node whose parent is the repository root.
 
