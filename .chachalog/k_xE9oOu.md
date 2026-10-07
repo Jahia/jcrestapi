@@ -1,5 +1,5 @@
 ---
-jcrestapi: minor
+jcrestapi: patch
 ---
 
 Fixed the Languages screen of the site settings so it saves its changes again.
