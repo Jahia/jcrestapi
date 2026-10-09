@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: jahia/jahia-modules-action/update-signature@v2
+      - uses: jahia/jahia-modules-action/update-signature@fix/update-signature-on-pull-request
         with:
           nexus_username: ${{ secrets.NEXUS_USERNAME }}
           nexus_password: ${{ secrets.NEXUS_PASSWORD }}
