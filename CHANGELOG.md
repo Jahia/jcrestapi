@@ -1,5 +1,9 @@
 # jcrestapi Changelog
 
+## 3.4.2
+
+* Added maven.jahia.com to the Maven repositories jcrestapi uses to download its dependencies.
+
 ## 3.4.1
 
 * Fixed the Languages screen of the site settings so it saves its changes again.
